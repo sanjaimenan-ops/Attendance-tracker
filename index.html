@@ -19,6 +19,12 @@ body.authenticated #loginScreen{display:none}
 .login-card label{display:flex;flex-direction:column;gap:6px;margin:12px 0}
 .login-card input{width:100%;padding:12px}.password-wrap{display:flex;align-items:center;gap:8px}.password-wrap input{flex:1;min-width:0}.password-toggle{flex:0 0 auto;width:44px;height:44px;padding:0;margin:0!important;border:1px solid #d0d5dd;background:#fff;color:#344054;border-radius:9px;display:grid;place-items:center}.password-toggle svg{width:20px;height:20px}
 .login-card button{width:100%;padding:12px;margin-top:8px}
+/* Keep the password visibility control compact; do not inherit full-width login button styles. */
+.login-card .password-wrap{display:flex;width:100%;align-items:center;gap:8px}
+.login-card .password-wrap input{width:0;min-width:0;flex:1}
+.login-card button.password-toggle{display:grid;width:44px;min-width:44px;max-width:44px;height:44px;flex:0 0 44px;margin:0;padding:0;place-items:center}
+.login-card button.password-toggle svg{display:block;width:20px;height:20px;flex:none}
+
 #loginError{color:#b42318;font-size:13px;min-height:18px;margin-top:10px}
 .auth-actions{display:flex;align-items:center;gap:8px}
 </style></head>
