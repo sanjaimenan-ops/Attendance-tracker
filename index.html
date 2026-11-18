@@ -189,11 +189,11 @@ body.authenticated .tag{background:#ffdf9e;color:#57340a;border:1px solid #e9a83
       <path d="M590 900q70-45 140 0t140 0" fill="none" stroke="#fff" stroke-width="14" stroke-linecap="round"/>
     </svg>
   </div>
-  <form class="login-card" id="loginForm">
+  <form class="login-card" id="loginForm" autocomplete="off">
     <h1>Welcome Back</h1>
     <p>Sign in to access your attendance and salary tracker.</p>
-    <label>Email / Login ID<input id="loginEmail" type="email" autocomplete="username" required placeholder="Username / email"></label>
-    <label>Password<div class="password-wrap"><input id="loginPassword" type="password" autocomplete="current-password" required placeholder="Password"><button class="password-toggle" id="togglePassword" type="button" aria-label="Show password" aria-pressed="false" title="Show password"><svg id="passwordEyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></button></div></label>
+    <label>Email / Login ID<input id="loginEmail" type="email" autocomplete="off" autocapitalize="none" spellcheck="false" required placeholder="Username / email"></label>
+    <label>Password<div class="password-wrap"><input id="loginPassword" type="password" autocomplete="off" required placeholder="Password"><button class="password-toggle" id="togglePassword" type="button" aria-label="Show password" aria-pressed="false" title="Show password"><svg id="passwordEyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></button></div></label>
     <button id="loginButton" type="submit">Sign in</button>
     <div id="loginError" role="alert" aria-live="polite"></div>
   </form>
@@ -335,6 +335,22 @@ load();
       : '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>';
   });
 
+  function clearLoginCredentials() {
+    const email = document.getElementById('loginEmail');
+    if (email) email.value = '';
+    if (passwordInput) {
+      passwordInput.value = '';
+      passwordInput.type = 'password';
+    }
+    if (togglePasswordButton) {
+      togglePasswordButton.setAttribute('aria-label', 'Show password');
+      togglePasswordButton.setAttribute('aria-pressed', 'false');
+      togglePasswordButton.title = 'Show password';
+    }
+    const eye = document.getElementById('passwordEyeIcon');
+    if (eye) eye.innerHTML = '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>';
+  }
+
   let auth = null;
   let cloudDoc = null;
   let cloudReady = false;
@@ -382,6 +398,7 @@ load();
     // Only disable cloud access after the final save attempt has finished.
     cloudReady = false;
 
+    clearLoginCredentials();
     try {
       await auth.signOut();
       showError('You were logged out automatically after 3 minutes of inactivity. Sign in again to continue.');
@@ -494,6 +511,7 @@ load();
     });
 
     logoutButton.addEventListener('click', async () => {
+      clearLoginCredentials();
       stopIdleTimer();
       cloudReady = false;
       cloudDoc = null;
@@ -506,7 +524,7 @@ load();
       cloudDoc = null;
       document.body.classList.toggle('authenticated', false);
 
-      if (!user) return;
+      if (!user) { clearLoginCredentials(); return; }
 
       if (user.uid !== OWNER_UID) {
         await auth.signOut();
