@@ -83,6 +83,57 @@ tbody tr:nth-child(even){background:#fafbff}
  tbody tr{border:1px solid #e4e8f2;border-radius:14px;box-shadow:0 4px 14px #263b7409}
 }
 @media(prefers-reduced-motion:reduce){button,.filebtn{transition:none}}
+
+/* Deeper navy + warm amber dashboard polish */
+html{scroll-behavior:smooth}
+body{background:#e7ebf5;color:#172554}
+body.authenticated{background:linear-gradient(145deg,#e5eaf5 0%,#f3f5fa 48%,#e9edf6 100%)}
+body.authenticated .wrap{animation:dashboardEnter .45s ease both}
+body.authenticated .top{background:#172554;color:#fff;border-radius:20px;padding:20px 22px;margin:0 0 18px;box-shadow:0 12px 28px #17255425}
+body.authenticated .top .brand{color:#fff;font-size:24px}
+body.authenticated .top .muted{color:#c7d2fe}
+body.authenticated .top .tag{background:#f59e0b;color:#172554;border:0}
+body.authenticated .panel{background:#fff;border:1px solid #d7deed;border-radius:20px;box-shadow:0 8px 24px #17255412;transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease}
+body.authenticated .panel:hover{transform:translateY(-2px);box-shadow:0 14px 30px #17255419;border-color:#c5cee2}
+body.authenticated .panel h3{color:#172554;font-weight:750}
+body.authenticated .metric{background:linear-gradient(145deg,#fff8e8,#ffedc8);border:1px solid #f3d18e;border-radius:16px;transition:transform .2s ease,box-shadow .2s ease}
+body.authenticated .metric:hover{transform:translateY(-3px);box-shadow:0 8px 18px #a66a171c}
+body.authenticated .metric small{color:#704b17;font-weight:650}
+body.authenticated .metric strong{color:#172554;font-size:26px}
+body.authenticated button,body.authenticated .filebtn{background:#172554;color:#fff;border:1px solid #172554;border-radius:11px;box-shadow:0 3px 0 #0d1738;transition:background .18s ease,transform .18s ease,box-shadow .18s ease}
+body.authenticated button:hover,body.authenticated .filebtn:hover{background:#263b78;transform:translateY(-2px);box-shadow:0 5px 0 #0d1738,0 8px 16px #17255425}
+body.authenticated button:active,body.authenticated .filebtn:active{transform:translateY(1px);box-shadow:0 1px 0 #0d1738}
+body.authenticated button.secondary{background:#ffedc8;color:#5d3b08;border:1px solid #e9c477;box-shadow:0 2px 0 #dfbd7a}
+body.authenticated button.secondary:hover{background:#ffe1a1}
+body.authenticated button.danger{background:#fff0ed;color:#a12c23;border-color:#f1c8c1;box-shadow:0 2px 0 #e8c0b8}
+body.authenticated input,body.authenticated select{border:1px solid #c8d1e3;border-radius:10px;background:#fbfcff;color:#172554;transition:border-color .18s ease,box-shadow .18s ease,background .18s ease}
+body.authenticated input:focus,body.authenticated select:focus{outline:0;border-color:#d88a13;box-shadow:0 0 0 3px #f59e0b35;background:#fff}
+body.authenticated .drop{background:#fff8e9;border:2px dashed #d99a2b;border-radius:16px;transition:background .2s ease,border-color .2s ease}
+body.authenticated .drop.uploading{background:#fff0cf;border-color:#b7791f}
+body.authenticated .tablewrap{border:1px solid #d7deed;border-radius:14px;overflow-x:auto}
+body.authenticated th{background:#172554;color:#fff;border-bottom:0;padding:12px 10px}
+body.authenticated td{color:#26365f;border-bottom:1px solid #e8ecf4}
+body.authenticated tbody tr:nth-child(even){background:#f2f5fb}
+body.authenticated tbody tr:hover{background:#fff3d9}
+body.authenticated .status.present{background:#d8f3e4;color:#12613b}
+body.authenticated .status.leave{background:#ffedc8;color:#754b0b}
+body.authenticated .status.review{background:#ffe2dd;color:#9f2d23}
+body.authenticated .note,body.authenticated .muted{color:#5e6b89}
+body.authenticated .foot{color:#65718d}
+@keyframes dashboardEnter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:760px){
+ body.authenticated .top{border-radius:16px;padding:16px}
+ body.authenticated .top .brand{font-size:21px}
+ body.authenticated .panel{border-radius:16px}
+ body.authenticated .metric strong{font-size:23px}
+ body.authenticated tbody tr{background:#fff;border:1px solid #d7deed;transition:box-shadow .2s ease,transform .2s ease}
+ body.authenticated tbody tr:active{transform:scale(.995)}
+}
+@media(prefers-reduced-motion:reduce){
+ html{scroll-behavior:auto}
+ body.authenticated .wrap{animation:none}
+ body.authenticated .panel,body.authenticated .metric,body.authenticated button,body.authenticated .filebtn{transition:none}
+}
 </style></head>
 <body>
 <section id="loginScreen" aria-label="Private login">
