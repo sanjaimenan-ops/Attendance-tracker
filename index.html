@@ -178,6 +178,74 @@ body.authenticated .tag{background:#ffdf9e;color:#57340a;border:1px solid #e9a83
  .time-entry{gap:4px}
  .time-entry .period-button{flex-basis:48px;width:48px;min-width:48px}
 }
+
+/* Orange + white premium dashboard refresh (visual-only; preserve app logic) */
+body.authenticated,
+body.authenticated .wrap{background:#fff7ed!important;color:#292524}
+body.authenticated .wrap{max-width:1280px;padding:26px}
+body.authenticated .wrap>header.top{
+  background:linear-gradient(120deg,#f97316 0%,#ea580c 100%)!important;
+  color:#fff;border-radius:22px;padding:22px 24px;margin:0 0 20px;
+  box-shadow:0 12px 28px #c2410c24
+}
+body.authenticated .wrap>header.top .brand{color:#fff!important;font-size:25px;letter-spacing:-.6px}
+body.authenticated .wrap>header.top .muted{color:#ffedd5!important}
+body.authenticated .wrap>header.top .tag{background:#fff;color:#c2410c;border:0}
+body.authenticated .wrap>header.top button.secondary{background:#fff;color:#c2410c;border:1px solid #ffedd5;box-shadow:none}
+body.authenticated .panel{
+  background:#fff!important;border:1px solid #fed7aa!important;border-radius:20px;
+  box-shadow:0 7px 22px #9a34120d!important;transition:box-shadow .2s ease,border-color .2s ease
+}
+body.authenticated .panel:hover{background:#fff!important;border-color:#fdba74!important;box-shadow:0 12px 28px #9a341218!important;transform:translateY(-1px)}
+body.authenticated .panel h3{color:#292524!important}
+body.authenticated .panel>.top{background:transparent!important;color:#292524!important;padding:0!important;margin:0!important;box-shadow:none!important;border-radius:0!important}
+body.authenticated .panel>.top .brand{color:#292524!important}
+body.authenticated .panel>.top .muted{color:#78716c!important}
+body.authenticated .metric{
+  background:#fff!important;border:1px solid #ffedd5!important;border-left:4px solid #f97316!important;
+  border-radius:15px;padding:16px;box-shadow:0 3px 10px #9a34120a!important
+}
+body.authenticated .metric:hover{background:#fffaf5!important;transform:translateY(-2px)}
+body.authenticated .metric small{color:#78716c!important;font-weight:650}
+body.authenticated .metric strong{color:#292524!important;font-size:25px}
+body.authenticated .summary-grid .metric:nth-child(7){
+  background:#fff1e6!important;border:1px solid #fdba74!important;border-left:5px solid #ea580c!important
+}
+body.authenticated .summary-grid .metric:nth-child(7) small{color:#9a3412!important}
+body.authenticated .summary-grid .metric:nth-child(7) strong{color:#c2410c!important;font-size:28px}
+body.authenticated button,body.authenticated .filebtn{
+  background:#ea580c!important;color:#fff!important;border:1px solid #ea580c!important;
+  border-radius:11px;box-shadow:0 3px 0 #c2410c!important
+}
+body.authenticated button:hover,body.authenticated .filebtn:hover{background:#c2410c!important;box-shadow:0 4px 0 #9a3412,0 8px 16px #ea580c22!important}
+body.authenticated button.secondary{
+  background:#fff7ed!important;color:#9a3412!important;border:1px solid #fed7aa!important;box-shadow:none!important
+}
+body.authenticated button.secondary:hover{background:#ffedd5!important}
+body.authenticated button.danger{background:#fff1f0!important;color:#b42318!important;border:1px solid #fecdca!important;box-shadow:none!important}
+body.authenticated input,body.authenticated select{background:#fff!important;border:1px solid #e7d5c7!important;color:#292524!important}
+body.authenticated input:focus,body.authenticated select:focus{border-color:#f97316!important;box-shadow:0 0 0 3px #f9731625!important}
+body.authenticated .drop{background:#fffaf5!important;border:2px dashed #fb923c!important;border-radius:16px}
+body.authenticated .drop.uploading{background:#fff1e6!important;border-color:#ea580c!important}
+body.authenticated .tablewrap{background:#fff!important;border:1px solid #fed7aa!important;border-radius:14px}
+body.authenticated th{background:#fff1e6!important;color:#9a3412!important;border-bottom:1px solid #fed7aa!important}
+body.authenticated td{color:#44403c!important;border-bottom:1px solid #f5e7dc!important}
+body.authenticated tbody tr:nth-child(even),body.authenticated tbody tr:nth-child(odd){background:#fff!important}
+body.authenticated tbody tr:hover{background:#fff7ed!important}
+body.authenticated .status.present{background:#dcfce7!important;color:#166534!important}
+body.authenticated .status.leave{background:#ffedd5!important;color:#9a3412!important}
+body.authenticated .status.review{background:#fee2e2!important;color:#b91c1c!important}
+body.authenticated .note,body.authenticated .muted,body.authenticated .foot{color:#78716c!important}
+body.authenticated .tag{background:#fff1e6!important;color:#9a3412!important;border:1px solid #fed7aa!important}
+@media(max-width:760px){
+  body.authenticated .wrap{padding:12px}
+  body.authenticated .wrap>header.top{padding:17px!important;border-radius:17px}
+  body.authenticated .wrap>header.top .brand{font-size:21px}
+  body.authenticated .panel{border-radius:16px}
+  body.authenticated .metric strong{font-size:22px}
+  body.authenticated .summary-grid .metric:nth-child(7) strong{font-size:24px}
+}
+
 </style></head>
 <body>
 <section id="loginScreen" aria-label="Private login">
