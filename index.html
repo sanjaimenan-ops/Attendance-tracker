@@ -443,11 +443,14 @@ load();
       activeStaff: activeStaff,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     };
-    saveQueue = saveQueue.then(() => targetDoc.set(payload)).catch(error => {
+    const writePromise = saveQueue.then(() => targetDoc.set(payload));
+    // Keep the queue usable for later saves, but return the original write result so
+    // automatic logout can detect a failed final Firebase write.
+    saveQueue = writePromise.catch(error => {
       console.error('Cloud save failed:', error);
       showError('Cloud save failed. Check your internet connection and try again.');
     });
-    return saveQueue;
+    return writePromise;
   }
 
   window.scheduleAttendanceCloudSave = function() {
