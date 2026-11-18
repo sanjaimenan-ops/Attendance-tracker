@@ -407,8 +407,10 @@ load();
   // Automatically end the authenticated session after three minutes without activity.
   const IDLE_TIMEOUT_MS = 3 * 60 * 1000;
   let idleTimer = null;
+  let idleWatchdog = null;
   let lastActivityAt = 0;
   let logoutInProgress = false;
+  const IDLE_ACTIVITY_KEY = 'attendanceLastActivityAt';
 
   function stopIdleTimer() {
     if (idleTimer !== null) clearTimeout(idleTimer);
@@ -453,9 +455,33 @@ load();
   function resetIdleTimer() {
     if (!auth || !auth.currentUser || !cloudReady || logoutInProgress) return;
     lastActivityAt = Date.now();
+    try { localStorage.setItem(IDLE_ACTIVITY_KEY, String(lastActivityAt)); } catch (_) {}
     stopIdleTimer();
-    idleTimer = setTimeout(expireIdleSession, IDLE_TIMEOUT_MS);
+    idleTimer = setTimeout(checkIdleDeadline, IDLE_TIMEOUT_MS);
   }
+
+  // Timers can be heavily throttled while a phone is locked or the browser is in the
+  // background. Re-check the real elapsed time rather than trusting a single timeout.
+  function checkIdleDeadline() {
+    if (!auth || !auth.currentUser || !cloudReady || logoutInProgress) return;
+    if (Date.now() - lastActivityAt >= IDLE_TIMEOUT_MS) expireIdleSession();
+  }
+
+  idleWatchdog = setInterval(checkIdleDeadline, 1000);
+
+  window.addEventListener('storage', event => {
+    if (event.key !== IDLE_ACTIVITY_KEY || !event.newValue) return;
+    const sharedActivity = Number(event.newValue);
+    if (Number.isFinite(sharedActivity) && sharedActivity > lastActivityAt) {
+      lastActivityAt = sharedActivity;
+      if (auth && auth.currentUser && cloudReady && !logoutInProgress) {
+        stopIdleTimer();
+        idleTimer = setTimeout(checkIdleDeadline, Math.max(0, IDLE_TIMEOUT_MS - (Date.now() - lastActivityAt)));
+      }
+    }
+  });
+
+  window.addEventListener('pageshow', checkIdleDeadline);
 
   ['pointerdown', 'keydown', 'touchstart', 'scroll', 'click'].forEach(eventName => {
     document.addEventListener(eventName, resetIdleTimer, {passive: true});
@@ -530,6 +556,8 @@ load();
       loginButton.disabled = true;
       loginButton.textContent = 'Signing in…';
       try {
+        // A fresh, successful sign-in starts a new inactivity window.
+        localStorage.setItem(IDLE_ACTIVITY_KEY, String(Date.now()));
         const credential = await auth.signInWithEmailAndPassword(
           document.getElementById('loginEmail').value.trim(),
           document.getElementById('loginPassword').value
@@ -558,6 +586,7 @@ load();
       stopIdleTimer();
       cloudReady = false;
       cloudDoc = null;
+      try { localStorage.removeItem(IDLE_ACTIVITY_KEY); } catch (_) {}
       await auth.signOut();
     });
 
@@ -599,6 +628,12 @@ load();
         }
         cloudReady = true;
         document.body.classList.toggle('authenticated', true);
+        const savedActivity = Number(localStorage.getItem(IDLE_ACTIVITY_KEY));
+        lastActivityAt = Number.isFinite(savedActivity) && savedActivity > 0 ? savedActivity : Date.now();
+        if (Date.now() - lastActivityAt >= IDLE_TIMEOUT_MS) {
+          await expireIdleSession();
+          return;
+        }
         resetIdleTimer();
         showError('');
       } catch (error) {
