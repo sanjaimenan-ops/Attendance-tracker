@@ -316,7 +316,29 @@ document.addEventListener('click',e=>{const periodButton=e.target.closest('[data
 $('add').onclick=()=>{const month=$('month').value;const total=daysInMonth(month);const used=new Set(records.filter(r=>r.date&&r.date.startsWith(month+'-')).map(r=>Number(r.date.slice(8,10))));let day=1;while(day<=total&&used.has(day))day++;if(day>total){notify('All days in this month already have attendance records.','error');return;}const d=month+'-'+String(day).padStart(2,'0');records.push({date:d,status:'Present',in:'',out:'',lunch:0,permission:0,notes:[]});records.sort((a,b)=>a.date.localeCompare(b.date));save();render();notify('Added attendance for '+d+'.')};
 $('reset').onclick=()=>{if(confirm('Clear this month\'s imported attendance and restore the configured leave dates?')){const resetMonth=$('month').value;records=records.filter(r=>!String(r.date||'').startsWith(resetMonth+'-'));if(resetMonth==='2026-11')records.push(...defaultLeaves.map(day=>({date:resetMonth+'-'+String(day).padStart(2,'0'),status:'Leave',in:'',out:'',lunch:0,permission:0,notes:[]})));save();render();$('review').textContent='';$('fileName').textContent='';notify('Month reset complete. Configured leave dates restored.');}else{notify('Reset cancelled. Your attendance data is unchanged.','error')}};
 
-$('print').onclick=()=>window.print();$('csv').onclick=()=>{let head=['Date','Status','IN','OUT','Lunch hours','Permission hours','Clocked hours','Extra lunch deduction','Net hours','Regular hours','OT hours','Pay INR'];let lines=[head,...records.map(r=>{let c=calc(r);return [r.date,r.status,r.in,r.out,r.lunch,r.permission,c.clock.toFixed(2),c.extra.toFixed(2),c.net.toFixed(2),c.reg.toFixed(2),c.ot.toFixed(2),c.pay.toFixed(2)]})];let csv=lines.map(a=>a.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='attendance-'+$('month').value+'.csv';a.click();URL.revokeObjectURL(a.href)};
+$('print').onclick=()=>window.print();
+$('csv').onclick=()=>{
+ const month=$('month').value;
+ const monthRows=records.filter(r=>r.date&&r.date.startsWith(month+'-')).sort((a,b)=>a.date.localeCompare(b.date));
+ if(!monthRows.length){notify('No attendance records to export for '+month+'.','error');return;}
+ const headers=['Date','Status','IN time','OUT time','Lunch hours','Permission hours','Clocked hours','Extra lunch deduction hours','Net paid hours','Regular hours','Overtime hours','Pay (INR)'];
+ const totals={lunch:0,permission:0,clock:0,extra:0,net:0,regular:0,overtime:0,pay:0};
+ const safeText=value=>{let s=String(value??'');return /^[=+@\\-\\t\\r]/.test(s)?("'"+s):s;};
+ const rows=monthRows.map(r=>{
+   const v=calc(r);
+   totals.lunch+=(+r.lunch||0);totals.permission+=(+r.permission||0);totals.clock+=v.clock;totals.extra+=v.extra;totals.net+=v.net;totals.regular+=v.reg;totals.overtime+=v.ot;totals.pay+=v.pay;
+   return [r.date,safeText(r.status),safeText(r.in),safeText(r.out),(+r.lunch||0).toFixed(2),(+r.permission||0).toFixed(2),v.clock.toFixed(2),v.extra.toFixed(2),v.net.toFixed(2),v.reg.toFixed(2),v.ot.toFixed(2),v.pay.toFixed(2)];
+ });
+ const csvCell=value=>'"'+String(value??'').replace(/"/g,'""')+'"';
+ const output=[headers,...rows,['TOTAL','', '', '',totals.lunch.toFixed(2),totals.permission.toFixed(2),totals.clock.toFixed(2),totals.extra.toFixed(2),totals.net.toFixed(2),totals.regular.toFixed(2),totals.overtime.toFixed(2),totals.pay.toFixed(2)]];
+ const csv='\\uFEFF'+output.map(row=>row.map(csvCell).join(',')).join('\\r\\n')+'\\r\\n';
+ const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement('a');a.href=url;a.download='attendance-'+month+'.csv';a.style.display='none';
+ document.body.appendChild(a);a.click();a.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),1500);
+ notify('Exported '+monthRows.length+' attendance records with monthly totals.');
+};
 load();
 </script>
 <!-- Firebase Authentication and private Firestore sync -->
