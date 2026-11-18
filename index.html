@@ -40,6 +40,49 @@ body.authenticated #loginScreen{display:none}
  .login-card{padding:30px 22px;border-radius:26px}
  .login-card h1{font-size:28px}
 }
+
+/* Main attendance dashboard theme — coordinated with the orange/navy login */
+body{background:#f2f5ff;color:#26345f}
+.wrap{max-width:1240px;padding:26px}
+.top{padding:8px 2px 14px}
+.brand{color:#293b78;letter-spacing:-.5px}
+.muted{color:#69738e}
+.tag{background:#ffedcf;color:#795018;border:1px solid #f8d99f}
+.panel{background:#fff;border:1px solid #e3e7f2;border-radius:20px;padding:20px;margin-top:18px;box-shadow:0 8px 24px #263b7410}
+.panel h3{color:#293b78;letter-spacing:-.2px}
+button,.filebtn{background:#303f7c;color:#fff;border-radius:12px;transition:transform .15s ease,box-shadow .15s ease,background .15s ease}
+button:hover,.filebtn:hover{background:#26366f;box-shadow:0 4px 12px #26366f25;transform:translateY(-1px)}
+button.secondary{background:#fff1d9;color:#704b17;border:1px solid #f2d39e}
+button.secondary:hover{background:#ffe7bd}
+button.danger{background:#fff0ee;color:#a43a30;border:1px solid #f4d0cb}
+input,select{border:1px solid #d6dced;border-radius:10px;background:#fff;color:#26345f}
+input:focus,select:focus{outline:2px solid #ffbd62;outline-offset:1px;border-color:#eaa13e}
+.metric{background:#fff8ec;border:1px solid #f5dfb9;border-radius:15px;padding:16px}
+.metric small{color:#806b4b}
+.metric strong{color:#293b78}
+.drop{border:1.5px dashed #e5ad55;background:#fffaf1;border-radius:16px;padding:22px}
+.drop .muted{color:#806f55}
+.settings label{color:#536080;font-weight:600}
+.tablewrap{border:1px solid #e4e8f2;border-radius:14px;overflow-x:auto}
+table{font-size:13px}
+th{background:#303f7c;color:#fff;border-bottom:0}
+td{border-bottom:1px solid #edf0f6;color:#344166}
+tbody tr:nth-child(even){background:#fafbff}
+.status{background:#f0f2f8;color:#4c5877}
+.status.present{background:#e3f5e9;color:#176b43}
+.status.leave{background:#fff0d5;color:#8a5b12}
+.status.review{background:#fee9e6;color:#a43a30}
+.note{color:#68738f}
+.foot{color:#78829b}
+.toast{border-radius:14px}
+@media(max-width:760px){
+ .wrap{padding:12px}
+ .panel{border-radius:16px;padding:14px}
+ .drop{padding:17px}
+ .tablewrap{border:0;border-radius:0}
+ tbody tr{border:1px solid #e4e8f2;border-radius:14px;box-shadow:0 4px 14px #263b7409}
+}
+@media(prefers-reduced-motion:reduce){button,.filebtn{transition:none}}
 </style></head>
 <body>
 <section id="loginScreen" aria-label="Private login">
