@@ -134,6 +134,33 @@ body.authenticated .foot{color:#65718d}
  body.authenticated .wrap{animation:none}
  body.authenticated .panel,body.authenticated .metric,body.authenticated button,body.authenticated .filebtn{transition:none}
 }
+
+/* Full warm-orange dashboard background palette */
+body.authenticated{background:#f59e0b}
+body.authenticated .wrap{background:transparent}
+body.authenticated .panel{background:#ffd28a;border:1px solid #e99a20;box-shadow:0 9px 24px #713f0d25}
+body.authenticated .panel:hover{background:#ffcc78;border-color:#d88912;box-shadow:0 14px 30px #713f0d30}
+body.authenticated .metric{background:#ffb84d;border:1px solid #e9981b}
+body.authenticated .metric:hover{background:#ffad32}
+body.authenticated .drop{background:#ffe0a8;border:2px dashed #b87512}
+body.authenticated .drop.uploading{background:#ffc96b;border-color:#8b5608}
+body.authenticated .tablewrap{background:#ffc56b;border-color:#d98a14}
+body.authenticated tbody tr:nth-child(even){background:#ffe0a8}
+body.authenticated tbody tr:nth-child(odd){background:#ffcf83}
+body.authenticated tbody tr:hover{background:#ffb84d}
+body.authenticated td{border-bottom-color:#e9a53b;color:#26345f}
+body.authenticated input,body.authenticated select{background:#ffe9c5;border-color:#d99a39}
+body.authenticated input:focus,body.authenticated select:focus{background:#fff0d4}
+body.authenticated .status{background:#ffe4b6;color:#67400b}
+body.authenticated .status.present{background:#d8f3e4;color:#12613b}
+body.authenticated .status.leave{background:#ffedc8;color:#754b0b}
+body.authenticated .status.review{background:#ffe2dd;color:#9f2d23}
+body.authenticated .note,body.authenticated .muted{color:#5d4525}
+body.authenticated .foot{color:#593b16}
+body.authenticated .tag{background:#ffdf9e;color:#57340a;border:1px solid #e9a83c}
+@media(max-width:760px){
+ body.authenticated tbody tr{background:#ffcf83;border-color:#e9a53b}
+}
 </style></head>
 <body>
 <section id="loginScreen" aria-label="Private login">
