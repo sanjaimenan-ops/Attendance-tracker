@@ -157,6 +157,7 @@ load();
   const errorBox = document.getElementById('loginError');
   const loginButton = document.getElementById('loginButton');
   const logoutButton = document.getElementById('logoutButton');
+  let auth = null;
   let cloudDoc = null;
   let cloudReady = false;
   let cloudTimer = null;
@@ -269,7 +270,7 @@ load();
 
   try {
     firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
+    auth = firebase.auth();
     const db = firebase.firestore();
 
     form.addEventListener('submit', async event => {
