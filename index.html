@@ -24,8 +24,9 @@ body.authenticated #loginScreen{display:none}
 .login-card input:focus{outline:2px solid #5265a5;outline-offset:2px}
 .password-wrap{display:flex;align-items:center;gap:8px;position:relative}
 .password-wrap input{flex:1;min-width:0}
-.password-toggle{flex:0 0 auto;width:42px;height:42px;padding:0;margin:0!important;border:0;background:transparent;color:#34416f;border-radius:50%;display:grid;place-items:center}
-.password-toggle svg{width:19px;height:19px}
+.password-toggle{flex:0 0 44px;width:44px;height:44px;min-width:44px;padding:0!important;margin:0!important;border:0;background:transparent!important;color:#34416f;border-radius:50%;display:grid;place-items:center;align-self:center;transform:none!important;box-shadow:none!important;transition:none!important;line-height:0;-webkit-tap-highlight-color:transparent}
+.password-toggle:hover,.password-toggle:active,.password-toggle:focus,.password-toggle:focus-visible{background:transparent!important;transform:none!important;box-shadow:none!important;outline:none}
+.password-toggle svg{display:block;width:20px;height:20px;min-width:20px;flex:none;overflow:visible;transform:none;}
 .login-card button#loginButton{width:100%;height:48px;padding:0 18px;margin-top:30px;border-radius:28px;background:#303f7c;color:#fff;font-size:15px;font-weight:700;box-shadow:0 5px 0 #d98c2f}
 #loginError{color:#7f1d1d;font-size:13px;min-height:18px;margin-top:14px}
 .auth-actions{display:flex;align-items:center;gap:8px}
@@ -348,7 +349,10 @@ load();
       togglePasswordButton.title = 'Show password';
     }
     const eye = document.getElementById('passwordEyeIcon');
-    if (eye) eye.innerHTML = '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>';
+    if (eye) {
+      eye.setAttribute('viewBox', '0 0 24 24');
+      eye.innerHTML = '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>';
+    }
   }
 
   let auth = null;
