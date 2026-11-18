@@ -166,6 +166,68 @@ load();
     errorBox.textContent = message;
   }
 
+  // Automatically end the authenticated session after five minutes without activity.
+  const IDLE_TIMEOUT_MS = 5 * 60 * 1000;
+  let idleTimer = null;
+  let lastActivityAt = 0;
+  let logoutInProgress = false;
+
+  function stopIdleTimer() {
+    if (idleTimer !== null) clearTimeout(idleTimer);
+    idleTimer = null;
+  }
+
+  async function expireIdleSession() {
+    if (logoutInProgress || !auth.currentUser) return;
+    logoutInProgress = true;
+    stopIdleTimer();
+    cloudReady = false;
+    if (cloudTimer !== null) {
+      clearTimeout(cloudTimer);
+      cloudTimer = null;
+    }
+    try {
+      // Flush any pending attendance changes before signing out.
+      if (cloudDoc) {
+        pushCloudState();
+        await saveQueue;
+      }
+    } catch (error) {
+      console.error('Could not finish the final attendance save:', error);
+    }
+    try {
+      await auth.signOut();
+      showError('You were logged out automatically after 5 minutes of inactivity. Sign in again to continue.');
+    } finally {
+      logoutInProgress = false;
+    }
+  }
+
+  function resetIdleTimer() {
+    if (!auth || !auth.currentUser || !cloudReady || logoutInProgress) return;
+    lastActivityAt = Date.now();
+    stopIdleTimer();
+    idleTimer = setTimeout(expireIdleSession, IDLE_TIMEOUT_MS);
+  }
+
+  ['pointerdown', 'keydown', 'touchstart', 'scroll', 'click'].forEach(eventName => {
+    document.addEventListener(eventName, resetIdleTimer, {passive: true});
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && auth && auth.currentUser && cloudReady) {
+      if (Date.now() - lastActivityAt >= IDLE_TIMEOUT_MS) expireIdleSession();
+      else resetIdleTimer();
+    }
+  });
+
+  window.addEventListener('focus', () => {
+    if (auth && auth.currentUser && cloudReady) {
+      if (Date.now() - lastActivityAt >= IDLE_TIMEOUT_MS) expireIdleSession();
+      else resetIdleTimer();
+    }
+  });
+
   function localState() {
     try {
       return JSON.parse(localStorage.getItem('privateAttendanceNov2026_v1') || '{}');
@@ -240,12 +302,14 @@ load();
     });
 
     logoutButton.addEventListener('click', async () => {
+      stopIdleTimer();
       cloudReady = false;
       cloudDoc = null;
       await auth.signOut();
     });
 
     auth.onAuthStateChanged(async user => {
+      stopIdleTimer();
       cloudReady = false;
       cloudDoc = null;
       document.body.classList.toggle('authenticated', false);
@@ -282,6 +346,7 @@ load();
         }
         cloudReady = true;
         document.body.classList.toggle('authenticated', true);
+        resetIdleTimer();
         showError('');
       } catch (error) {
         console.error('Firestore initialization failed:', error);
