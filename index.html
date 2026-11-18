@@ -345,8 +345,8 @@ load();
     errorBox.textContent = message;
   }
 
-  // Automatically end the authenticated session after five minutes without activity.
-  const IDLE_TIMEOUT_MS = 5 * 60 * 1000;
+  // Automatically end the authenticated session after three minutes without activity.
+  const IDLE_TIMEOUT_MS = 3 * 60 * 1000;
   let idleTimer = null;
   let lastActivityAt = 0;
   let logoutInProgress = false;
@@ -357,26 +357,34 @@ load();
   }
 
   async function expireIdleSession() {
-    if (logoutInProgress || !auth.currentUser) return;
+    if (logoutInProgress || !auth || !auth.currentUser) return;
     logoutInProgress = true;
     stopIdleTimer();
-    cloudReady = false;
+
+    // IMPORTANT: keep cloudReady enabled while the final write is queued and completed.
+    // Disabling it first makes pushCloudState() return without saving, which can leave
+    // Firebase with stale attendance data when an automatic logout occurs.
     if (cloudTimer !== null) {
       clearTimeout(cloudTimer);
       cloudTimer = null;
     }
+
     try {
-      // Flush any pending attendance changes before signing out.
-      if (cloudDoc) {
-        pushCloudState();
+      if (cloudDoc && cloudReady) {
+        await pushCloudState();
         await saveQueue;
       }
     } catch (error) {
-      console.error('Could not finish the final attendance save:', error);
+      console.error('Could not finish the final attendance save before automatic logout:', error);
+      showError('Automatic logout: the latest cloud save could not be confirmed. Check your connection after signing in again.');
     }
+
+    // Only disable cloud access after the final save attempt has finished.
+    cloudReady = false;
+
     try {
       await auth.signOut();
-      showError('You were logged out automatically after 5 minutes of inactivity. Sign in again to continue.');
+      showError('You were logged out automatically after 3 minutes of inactivity. Sign in again to continue.');
     } finally {
       logoutInProgress = false;
     }
@@ -428,22 +436,24 @@ load();
   }
 
   function pushCloudState() {
-    if (!cloudReady || !cloudDoc || !firebase.auth().currentUser) return;
+    if (!cloudReady || !cloudDoc || !firebase.auth().currentUser) return Promise.resolve();
+    const targetDoc = cloudDoc;
     const payload = {
       staffStore: staffStore,
       activeStaff: activeStaff,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     };
-    saveQueue = saveQueue.then(() => cloudDoc.set(payload)).catch(error => {
+    saveQueue = saveQueue.then(() => targetDoc.set(payload)).catch(error => {
       console.error('Cloud save failed:', error);
       showError('Cloud save failed. Check your internet connection and try again.');
     });
+    return saveQueue;
   }
 
   window.scheduleAttendanceCloudSave = function() {
     if (!cloudReady || !cloudDoc) return;
     clearTimeout(cloudTimer);
-    cloudTimer = setTimeout(pushCloudState, 700);
+    cloudTimer = setTimeout(() => { pushCloudState(); }, 700);
   };
 
   try {
