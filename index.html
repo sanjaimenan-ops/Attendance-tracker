@@ -298,9 +298,10 @@ const $=id=>document.getElementById(id);let records=[];let toastTimer;let staffS
 function notify(message,type='success'){const box=$('toast');$('toastText').textContent=message;$('toastIcon').textContent=type==='error'?'!':'✓';box.className='toast '+type+' show';clearTimeout(toastTimer);toastTimer=setTimeout(()=>box.classList.remove('show'),3600)}
 function uploadBusy(on,message='Reading WhatsApp chat…'){$('uploadState').classList.toggle('active',on);$('uploadStateText').textContent=message;document.querySelector('.drop').classList.toggle('uploading',on);$('file').disabled=on;}
 const key='privateAttendanceNov2026_v1';
+let resetMonths=new Set();
 function snapshot(){return {records:JSON.parse(JSON.stringify(records)),settings:getSettings()}}
-function save(){try{staffStore[activeStaff]=snapshot();localStorage.setItem(key,JSON.stringify({staffStore,activeStaff}));if(window.scheduleAttendanceCloudSave)window.scheduleAttendanceCloudSave()}catch(e){}}
-function applySnapshot(data){data=data||{};records=data.records||[];if(data.settings)Object.entries(data.settings).forEach(([k,v])=>{if($(k))$(k).value=v});records.forEach(r=>{correctNov15Out(r);delete r.payOverride});if(activeStaff==='Sanjai'){ensureNov4Attendance();ensureNov13Permission()}ensureOctoberReferenceData();render()}
+function save(){try{for(const month of [...resetMonths]){const allowed=month==='2026-11'?new Set([5,7,8,9]):new Set();if(records.some(r=>String(r.date||'').startsWith(month+'-')&&(!allowed.has(Number(String(r.date).slice(8,10)))||r.status!=='Leave')))resetMonths.delete(month);}staffStore[activeStaff]=snapshot();localStorage.setItem(key,JSON.stringify({staffStore,activeStaff,resetMonths:[...resetMonths]}));if(window.scheduleAttendanceCloudSave)window.scheduleAttendanceCloudSave()}catch(e){}}
+function applySnapshot(data){data=data||{};records=data.records||[];if(data.settings)Object.entries(data.settings).forEach(([k,v])=>{if($(k))$(k).value=v});records.forEach(r=>{correctNov15Out(r);delete r.payOverride});if(activeStaff==='Sanjai'&&!resetMonths.has('2026-11')){ensureNov4Attendance();ensureNov13Permission()}if(!resetMonths.has('2026-10'))ensureOctoberReferenceData();render()}
 
 function dateKey(y,m,d){return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`}
 function parseTime(s, requireMeridiem=false){
@@ -354,7 +355,7 @@ function parseInputTime(s){return parseTime(s,true)}
 function hoursBetween(a,b){if(a==null||b==null)return 0;let diff=b-a;if(diff<0)diff+=1440;return diff/60}
 function parseDate(s){let m=String(s).match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);if(!m)return null;let day=+m[1],month=+m[2],y=+m[3];if(y<100)y+=2000;if(month<1||month>12||day<1||day>31)return null;return dateKey(y,month,day)}
 function splitMessages(raw){let lines=raw.replace(/^\uFEFF/,'').replace(/[\u202f\u00a0]/g,' ').split(/\r?\n/),out=[],cur=null;const start=/^(?:\[)?(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}),?\s+(\d{1,2}:\d{2}\s*(?:[ap]m)?)(?:\])?\s*[-–]\s*([^:]+):\s?(.*)$/i;for(const line of lines){let m=line.match(start);if(m){if(cur)out.push(cur);cur={date:parseDate(m[1]),time:m[2].trim(),sender:m[3].trim(),text:m[4]};}else if(cur)cur.text+=' '+line.trim();}if(cur)out.push(cur);return out}
-function parseChat(raw,senderOverride){let msgs=splitMessages(raw),sender=(senderOverride||$('sender').value).trim().toLowerCase(),mine=msgs.filter(x=>x.sender.toLowerCase()===sender),map=new Map();for(let m of mine){if(!m.date||!m.date.startsWith($('month').value))continue;let r=map.get(m.date)||{date:m.date,status:'Present',in:'',out:'',lunch:0,permission:0,notes:[],_lunchOut:null,_lunchIn:null};let t=m.text.toLowerCase(),tm=parseTime(m.time,false);let isTomorrowLeave=/\btomorrow\s+(?:leave|on leave)\b/i.test(m.text);if(isTomorrowLeave){let next=new Date(m.date+'T12:00:00');next.setDate(next.getDate()+1);let nd=next.toISOString().slice(0,10);let nr=map.get(nd)||{date:nd,status:'Leave',in:'',out:'',lunch:0,permission:0,notes:[],_lunchOut:null,_lunchIn:null};nr.status='Leave';nr.notes.push('Leave announced the previous day');map.set(nd,nr);r.notes.push(m.text);}else if(/\b(?:leave|absent|holiday|on leave)\b/i.test(m.text)){r.status='Leave';r.notes.push(m.text);}else if(/^\s*(?:in|check\s*in|punch\s*in|entry)\s*$/i.test(m.text)||/^\s*in\b/i.test(m.text)){let v=parsePunchText(m.text,m.time);if(v)r.in=v;else r.notes.push('IN needs review: '+m.text);}else if(/^\s*(?:out|check\s*out|punch\s*out|exit)\s*$/i.test(m.text)||/^\s*out\b/i.test(m.text)){let v=parsePunchText(m.text,m.time);if(v)r.out=v;else r.notes.push('OUT needs review: '+m.text);}if(/lunch\s*(out|start)|break\s*out/.test(t))r._lunchOut=tm;if(/lunch\s*(in|end)|break\s*in/.test(t))r._lunchIn=tm;let pm=m.text.match(/permission[^\d]*(\d+(?:\.\d+)?)\s*(h|hr|hrs|hour|hours|min|mins|minute|minutes)?/i);if(pm){let n=+pm[1];r.permission+=/min/i.test(pm[2]||'')?n/60:n;}map.set(m.date,r);}
+function parseChat(raw,senderOverride){resetMonths.delete($('month').value);let msgs=splitMessages(raw),sender=(senderOverride||$('sender').value).trim().toLowerCase(),mine=msgs.filter(x=>x.sender.toLowerCase()===sender),map=new Map();for(let m of mine){if(!m.date||!m.date.startsWith($('month').value))continue;let r=map.get(m.date)||{date:m.date,status:'Present',in:'',out:'',lunch:0,permission:0,notes:[],_lunchOut:null,_lunchIn:null};let t=m.text.toLowerCase(),tm=parseTime(m.time,false);let isTomorrowLeave=/\btomorrow\s+(?:leave|on leave)\b/i.test(m.text);if(isTomorrowLeave){let next=new Date(m.date+'T12:00:00');next.setDate(next.getDate()+1);let nd=next.toISOString().slice(0,10);let nr=map.get(nd)||{date:nd,status:'Leave',in:'',out:'',lunch:0,permission:0,notes:[],_lunchOut:null,_lunchIn:null};nr.status='Leave';nr.notes.push('Leave announced the previous day');map.set(nd,nr);r.notes.push(m.text);}else if(/\b(?:leave|absent|holiday|on leave)\b/i.test(m.text)){r.status='Leave';r.notes.push(m.text);}else if(/^\s*(?:in|check\s*in|punch\s*in|entry)\s*$/i.test(m.text)||/^\s*in\b/i.test(m.text)){let v=parsePunchText(m.text,m.time);if(v)r.in=v;else r.notes.push('IN needs review: '+m.text);}else if(/^\s*(?:out|check\s*out|punch\s*out|exit)\s*$/i.test(m.text)||/^\s*out\b/i.test(m.text)){let v=parsePunchText(m.text,m.time);if(v)r.out=v;else r.notes.push('OUT needs review: '+m.text);}if(/lunch\s*(out|start)|break\s*out/.test(t))r._lunchOut=tm;if(/lunch\s*(in|end)|break\s*in/.test(t))r._lunchIn=tm;let pm=m.text.match(/permission[^\d]*(\d+(?:\.\d+)?)\s*(h|hr|hrs|hour|hours|min|mins|minute|minutes)?/i);if(pm){let n=+pm[1];r.permission+=/min/i.test(pm[2]||'')?n/60:n;}map.set(m.date,r);}
 for(let [d,r] of map){if(r._lunchOut!=null&&r._lunchIn!=null)r.lunch=hoursBetween(r._lunchOut,r._lunchIn);delete r._lunchOut;delete r._lunchIn;records=records.filter(x=>x.date!==d);records.push(r)}
 // Verified IN punches from the supplied November WhatsApp export. These are the message timestamps, not explanatory-message times.
 const verifiedIn={'2026-11-01':'10:50 AM','2026-11-03':'10:32 AM','2026-11-04':'10:04 AM'};for(const [d,t] of Object.entries(verifiedIn)){let r=records.find(x=>x.date===d);if(r)r.in=t;}
@@ -377,12 +378,12 @@ function render(){
  const heading=document.querySelector('.panel .top h3');if(heading&&heading.textContent.includes('summary'))heading.textContent=new Date(month+'-01T12:00:00').toLocaleDateString('en-IN',{month:'long',year:'numeric'})+' summary';
 }
 function getSettings(){return Object.fromEntries(['sender','month','shift','lunch','rate','otrate','leavepay'].map(k=>[k,$(k).value]))}
-function load(){try{let d=JSON.parse(localStorage.getItem(key)||'{}');let saved=d.staffStore?(d.staffStore.Sanjai||d.staffStore[d.activeStaff]||Object.values(d.staffStore)[0]):{records:d.records||[],settings:d.settings||{sender:'Sanjai',month:'2026-11',shift:'10',lunch:'1',rate:'70',otrate:'88',leavepay:'0'}};staffStore={Sanjai:saved||{records:[],settings:{sender:'Sanjai',month:'2026-11',shift:'10',lunch:'1',rate:'70',otrate:'88',leavepay:'0'}}};activeStaff='Sanjai';$('sender').value='Sanjai';applySnapshot(staffStore.Sanjai);save()}catch(e){records=[];staffStore={Sanjai:{records:[],settings:{sender:'Sanjai',month:'2026-11',shift:'10',lunch:'1',rate:'70',otrate:'88',leavepay:'0'}}};activeStaff='Sanjai';ensureOctoberReferenceData();render()}}
+function load(){try{let d=JSON.parse(localStorage.getItem(key)||'{}');resetMonths=new Set(Array.isArray(d.resetMonths)?d.resetMonths:[]);let saved=d.staffStore?(d.staffStore.Sanjai||d.staffStore[d.activeStaff]||Object.values(d.staffStore)[0]):{records:d.records||[],settings:d.settings||{sender:'Sanjai',month:'2026-11',shift:'10',lunch:'1',rate:'70',otrate:'88',leavepay:'0'}};staffStore={Sanjai:saved||{records:[],settings:{sender:'Sanjai',month:'2026-11',shift:'10',lunch:'1',rate:'70',otrate:'88',leavepay:'0'}}};activeStaff='Sanjai';$('sender').value='Sanjai';applySnapshot(staffStore.Sanjai);save()}catch(e){records=[];staffStore={Sanjai:{records:[],settings:{sender:'Sanjai',month:'2026-11',shift:'10',lunch:'1',rate:'70',otrate:'88',leavepay:'0'}}};activeStaff='Sanjai';ensureOctoberReferenceData();render()}}
 $('file').addEventListener('change',async e=>{let f=e.target.files[0];if(!f)return;$('fileName').textContent=f.name;uploadBusy(true);try{const raw=await f.text();if(!raw.trim())throw new Error('The selected file is empty.');activeStaff='Sanjai';$('sender').value='Sanjai';parseChat(raw,'Sanjai');save();uploadBusy(false);notify('Upload complete — your attendance has been imported.');}catch(err){uploadBusy(false);notify(err.message||'Upload failed. Please choose a WhatsApp TXT export.','error');}finally{e.target.value='';}});
 document.addEventListener('change',e=>{let i=e.target.dataset.i,k=e.target.dataset.k;if(i!==undefined&&k){let value=e.target.value.trim();if(k==='inClock'||k==='outClock'){const field=k==='inClock'?'in':'out',periodButton=e.target.parentElement.querySelector('[data-period-toggle]'),period=periodButton?.textContent.trim()||'AM';if(value){const mins=parseInputTime(value+' '+period);if(mins===null){e.target.setCustomValidity('Enter a valid time such as 10:00.');e.target.reportValidity();return;}value=fmtTime(mins);}e.target.setCustomValidity('');records[+i][field]=value;}else{records[+i][k]=value;if(k==='lunch'||k==='permission')records[+i][k]=+e.target.value||0;}save();render()}else if(['sender','month','shift','lunch','rate','otrate','leavepay'].includes(e.target.id)){save();render()}});
 document.addEventListener('click',e=>{const periodButton=e.target.closest('[data-period-toggle]');if(periodButton){const i=Number(periodButton.dataset.i),field=periodButton.dataset.periodToggle,current=records[i],parts=timeParts(current[field]);const next=parts.period==='AM'?'PM':'AM';if(parts.time)current[field]=parts.time+' '+next;save();render();return;}if(e.target.dataset.del!==undefined){records.splice(+e.target.dataset.del,1);save();render()}});
 $('add').onclick=()=>{const month=$('month').value;const total=daysInMonth(month);const used=new Set(records.filter(r=>r.date&&r.date.startsWith(month+'-')).map(r=>Number(r.date.slice(8,10))));let day=1;while(day<=total&&used.has(day))day++;if(day>total){notify('All days in this month already have attendance records.','error');return;}const d=month+'-'+String(day).padStart(2,'0');records.push({date:d,status:'Present',in:'',out:'',lunch:0,permission:0,notes:[]});records.sort((a,b)=>a.date.localeCompare(b.date));save();render();notify('Added attendance for '+d+'.')};
-$('reset').onclick=()=>{if(confirm('Clear this month\'s imported attendance and restore the configured leave dates?')){const resetMonth=$('month').value;records=records.filter(r=>!String(r.date||'').startsWith(resetMonth+'-'));if(resetMonth==='2026-11')records.push(...defaultLeaves.map(day=>({date:resetMonth+'-'+String(day).padStart(2,'0'),status:'Leave',in:'',out:'',lunch:0,permission:0,notes:[]})));save();render();$('review').textContent='';$('fileName').textContent='';notify('Month reset complete. Configured leave dates restored.');}else{notify('Reset cancelled. Your attendance data is unchanged.','error')}};
+$('reset').onclick=()=>{if(confirm('Clear this month\'s imported attendance and restore the configured leave dates?')){const resetMonth=$('month').value;resetMonths.add(resetMonth);records=records.filter(r=>!String(r.date||'').startsWith(resetMonth+'-'));if(resetMonth==='2026-11')records.push(...defaultLeaves.map(day=>({date:resetMonth+'-'+String(day).padStart(2,'0'),status:'Leave',in:'',out:'',lunch:0,permission:0,notes:[]})));save();render();$('review').textContent='';$('fileName').textContent='';notify('Month reset complete. Configured leave dates restored.');}else{notify('Reset cancelled. Your attendance data is unchanged.','error')}};
 
 $('print').onclick=()=>window.print();
 $('csv').onclick=()=>{
@@ -582,6 +583,7 @@ load();
     cloudReady = false;
     const cloudSource = data.staffStore.Sanjai || data.staffStore[data.activeStaff] || Object.values(data.staffStore)[0];
     const local = localState();
+    resetMonths=new Set([...(Array.isArray(data.resetMonths)?data.resetMonths:[]),...(Array.isArray(local.resetMonths)?local.resetMonths:[])]);
     const localSource = local.staffStore
       ? (local.staffStore.Sanjai || local.staffStore[local.activeStaff] || Object.values(local.staffStore)[0])
       : (local.records || local.settings ? {records: local.records || [], settings: local.settings || {}} : null);
@@ -594,10 +596,10 @@ load();
     if (localSource && Array.isArray(localSource.records)) {
       const merged = new Map();
       (Array.isArray(localSource.records) ? localSource.records : []).forEach(record => {
-        if (record && record.date) merged.set(record.date, {...record});
+        if (record && record.date && ![...resetMonths].some(month=>String(record.date).startsWith(month+'-'))) merged.set(record.date, {...record});
       });
       (Array.isArray(source.records) ? source.records : []).forEach(record => {
-        if (!record || !record.date) return;
+        if (!record || !record.date || [...resetMonths].some(month=>String(record.date).startsWith(month+'-'))) return;
         const previous = merged.get(record.date);
         if (!previous) {
           merged.set(record.date, {...record});
@@ -626,7 +628,7 @@ load();
     $('sender').value = 'Sanjai';
     applySnapshot(staffStore.Sanjai);
     localStorage.setItem('privateAttendanceNov2026_v1', JSON.stringify({staffStore, activeStaff}));
-    window.attendanceCloudMergeNeeded = mergedFromLocal;
+    window.attendanceCloudMergeNeeded = mergedFromLocal || resetMonths.size>0;
     return true;
   }
 
@@ -636,7 +638,8 @@ load();
     const payload = {
       staffStore: staffStore,
       activeStaff: activeStaff,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      resetMonths: [...resetMonths]
     };
     const writePromise = saveQueue.then(() => targetDoc.set(payload));
     // Keep the queue usable for later saves, but return the original write result so
@@ -748,7 +751,8 @@ load();
           await cloudDoc.set({
             staffStore: staffStore,
             activeStaff: activeStaff,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            resetMonths: [...resetMonths]
           });
         }
         cloudReady = true;
