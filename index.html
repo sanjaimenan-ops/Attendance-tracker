@@ -319,11 +319,11 @@ function parseTime(s, requireMeridiem=false){
 function parseLunchEventTime(text,messageTime){
  // Honor an actual punch time written in a late WhatsApp lunch message, e.g. "Lunch in 3.10".
  const stamp=parseTime(messageTime,false);
- const match=String(text||'').match(/\\b(?:lunch\\s*(?:out|in|start|end)|break\\s*(?:out|in))\\b[^\\d]*(\\d{1,2}[:.]\\d{2}\\s*(?:AM|PM)?)/i);
+ const match=String(text||'').match(/\b(?:lunch\s*(?:out|in|start|end)|break\s*(?:out|in))\b[^\d]*(\d{1,2}[:.]\d{2}\s*(?:AM|PM)?)/i);
  if(match){
   const raw=match[1],explicit=parseTime(raw,false);
-  if(explicit!==null&&/\\b(?:AM|PM)\\b/i.test(raw))return explicit;
-  const parts=raw.match(/^(\\d{1,2})[:.](\\d{2})$/);
+  if(explicit!==null&&/\b(?:AM|PM)\b/i.test(raw))return explicit;
+  const parts=raw.match(/^(\d{1,2})[:.](\d{2})$/);
   if(parts&&+parts[1]>12)return parseTime(raw,false);
   if(parts&&stamp!==null){const ap=stamp>=720?'PM':'AM',inferred=parseTime(raw+' '+ap,true);if(inferred!==null)return inferred;}
  }
