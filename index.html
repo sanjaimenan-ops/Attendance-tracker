@@ -580,12 +580,53 @@ load();
   function applyCloudState(data) {
     if (!data || !data.staffStore) return false;
     cloudReady = false;
-    const source = data.staffStore.Sanjai || data.staffStore[data.activeStaff] || Object.values(data.staffStore)[0];
-    staffStore = {Sanjai: source || {records: [], settings: {sender:'Sanjai', month:'2026-11', shift:'10', lunch:'1', rate:'70', otrate:'88', leavepay:'0'}}};
+    const cloudSource = data.staffStore.Sanjai || data.staffStore[data.activeStaff] || Object.values(data.staffStore)[0];
+    const local = localState();
+    const localSource = local.staffStore
+      ? (local.staffStore.Sanjai || local.staffStore[local.activeStaff] || Object.values(local.staffStore)[0])
+      : (local.records || local.settings ? {records: local.records || [], settings: local.settings || {}} : null);
+    const source = cloudSource || {records: [], settings: {sender:'Sanjai', month:'2026-11', shift:'10', lunch:'1', rate:'70', otrate:'88', leavepay:'0'}};
+
+    // A cloud document can occasionally contain an incomplete record list after an
+    // interrupted/overlapping sync. Keep cloud values as authoritative, but restore
+    // local-only dates and fill missing IN/OUT punches from the local copy.
+    let mergedFromLocal = false;
+    if (localSource && Array.isArray(localSource.records)) {
+      const merged = new Map();
+      (Array.isArray(localSource.records) ? localSource.records : []).forEach(record => {
+        if (record && record.date) merged.set(record.date, {...record});
+      });
+      (Array.isArray(source.records) ? source.records : []).forEach(record => {
+        if (!record || !record.date) return;
+        const previous = merged.get(record.date);
+        if (!previous) {
+          merged.set(record.date, {...record});
+          mergedFromLocal = true;
+          return;
+        }
+        const combined = {...previous, ...record};
+        ['in', 'out'].forEach(field => {
+          if (!combined[field] && previous[field]) {
+            combined[field] = previous[field];
+            mergedFromLocal = true;
+          }
+        });
+        if (Array.isArray(previous.notes) || Array.isArray(record.notes)) {
+          combined.notes = [...new Set([...(previous.notes || []), ...(record.notes || [])])];
+        }
+        merged.set(record.date, combined);
+      });
+      const cloudDates = new Set((source.records || []).map(record => record && record.date).filter(Boolean));
+      if ((localSource.records || []).some(record => record && record.date && !cloudDates.has(record.date))) mergedFromLocal = true;
+      source.records = [...merged.values()].sort((a,b) => String(a.date).localeCompare(String(b.date)));
+    }
+
+    staffStore = {Sanjai: source};
     activeStaff = 'Sanjai';
     $('sender').value = 'Sanjai';
     applySnapshot(staffStore.Sanjai);
     localStorage.setItem('privateAttendanceNov2026_v1', JSON.stringify({staffStore, activeStaff}));
+    window.attendanceCloudMergeNeeded = mergedFromLocal;
     return true;
   }
 
@@ -650,12 +691,28 @@ load();
     });
 
     logoutButton.addEventListener('click', async () => {
+      if (logoutInProgress) return;
+      logoutInProgress = true;
       clearLoginCredentials();
       stopIdleTimer();
+      if (cloudTimer !== null) {
+        clearTimeout(cloudTimer);
+        cloudTimer = null;
+      }
+      try {
+        if (cloudDoc && cloudReady) {
+          await pushCloudState();
+          await saveQueue;
+        }
+      } catch (error) {
+        console.error('Could not finish the final attendance save before manual logout:', error);
+        showError('The latest attendance save could not be confirmed. Check your connection before signing in again.');
+      }
       cloudReady = false;
       cloudDoc = null;
       try { localStorage.removeItem(IDLE_ACTIVITY_KEY); } catch (_) {}
-      await auth.signOut();
+      try { await auth.signOut(); }
+      finally { logoutInProgress = false; }
     });
 
     auth.onAuthStateChanged(async user => {
@@ -695,6 +752,10 @@ load();
           });
         }
         cloudReady = true;
+        if (window.attendanceCloudMergeNeeded) {
+          window.attendanceCloudMergeNeeded = false;
+          window.scheduleAttendanceCloudSave();
+        }
         document.body.classList.toggle('authenticated', true);
         const savedActivity = Number(localStorage.getItem(IDLE_ACTIVITY_KEY));
         lastActivityAt = Number.isFinite(savedActivity) && savedActivity > 0 ? savedActivity : Date.now();
