@@ -583,7 +583,7 @@ load();
     cloudReady = false;
     const cloudSource = data.staffStore.Sanjai || data.staffStore[data.activeStaff] || Object.values(data.staffStore)[0];
     const local = localState();
-    resetMonths=new Set(Array.isArray(data.resetMonths)?data.resetMonths:(Array.isArray(local.resetMonths)?local.resetMonths:[]));
+    resetMonths=new Set([...(Array.isArray(data.resetMonths)?data.resetMonths:[]),...(Array.isArray(local.resetMonths)?local.resetMonths:[])]);
     const localSource = local.staffStore
       ? (local.staffStore.Sanjai || local.staffStore[local.activeStaff] || Object.values(local.staffStore)[0])
       : (local.records || local.settings ? {records: local.records || [], settings: local.settings || {}} : null);
