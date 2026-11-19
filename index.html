@@ -627,7 +627,7 @@ load();
     activeStaff = 'Sanjai';
     $('sender').value = 'Sanjai';
     applySnapshot(staffStore.Sanjai);
-    localStorage.setItem('privateAttendanceNov2026_v1', JSON.stringify({staffStore, activeStaff}));
+    localStorage.setItem('privateAttendanceNov2026_v1', JSON.stringify({staffStore, activeStaff, resetMonths:[...resetMonths]}));
     window.attendanceCloudMergeNeeded = mergedFromLocal || resetMonths.size>0;
     return true;
   }
