@@ -400,7 +400,7 @@ $('csv').onclick=()=>{
  });
  const csvCell=value=>'"'+String(value??'').replace(/"/g,'""')+'"';
  const output=[headers,...rows,['TOTAL','', '', '',totals.lunch.toFixed(2),totals.permission.toFixed(2),totals.clock.toFixed(2),totals.extra.toFixed(2),totals.net.toFixed(2),totals.regular.toFixed(2),totals.overtime.toFixed(2),totals.pay.toFixed(2)]];
- const csv='\\uFEFF'+output.map(row=>row.map(csvCell).join(',')).join('\\r\\n')+'\\r\\n';
+ const csv='\uFEFF'+output.map(row=>row.map(csvCell).join(',')).join('\r\n')+'\r\n';
  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
  const url=URL.createObjectURL(blob);
  const a=document.createElement('a');a.href=url;a.download='attendance-'+month+'.csv';a.style.display='none';
