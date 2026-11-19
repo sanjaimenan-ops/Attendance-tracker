@@ -301,7 +301,7 @@ const key='privateAttendanceNov2026_v1';
 let resetMonths=new Set();
 function snapshot(){return {records:JSON.parse(JSON.stringify(records)),settings:getSettings()}}
 function save(){try{for(const month of [...resetMonths]){const allowed=month==='2026-11'?new Set([5,7,8,9]):new Set();if(records.some(r=>String(r.date||'').startsWith(month+'-')&&(!allowed.has(Number(String(r.date).slice(8,10)))||r.status!=='Leave')))resetMonths.delete(month);}staffStore[activeStaff]=snapshot();localStorage.setItem(key,JSON.stringify({staffStore,activeStaff,resetMonths:[...resetMonths]}));if(window.scheduleAttendanceCloudSave)window.scheduleAttendanceCloudSave()}catch(e){}}
-function applySnapshot(data){data=data||{};records=data.records||[];if(data.settings)Object.entries(data.settings).forEach(([k,v])=>{if($(k))$(k).value=v});records.forEach(r=>{correctNov15Out(r);delete r.payOverride});if(activeStaff==='Sanjai'&&!resetMonths.has('2026-11')){ensureNov4Attendance();ensureNov13Permission()}render()}
+function applySnapshot(data){data=data||{};records=data.records||[];if(data.settings)Object.entries(data.settings).forEach(([k,v])=>{if($(k))$(k).value=v});records.forEach(r=>{correctNov15Out(r);delete r.payOverride;if(r.status==='Leave'&&parseInputTime(r.in)!=null&&parseInputTime(r.out)!=null){r.status='Present';r.notes=Array.isArray(r.notes)?r.notes:[];r.notes.push('Status corrected to Present because both IN and OUT punches exist');}});if(activeStaff==='Sanjai'&&!resetMonths.has('2026-11')){ensureNov4Attendance();ensureNov13Permission()}render()}
 
 function dateKey(y,m,d){return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`}
 function parseTime(s, requireMeridiem=false){
