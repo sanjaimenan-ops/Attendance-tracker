@@ -301,7 +301,7 @@ const key='privateAttendanceNov2026_v1';
 let resetMonths=new Set();
 function snapshot(){return {records:JSON.parse(JSON.stringify(records)),settings:getSettings()}}
 function save(){try{for(const month of [...resetMonths]){const allowed=month==='2026-11'?new Set([5,7,8,9]):new Set();if(records.some(r=>String(r.date||'').startsWith(month+'-')&&(!allowed.has(Number(String(r.date).slice(8,10)))||r.status!=='Leave')))resetMonths.delete(month);}staffStore[activeStaff]=snapshot();localStorage.setItem(key,JSON.stringify({staffStore,activeStaff,resetMonths:[...resetMonths]}));if(window.scheduleAttendanceCloudSave)window.scheduleAttendanceCloudSave()}catch(e){}}
-function applySnapshot(data){data=data||{};records=data.records||[];if(data.settings)Object.entries(data.settings).forEach(([k,v])=>{if($(k))$(k).value=v});records.forEach(r=>{correctNov15Out(r);delete r.payOverride});if(activeStaff==='Sanjai'&&!resetMonths.has('2026-11')){ensureNov4Attendance();ensureNov13Permission()}if(!resetMonths.has('2026-10'))ensureOctoberReferenceData();render()}
+function applySnapshot(data){data=data||{};records=data.records||[];if(data.settings)Object.entries(data.settings).forEach(([k,v])=>{if($(k))$(k).value=v});records.forEach(r=>{correctNov15Out(r);delete r.payOverride});if(activeStaff==='Sanjai'&&!resetMonths.has('2026-11')){ensureNov4Attendance();ensureNov13Permission()}render()}
 
 function dateKey(y,m,d){return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`}
 function parseTime(s, requireMeridiem=false){
@@ -327,29 +327,6 @@ function parsePunchText(text, messageTime){
 function correctNov15Out(r){if(r&&r.date==='2026-11-15'&&/\bAM$/i.test(String(r.out||''))){r.out=String(r.out).replace(/\bAM$/i,'PM');return true;}return false;}
 function ensureNov4Attendance(){let r=records.find(x=>x.date==='2026-11-04');if(!r){r={date:'2026-11-04',status:'Present',in:'10:04 AM',out:'09:35 PM',lunch:1.20,permission:0,notes:['Verified from WhatsApp attendance']};records.push(r);return;}r.status='Present';if(!r.in)r.in='10:04 AM';if(!r.out)r.out='09:35 PM';if(!(+r.lunch>0))r.lunch=1.20;if(r.permission==null)r.permission=0;delete r.payOverride;r.notes=Array.isArray(r.notes)?r.notes:[];}
 function ensureNov13Permission(){let r=records.find(x=>x.date==='2026-11-13');if(!r){r={date:'2026-11-13',status:'Present',in:'10:03 AM',out:'07:03 PM',lunch:0,permission:0.65,notes:['Permission OUT 1:23 PM – IN 2:02 PM (39 minutes)']};records.push(r);}if(!(+r.permission>0))r.permission=0.65;delete r.payOverride;r.notes=Array.isArray(r.notes)?r.notes:[];if(!r.notes.some(n=>String(n).includes('1:23 PM')&&String(n).includes('2:02 PM')))r.notes.push('Permission OUT 1:23 PM – IN 2:02 PM (39 minutes)');r.notes=r.notes.filter(n=>!String(n).includes('Salary manually confirmed as ₹444.50'));}
-function ensureOctoberReferenceData(){
- if(records.some(r=>String(r.date||'').startsWith('2026-10-')))return;
- const data=[
-  ['2026-10-01','Present','10:50 AM','09:45 PM',0.62,0],
-  ['2026-10-02','Present','10:13 AM','09:40 PM',0,0],
-  ['2026-10-03','Present','10:32 AM','10:07 PM',0.80,0],
-  ['2026-10-04','Present','10:04 AM','09:35 PM',1.20,0],
-  ['2026-10-05','Leave','','',0,0],
-  ['2026-10-06','Present','10:19 AM','09:41 PM',0.67,0],
-  ['2026-10-07','Present','10:23 AM','04:31 PM',0,0],
-  ['2026-10-08','Holiday','','',0,0],
-  ['2026-10-09','Leave','','',0,0],
-  ['2026-10-10','Leave','','',0,0],
-  ['2026-10-11','Present','10:00 AM','09:35 PM',0,0],
-  ['2026-10-12','Present','10:08 AM','09:34 PM',0,0],
-  ['2026-10-13','Present','10:03 AM','07:03 PM',0,2.65],
-  ['2026-10-14','Present','10:01 AM','07:24 PM',0,0],
-  ['2026-10-15','Present','10:58 AM','09:45 PM',0.52,0],
-  ['2026-10-16','Present','10:08 AM','09:28 PM',0.57,0]
- ];
- records.push(...data.map(([date,status,inn,out,lunch,permission])=>({date,status,in:inn,out,lunch,permission,notes:['Imported from October 2026 payroll reference image']})));
- records.sort((a,b)=>a.date.localeCompare(b.date));
-}
 
 function parseInputTime(s){return parseTime(s,true)}
 function hoursBetween(a,b){if(a==null||b==null)return 0;let diff=b-a;if(diff<0)diff+=1440;return diff/60}
@@ -359,8 +336,8 @@ function parseChat(raw,senderOverride){resetMonths.delete($('month').value);let 
 for(let [d,r] of map){if(r._lunchOut!=null&&r._lunchIn!=null)r.lunch=hoursBetween(r._lunchOut,r._lunchIn);delete r._lunchOut;delete r._lunchIn;records=records.filter(x=>x.date!==d);records.push(r)}
 // Verified IN punches from the supplied November WhatsApp export. These are the message timestamps, not explanatory-message times.
 const verifiedIn={'2026-11-01':'10:50 AM','2026-11-03':'10:32 AM','2026-11-04':'10:04 AM'};for(const [d,t] of Object.entries(verifiedIn)){let r=records.find(x=>x.date===d);if(r)r.in=t;}
-for(let day of defaultLeaves){let d=$('month').value+'-'+String(day).padStart(2,'0');if(!records.some(x=>x.date===d))records.push({date:d,status:'Leave',in:'',out:'',lunch:0,permission:0,notes:['Configured leave day']})}
-records.forEach(correctNov15Out);ensureNov4Attendance();ensureNov13Permission();records.sort((a,b)=>a.date.localeCompare(b.date));save();render();$('review').textContent=`Read ${msgs.length} messages; matched ${mine.length} messages from “${$('sender').value}”; extracted ${map.size} attendance dates. Verified IN times: 01 Nov 10:50 AM, 03 Nov 10:32 AM, 04 Nov 10:04 AM. Review all extracted entries before relying on salary totals.`;}
+if($('month').value==='2026-11'){for(let day of defaultLeaves){let d='2026-11-'+String(day).padStart(2,'0');if(!records.some(x=>x.date===d))records.push({date:d,status:'Leave',in:'',out:'',lunch:0,permission:0,notes:['Configured leave day']})}}
+records.forEach(correctNov15Out);if($('month').value==='2026-11'){ensureNov4Attendance();ensureNov13Permission()}records.sort((a,b)=>a.date.localeCompare(b.date));save();render();$('review').textContent=`Read ${msgs.length} messages; matched ${mine.length} messages from “${$('sender').value}”; extracted ${map.size} attendance dates. Verified IN times: 01 Nov 10:50 AM, 03 Nov 10:32 AM, 04 Nov 10:04 AM. Review all extracted entries before relying on salary totals.`;}
 function fmtTime(min){let h=Math.floor(min/60)%24,ap=h>=12?'PM':'AM';h=h%12||12;return String(h).padStart(2,'0')+':'+String(min%60).padStart(2,'0')+' '+ap}
 function timeParts(value){const mins=parseInputTime(value);if(mins===null)return {time:'',period:'AM'};const h=Math.floor(mins/60),m=mins%60;return {time:String(h%12||12).padStart(2,'0')+':'+String(m).padStart(2,'0'),period:h>=12?'PM':'AM'}}
 function daysInMonth(v){let [y,m]=v.split('-').map(Number);return new Date(y,m,0).getDate()}
@@ -378,7 +355,7 @@ function render(){
  const heading=document.querySelector('.panel .top h3');if(heading&&heading.textContent.includes('summary'))heading.textContent=new Date(month+'-01T12:00:00').toLocaleDateString('en-IN',{month:'long',year:'numeric'})+' summary';
 }
 function getSettings(){return Object.fromEntries(['sender','month','shift','lunch','rate','otrate','leavepay'].map(k=>[k,$(k).value]))}
-function load(){try{let d=JSON.parse(localStorage.getItem(key)||'{}');resetMonths=new Set(Array.isArray(d.resetMonths)?d.resetMonths:[]);let saved=d.staffStore?(d.staffStore.Sanjai||d.staffStore[d.activeStaff]||Object.values(d.staffStore)[0]):{records:d.records||[],settings:d.settings||{sender:'Sanjai',month:'2026-11',shift:'10',lunch:'1',rate:'70',otrate:'88',leavepay:'0'}};staffStore={Sanjai:saved||{records:[],settings:{sender:'Sanjai',month:'2026-11',shift:'10',lunch:'1',rate:'70',otrate:'88',leavepay:'0'}}};activeStaff='Sanjai';$('sender').value='Sanjai';applySnapshot(staffStore.Sanjai);save()}catch(e){records=[];staffStore={Sanjai:{records:[],settings:{sender:'Sanjai',month:'2026-11',shift:'10',lunch:'1',rate:'70',otrate:'88',leavepay:'0'}}};activeStaff='Sanjai';ensureOctoberReferenceData();render()}}
+function load(){try{let d=JSON.parse(localStorage.getItem(key)||'{}');resetMonths=new Set(Array.isArray(d.resetMonths)?d.resetMonths:[]);let saved=d.staffStore?(d.staffStore.Sanjai||d.staffStore[d.activeStaff]||Object.values(d.staffStore)[0]):{records:d.records||[],settings:d.settings||{sender:'Sanjai',month:'2026-11',shift:'10',lunch:'1',rate:'70',otrate:'88',leavepay:'0'}};staffStore={Sanjai:saved||{records:[],settings:{sender:'Sanjai',month:'2026-11',shift:'10',lunch:'1',rate:'70',otrate:'88',leavepay:'0'}}};activeStaff='Sanjai';$('sender').value='Sanjai';applySnapshot(staffStore.Sanjai);save()}catch(e){records=[];staffStore={Sanjai:{records:[],settings:{sender:'Sanjai',month:'2026-11',shift:'10',lunch:'1',rate:'70',otrate:'88',leavepay:'0'}}};activeStaff='Sanjai';render()}}
 $('file').addEventListener('change',async e=>{let f=e.target.files[0];if(!f)return;$('fileName').textContent=f.name;uploadBusy(true);try{const raw=await f.text();if(!raw.trim())throw new Error('The selected file is empty.');activeStaff='Sanjai';$('sender').value='Sanjai';parseChat(raw,'Sanjai');save();uploadBusy(false);notify('Upload complete — your attendance has been imported.');}catch(err){uploadBusy(false);notify(err.message||'Upload failed. Please choose a WhatsApp TXT export.','error');}finally{e.target.value='';}});
 document.addEventListener('change',e=>{let i=e.target.dataset.i,k=e.target.dataset.k;if(i!==undefined&&k){let value=e.target.value.trim();if(k==='inClock'||k==='outClock'){const field=k==='inClock'?'in':'out',periodButton=e.target.parentElement.querySelector('[data-period-toggle]'),period=periodButton?.textContent.trim()||'AM';if(value){const mins=parseInputTime(value+' '+period);if(mins===null){e.target.setCustomValidity('Enter a valid time such as 10:00.');e.target.reportValidity();return;}value=fmtTime(mins);}e.target.setCustomValidity('');records[+i][field]=value;}else{records[+i][k]=value;if(k==='lunch'||k==='permission')records[+i][k]=+e.target.value||0;}save();render()}else if(['sender','month','shift','lunch','rate','otrate','leavepay'].includes(e.target.id)){save();render()}});
 document.addEventListener('click',e=>{const periodButton=e.target.closest('[data-period-toggle]');if(periodButton){const i=Number(periodButton.dataset.i),field=periodButton.dataset.periodToggle,current=records[i],parts=timeParts(current[field]);const next=parts.period==='AM'?'PM':'AM';if(parts.time)current[field]=parts.time+' '+next;save();render();return;}if(e.target.dataset.del!==undefined){records.splice(+e.target.dataset.del,1);save();render()}});
