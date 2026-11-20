@@ -363,12 +363,89 @@ function hoursBetween(a,b){if(a==null||b==null)return 0;let diff=b-a;if(diff<0)d
 function parseDate(s){let m=String(s).match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);if(!m)return null;let day=+m[1],month=+m[2],y=+m[3];if(y<100)y+=2000;if(month<1||month>12||day<1||day>31)return null;return dateKey(y,month,day)}
 function splitMessages(raw){let lines=raw.replace(/^\uFEFF/,'').replace(/[\u202f\u00a0]/g,' ').split(/\r?\n/),out=[],cur=null;const start=/^(?:\[)?(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}),?\s+(\d{1,2}:\d{2}\s*(?:[ap]m)?)(?:\])?\s*[-–]\s*([^:]+):\s?(.*)$/i;for(const line of lines){let m=line.match(start);if(m){if(cur)out.push(cur);cur={date:parseDate(m[1]),time:m[2].trim(),sender:m[3].trim(),text:m[4]};}else if(cur)cur.text+=' '+line.trim();}if(cur)out.push(cur);return out}
 function nameKeywords(value){return String(value||'').toLocaleLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^\p{L}\p{N}]+/gu,' ').trim().split(/\s+/).filter(Boolean)}
-function parseChat(raw,senderOverride){let msgs=splitMessages(raw),keywords=nameKeywords(senderOverride||$('sender').value),mine=keywords.length?msgs.filter(x=>{const senderWords=new Set(nameKeywords(x.sender));return keywords.every(word=>senderWords.has(word))}):[];if(!mine.length)return 0;resetMonths.delete($('month').value);let map=new Map();for(let m of mine){if(!m.date||!m.date.startsWith($('month').value))continue;let r=map.get(m.date)||{date:m.date,status:'Present',in:'',out:'',lunch:0,permission:0,notes:[],_lunchOut:null,_lunchIn:null,_permissionOut:null,_permissionIn:null};let t=m.text.toLowerCase(),tm=parseTime(m.time,false);let isTomorrowLeave=/\btomorrow\s+(?:leave|on leave)\b/i.test(m.text);if(isTomorrowLeave){let next=new Date(m.date+'T12:00:00');next.setDate(next.getDate()+1);let nd=next.toISOString().slice(0,10);let nr=map.get(nd)||{date:nd,status:'Leave',in:'',out:'',lunch:0,permission:0,notes:[],_lunchOut:null,_lunchIn:null};nr.status='Leave';nr.notes.push('Leave announced the previous day');map.set(nd,nr);r.notes.push(m.text);}else if(/\b(?:leave|absent|holiday|on leave)\b/i.test(m.text)){r.status='Leave';r.notes.push(m.text);}else if(/^\s*(?:in|check\s*in|punch\s*in|entry)\s*$/i.test(m.text)||/^\s*(?:in|duty\s*in)\b/i.test(m.text)){let v=parsePunchText(m.text,m.time);if(v)r.in=v;else r.notes.push('IN needs review: '+m.text);}else if(/^\s*(?:out|check\s*out|punch\s*out|exit)\s*$/i.test(m.text)||/^\s*(?:out|duty\s*out)\b/i.test(m.text)){let v=parsePunchText(m.text,m.time);if(v)r.out=v;else r.notes.push('OUT needs review: '+m.text);}if(/lunch\s*(out|start)|break\s*out/.test(t))r._lunchOut=parseLunchEventTime(m.text,m.time);if(/lunch\s*(in|end)|break\s*in/.test(t))r._lunchIn=parseLunchEventTime(m.text,m.time);if(/\bpermission\s*out\b/i.test(m.text))r._permissionOut=parseEventTime(m.text,m.time,'permission\\s*out');if(/\bpermission\s*in\b/i.test(m.text))r._permissionIn=parseEventTime(m.text,m.time,'permission\\s*in');if(!/\bpermission\s*(?:out|in)\b/i.test(m.text)){let pm=m.text.match(/permission[^\d]*(\d+(?:\.\d+)?)\s*(h|hr|hrs|hour|hours|min|mins|minute|minutes)?/i);if(pm){let n=+pm[1];r.permission+=/min/i.test(pm[2]||'')?n/60:n;}}map.set(m.date,r);}
-for(let [d,r] of map){if(r._lunchOut!=null&&r._lunchIn!=null)r.lunch=hoursBetween(r._lunchOut,r._lunchIn);if(r._permissionOut!=null&&r._permissionIn!=null)r.permission=hoursBetween(r._permissionOut,r._permissionIn);delete r._lunchOut;delete r._lunchIn;delete r._permissionOut;delete r._permissionIn;records=records.filter(x=>x.date!==d);records.push(r)}
-// Verified IN punches from the supplied November WhatsApp export. These are the message timestamps, not explanatory-message times.
-if(activeStaff==='Sanjai'){const verifiedIn={'2026-11-01':'10:50 AM','2026-11-03':'10:32 AM','2026-11-04':'10:04 AM'};for(const [d,t] of Object.entries(verifiedIn)){let r=records.find(x=>x.date===d);if(r)r.in=t;}}
-if(activeStaff==='Sanjai'&&$('month').value==='2026-11'){for(let day of defaultLeaves){let d='2026-11-'+String(day).padStart(2,'0');if(!records.some(x=>x.date===d))records.push({date:d,status:'Leave',in:'',out:'',lunch:0,permission:0,notes:['Configured leave day']})}}
-records.forEach(correctNov15Out);if(activeStaff==='Sanjai'&&$('month').value==='2026-11'){ensureNov4Attendance();ensureNov13Permission()}records.sort((a,b)=>a.date.localeCompare(b.date));save();render();$('review').textContent=`Read ${msgs.length} messages; matched ${mine.length} messages from “${senderOverride||$('sender').value}”; extracted ${map.size} attendance dates for ${activeStaff}. Review all extracted entries before relying on salary totals.`;return mine.length;}
+function parseChat(raw,senderOverride){
+ const msgs=splitMessages(raw),keywords=nameKeywords(senderOverride||$('sender').value);
+ const mine=keywords.length?msgs.filter(x=>{const senderWords=new Set(nameKeywords(x.sender));return keywords.every(word=>senderWords.has(word));}):[];
+ if(!mine.length)return 0;
+ const month=$('month').value,map=new Map();
+ const blankRecord=(date,status='Present')=>({date,status,in:'',out:'',lunch:0,permission:0,notes:[],_lunchOut:null,_lunchIn:null,_permissionOut:null,_permissionIn:null});
+ const getRecord=(date,status='Present')=>{
+  if(!date||!date.startsWith(month+'-'))return null;
+  if(!map.has(date))map.set(date,blankRecord(date,status));
+  const row=map.get(date);
+  if(status==='Leave'&&!row._hasPunchMessage)row.status='Leave';
+  return row;
+ };
+ for(const m of mine){
+  if(!m.date||!m.date.startsWith(month+'-'))continue;
+  const r=getRecord(m.date);
+  const t=String(m.text||'').toLowerCase();
+  const hasLeaveWord=/\b(?:leave|absent|holiday|on leave)\b/i.test(m.text);
+  const partialLeave=/\b(?:1st|first|2nd|second)\s*half\b|\bhalf[- ]day\b|\b(?:morning|afternoon)\s+(?:half|leave)\b/i.test(m.text);
+  const explicitDates=[...String(m.text||'').matchAll(/\b(\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4})\b/g)].map(x=>parseDate(x[1])).filter(Boolean);
+  const uniqueDates=[...new Set(explicitDates)];
+  if(/\bmedia omitted\b|\bimage omitted\b|\bsticker omitted\b/i.test(t)){
+   r.notes.push('Media attachment omitted from TXT export; punch time needs image review.');
+  }
+  if(hasLeaveWord){
+   if(partialLeave){
+    r.notes.push('Partial-day leave mentioned; attendance punches are retained and full-day leave is not assumed: '+m.text);
+   }else if(/\btomorrow\s+(?:leave|on leave)\b/i.test(m.text)){
+    const next=new Date(m.date+'T12:00:00');next.setDate(next.getDate()+1);
+    const targetDate=next.getFullYear()+'-'+String(next.getMonth()+1).padStart(2,'0')+'-'+String(next.getDate()).padStart(2,'0');
+    const target=getRecord(targetDate,'Leave');
+    if(target)target.notes.push('Leave announced the previous day: '+m.text);
+    r.notes.push(m.text);
+   }else if(uniqueDates.length){
+    r.notes.push('Leave/holiday announced for '+uniqueDates.join(', ')+': '+m.text);
+    for(const targetDate of uniqueDates){
+     const target=getRecord(targetDate,'Leave');
+     if(target)target.notes.push('Leave/holiday date explicitly stated in message sent '+m.date+': '+m.text);
+    }
+   }else if(/\b(?:today\s+leave|today\s+is\s+(?:a\s+)?holiday|on leave today)\b/i.test(m.text)||!/\b(?:sunday|monday|tuesday|wednesday|thursday|friday|saturday|coming|next)\b/i.test(m.text)){
+    r.status='Leave';
+    r.notes.push(m.text);
+   }else{
+    r.notes.push('Leave announcement needs date review: '+m.text);
+   }
+  }
+  const inMatch=/^\s*(?:in|check\s*in|punch\s*in|entry)\s*$/i.test(m.text)||/^\s*(?:in|duty\s*in)\b/i.test(m.text);
+  const outMatch=/^\s*(?:out|check\s*out|punch\s*out|exit)\s*$/i.test(m.text)||/^\s*(?:out|duty\s*out)\b/i.test(m.text);
+  if(inMatch){const value=parsePunchText(m.text,m.time);if(value){r.in=value;r._hasPunchMessage=true;}else r.notes.push('IN needs review: '+m.text);}
+  if(outMatch){const value=parsePunchText(m.text,m.time);if(value){r.out=value;r._hasPunchMessage=true;}else r.notes.push('OUT needs review: '+m.text);}
+  if(/lunch\s*(out|start)|break\s*out/.test(t))r._lunchOut=parseLunchEventTime(m.text,m.time);
+  if(/lunch\s*(in|end)|break\s*in/.test(t))r._lunchIn=parseLunchEventTime(m.text,m.time);
+  if(/\bpermission\s*out\b/i.test(m.text))r._permissionOut=parseEventTime(m.text,m.time,'permission\\s*out');
+  if(/\bpermission\s*in\b/i.test(m.text))r._permissionIn=parseEventTime(m.text,m.time,'permission\\s*in');
+  if(!/\bpermission\s*(?:out|in)\b/i.test(m.text)){
+   const pm=m.text.match(/permission[^\d]*(\d+(?:\.\d+)?)\s*(h|hr|hrs|hour|hours|min|mins|minute|minutes)?/i);
+   if(pm){const n=+pm[1];r.permission+=/min/i.test(pm[2]||'')?n/60:n;}
+  }
+ }
+ for(const [date,imported] of map){
+  if(imported._lunchOut!=null&&imported._lunchIn!=null)imported.lunch=hoursBetween(imported._lunchOut,imported._lunchIn);
+  if(imported._permissionOut!=null&&imported._permissionIn!=null)imported.permission=hoursBetween(imported._permissionOut,imported._permissionIn);
+  delete imported._lunchOut;delete imported._lunchIn;delete imported._permissionOut;delete imported._permissionIn;delete imported._hasPunchMessage;
+  const existing=records.find(x=>x.date===date);
+  if(!existing){records.push(imported);continue;}
+  // Re-import is non-destructive: existing manual values and status always win.
+  if(!existing.in&&imported.in)existing.in=imported.in;
+  if(!existing.out&&imported.out)existing.out=imported.out;
+  if(!(+existing.lunch>0)&&(+imported.lunch>0))existing.lunch=imported.lunch;
+  if(!(+existing.permission>0)&&(+imported.permission>0))existing.permission=imported.permission;
+  if(!existing.status)existing.status=imported.status||'Present';
+  existing.notes=Array.isArray(existing.notes)?existing.notes:[];
+  existing.notes=[...new Set([...existing.notes,...(imported.notes||[])])];
+ }
+ // Verified Sanjai corrections remain limited to dates with independently confirmed punch evidence.
+ if(activeStaff==='Sanjai'){const verifiedIn={'2026-11-01':'10:50 AM','2026-11-03':'10:32 AM','2026-11-04':'10:04 AM'};for(const [date,value] of Object.entries(verifiedIn)){const row=records.find(x=>x.date===date);if(row&&!row.in)row.in=value;}}
+ if(activeStaff==='Sanjai'&&month==='2026-11'){for(const day of defaultLeaves){const date='2026-11-'+String(day).padStart(2,'0');if(!records.some(x=>x.date===date))records.push({date,status:'Leave',in:'',out:'',lunch:0,permission:0,notes:['Configured leave day']});}}
+ records.forEach(correctNov15Out);
+ if(activeStaff==='Sanjai'&&month==='2026-11'){ensureNov4Attendance();ensureNov13Permission();}
+ records.sort((a,b)=>a.date.localeCompare(b.date));save();render();
+ $('review').textContent='Read '+msgs.length+' messages; matched '+mine.length+' messages from "'+(senderOverride||$('sender').value)+'"; extracted '+map.size+' dates for '+activeStaff+'. Existing manual values were preserved. Review media-only and ambiguous leave entries before salary totals.';
+ return mine.length;
+}
 function fmtTime(min){let h=Math.floor(min/60)%24,ap=h>=12?'PM':'AM';h=h%12||12;return String(h).padStart(2,'0')+':'+String(min%60).padStart(2,'0')+' '+ap}
 function timeParts(value){const mins=parseInputTime(value);if(mins===null)return {time:'',period:'AM'};const h=Math.floor(mins/60),m=mins%60;return {time:String(h%12||12).padStart(2,'0')+':'+String(m).padStart(2,'0'),period:h>=12?'PM':'AM'}}
 function daysInMonth(v){let [y,m]=v.split('-').map(Number);return new Date(y,m,0).getDate()}
