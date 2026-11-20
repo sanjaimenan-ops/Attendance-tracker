@@ -384,7 +384,6 @@ function parseChat(raw,senderOverride){
   const eventText=rawText.replace(/(?:IMG|VID)-\d{8}-WA\d+\.(?:jpg|jpeg|png|mp4|webp)\s*\(file attached\)/gi,' ').replace(/<Media omitted>|<Image omitted>|<Sticker omitted>/gi,' ').replace(/\s+/g,' ').trim();
   const t=eventText.toLowerCase();
   const hasLeaveWord=/\b(?:leave|absent|holiday|on leave)\b/i.test(eventText);
-  const hasLeaveWord=/\b(?:leave|absent|holiday|on leave)\b/i.test(m.text);
   const partialLeave=/\b(?:1st|first|2nd|second)\s*half\b|\bhalf[- ]day\b|\b(?:morning|afternoon)\s+(?:half|leave)\b/i.test(m.text);
   const explicitDates=[...String(m.text||'').matchAll(/\b(\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4})\b/g)].map(x=>parseDate(x[1])).filter(Boolean);
   const uniqueDates=[...new Set(explicitDates)];
