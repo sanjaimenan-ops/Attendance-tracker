@@ -612,9 +612,14 @@ load();
     const localStore = local.staffStore && typeof local.staffStore === 'object'
       ? local.staffStore
       : (local.records || local.settings ? {Sanjai:{records:local.records||[],settings:local.settings||{}}} : {});
-    resetMonthsByStaff = {...(data.resetMonthsByStaff || {}), ...(local.resetMonthsByStaff || {})};
-    if (!data.resetMonthsByStaff && Array.isArray(data.resetMonths)) resetMonthsByStaff.Sanjai = [...new Set([...(resetMonthsByStaff.Sanjai||[]),...data.resetMonths])];
-    if (!local.resetMonthsByStaff && Array.isArray(local.resetMonths)) resetMonthsByStaff.Sanjai = [...new Set([...(resetMonthsByStaff.Sanjai||[]),...local.resetMonths])];
+    const cloudResetMap = data.resetMonthsByStaff && typeof data.resetMonthsByStaff === 'object' ? data.resetMonthsByStaff : {};
+    const localResetMap = local.resetMonthsByStaff && typeof local.resetMonthsByStaff === 'object' ? local.resetMonthsByStaff : {};
+    resetMonthsByStaff = {};
+    for (const name of new Set([...Object.keys(cloudResetMap), ...Object.keys(localResetMap), 'Sanjai'])) {
+      const cloudMarks = Array.isArray(cloudResetMap[name]) ? cloudResetMap[name] : (name === 'Sanjai' && Array.isArray(data.resetMonths) ? data.resetMonths : []);
+      const localMarks = Array.isArray(localResetMap[name]) ? localResetMap[name] : (name === 'Sanjai' && Array.isArray(local.resetMonths) ? local.resetMonths : []);
+      resetMonthsByStaff[name] = [...new Set([...cloudMarks, ...localMarks])];
+    }
     const names = new Set([...Object.keys(cloudStore), ...Object.keys(localStore), 'Sanjai']);
     staffStore = {};
     let mergedFromLocal = false;
