@@ -303,7 +303,7 @@ body.authenticated .leave-metric-heading strong{font-size:var(--leave-count-font
 </section>
 <main class="wrap">
 <header class="top"><div><div class="brand">Attendance & Salary</div><div class="muted">Private, browser-based tracker · Your uploaded chat stays on this device</div></div><div class="auth-actions noprint"><span class="tag">PRIVATE · LOCAL DATA</span><button class="secondary" id="logoutButton" type="button">Log out</button></div></header>
-<section class="panel noprint"><h3 style="margin:0 0 8px">1. Import WhatsApp attendance</h3><div class="drop"><div style="font-weight:700">Upload WhatsApp chat export (.txt)</div><div class="muted" style="margin:6px 0 12px">WhatsApp group → Export chat → Without media → choose the .txt file</div><label class="filebtn" style="display:inline-block"><input id="file" type="file" accept=".txt,text/plain">Choose WhatsApp TXT</label><div id="fileName" class="muted" style="margin-top:8px"></div><div id="uploadState" class="upload-state" role="status" aria-live="polite"><span class="spinner"></span><span id="uploadStateText">Reading WhatsApp chat…</span></div></div><p class="note">The app matches the employee name keyword(s) below against WhatsApp sender names (case-insensitive; extra sender-name words are allowed). It recognises common IN/OUT, lunch, permission and leave wording. Always review extracted entries before relying on salary totals.</p></section>
+<section class="panel noprint"><h3 style="margin:0 0 8px">1. Import WhatsApp attendance</h3><div class="drop"><div style="font-weight:700">Upload WhatsApp chat export (.txt)</div><div class="muted" style="margin:6px 0 12px">WhatsApp group → Export chat → choose the .txt file. Captions on photo messages are read; photo-only messages need review.</div><label class="filebtn" style="display:inline-block"><input id="file" type="file" accept=".txt,text/plain">Choose WhatsApp TXT</label><div id="fileName" class="muted" style="margin-top:8px"></div><div id="uploadState" class="upload-state" role="status" aria-live="polite"><span class="spinner"></span><span id="uploadStateText">Reading WhatsApp chat…</span></div></div><p class="note">The app matches the employee name keyword(s) below against WhatsApp sender names (case-insensitive; extra sender-name words are allowed). It recognises common IN/OUT, lunch, permission and leave wording, including photo captions such as “In purchase”, “Godown work in” and “Lunch in IOB”. Photo-only messages are never treated as punches. Always review extracted entries before relying on salary totals.</p></section>
 
 <section class="panel noprint"><h3 style="margin:0 0 12px">2. Calculation settings</h3><div class="settings"><div class="staff-controls"><label>Employee profile<select id="staffSelect" aria-label="Employee profile"></select></label><label>Add employee<input id="newStaffName" type="text" placeholder="Enter employee name" maxlength="60"></label><button type="button" class="secondary" id="addStaff">Add employee</button><button type="button" class="secondary" id="editStaff">Edit profile name</button><button type="button" class="secondary" id="deleteStaff">Delete employee</button></div><label>Employee name keyword(s)<input id="sender" value="Sanjai" autocomplete="off" placeholder="e.g. Sanjai"></label><label>Month<input id="month" type="month" value="2026-11"></label><label>Shift hours<input id="shift" type="number" min="0" step="0.25" value="10"></label><label>Included lunch hours<input id="lunch" type="number" min="0" step="0.25" value="1"></label><label>Regular rate (₹/h)<input id="rate" type="number" min="0" step="0.01" value="70"></label><label>Overtime rate (₹/h)<input id="otrate" type="number" min="0" step="0.01" value="88"></label><label>Paid leave hours/day<input id="leavepay" type="number" min="0" step="0.25" value="0"></label></div><div class="settings-actions"><button type="button" id="saveStaffSettings">Save salary &amp; work settings</button></div><p class="note">12-hour clock only: enter AM/PM (for example IN 10:00 AM, OUT 09:30 PM = 11.50 clocked hours). Do not enter bare times without AM/PM. Rules: net paid hours = clocked hours − lunch time exceeding the included lunch allowance − permission deduction. Regular hours are capped at shift hours; remaining hours are overtime. Missing lunch punches create no extra lunch deduction. Paid leave defaults to 0 hours until you choose otherwise.</p></section>
 <section class="panel"><div class="top"><div><h3 style="margin:0">Monthly summary</h3><div class="muted">Select a month to view its attendance and salary</div></div><div class="controls noprint"><button class="secondary" id="reset">Reset month</button><button class="secondary" id="csv">Export CSV</button><button id="print">Print / Save PDF</button></div></div><div class="grid summary-grid" style="margin-top:14px"><div class="metric"><small>Present days</small><strong id="present">0</strong></div><div class="metric leave-metric"><div class="leave-metric-heading"><small>Leave days</small><strong id="leaves">4</strong></div><div id="leaveDates" class="leave-dates" aria-label="Leave dates"></div></div><div class="metric"><small>Total clocked hours</small><strong id="clockedHours">0.00</strong></div><div class="metric"><small>Regular hours</small><strong id="regularHours">0.00</strong></div><div class="metric"><small>Overtime hours</small><strong id="overtimeHours">0.00</strong></div><div class="metric"><small>Net paid hours</small><strong id="hours">0.00</strong></div><div class="metric"><small>Estimated salary</small><strong id="salary">₹0.00</strong></div></div><div class="note" id="breakdown" style="margin-top:12px">Clocked: 0.00 h · Regular: 0.00 h · Overtime: 0.00 h · Extra lunch deduction: 0.00 h · Permission deduction: 0.00 h</div>
@@ -379,13 +379,18 @@ function parseChat(raw,senderOverride){
  for(const m of mine){
   if(!m.date||!m.date.startsWith(month+'-'))continue;
   const r=getRecord(m.date);
-  const t=String(m.text||'').toLowerCase();
+  const rawText=String(m.text||'');
+  const hasAttachment=/(?:IMG|VID)-\d{8}-WA\d+\.(?:jpg|jpeg|png|mp4|webp)\s*\(file attached\)/i.test(rawText)||/\bmedia omitted\b|\bimage omitted\b|\bsticker omitted\b/i.test(rawText);
+  const eventText=rawText.replace(/(?:IMG|VID)-\d{8}-WA\d+\.(?:jpg|jpeg|png|mp4|webp)\s*\(file attached\)/gi,' ').replace(/<Media omitted>|<Image omitted>|<Sticker omitted>/gi,' ').replace(/\s+/g,' ').trim();
+  const t=eventText.toLowerCase();
+  const hasLeaveWord=/\b(?:leave|absent|holiday|on leave)\b/i.test(eventText);
   const hasLeaveWord=/\b(?:leave|absent|holiday|on leave)\b/i.test(m.text);
   const partialLeave=/\b(?:1st|first|2nd|second)\s*half\b|\bhalf[- ]day\b|\b(?:morning|afternoon)\s+(?:half|leave)\b/i.test(m.text);
   const explicitDates=[...String(m.text||'').matchAll(/\b(\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4})\b/g)].map(x=>parseDate(x[1])).filter(Boolean);
   const uniqueDates=[...new Set(explicitDates)];
-  if(/\bmedia omitted\b|\bimage omitted\b|\bsticker omitted\b/i.test(t)){
-   r.notes.push('Media attachment omitted from TXT export; punch time needs image review.');
+  if(hasAttachment){
+   if(eventText)r.notes.push('Photo proof caption: '+eventText);
+   else r.notes.push('Photo/media attached without a readable attendance caption; review manually. No punch time was inferred from the photo alone.');
   }
   if(hasLeaveWord){
    if(partialLeave){
@@ -409,16 +414,16 @@ function parseChat(raw,senderOverride){
     r.notes.push('Leave announcement needs date review: '+m.text);
    }
   }
-  const inMatch=/^\s*(?:in|check\s*in|punch\s*in|entry)\s*$/i.test(m.text)||/^\s*(?:in|duty\s*in)\b/i.test(m.text);
-  const outMatch=/^\s*(?:out|check\s*out|punch\s*out|exit)\s*$/i.test(m.text)||/^\s*(?:out|duty\s*out)\b/i.test(m.text);
-  if(inMatch){const value=parsePunchText(m.text,m.time);if(value){r.in=value;r._hasPunchMessage=true;}else r.notes.push('IN needs review: '+m.text);}
-  if(outMatch){const value=parsePunchText(m.text,m.time);if(value){r.out=value;r._hasPunchMessage=true;}else r.notes.push('OUT needs review: '+m.text);}
-  if(/lunch\s*(out|start)|break\s*out/.test(t))r._lunchOut=parseLunchEventTime(m.text,m.time);
-  if(/lunch\s*(in|end)|break\s*in/.test(t))r._lunchIn=parseLunchEventTime(m.text,m.time);
-  if(/\bpermission\s*out\b/i.test(m.text))r._permissionOut=parseEventTime(m.text,m.time,'permission\\s*out');
-  if(/\bpermission\s*in\b/i.test(m.text))r._permissionIn=parseEventTime(m.text,m.time,'permission\\s*in');
+  const inMatch=/^\s*(?:in|check\s*in|punch\s*in|entry|duty\s*in)\b/i.test(eventText)||/^(?:(?:purchase|godown|work|customer|site|residency|belviza|delivery|mill|shop|store|aalin?wood|marinos)(?:\s+[\p{L}\p{N}().'-]+){0,5})\s+(?:in|entry)\s*$/iu.test(eventText);
+  const outMatch=/^\s*(?:out|check\s*out|punch\s*out|exit|duty\s*out)\b/i.test(eventText);
+  if(inMatch){const value=parsePunchText(eventText,m.time);if(value){r.in=value;r._hasPunchMessage=true;}else r.notes.push('IN needs review: '+eventText);}
+  if(outMatch){const value=parsePunchText(eventText,m.time);if(value){r.out=value;r._hasPunchMessage=true;}else r.notes.push('OUT needs review: '+eventText);}
+  if(/lunch\s*(out|start)|break\s*out/.test(t))r._lunchOut=parseLunchEventTime(eventText,m.time);
+  if(/lunch\s*(in|end)|break\s*in/.test(t))r._lunchIn=parseLunchEventTime(eventText,m.time);
+  if(/\bpermission\s*out\b/i.test(eventText))r._permissionOut=parseEventTime(eventText,m.time,'permission\\s*out');
+  if(/\bpermission\s*in\b/i.test(eventText))r._permissionIn=parseEventTime(eventText,m.time,'permission\\s*in');
   if(!/\bpermission\s*(?:out|in)\b/i.test(m.text)){
-   const pm=m.text.match(/permission[^\d]*(\d+(?:\.\d+)?)\s*(h|hr|hrs|hour|hours|min|mins|minute|minutes)?/i);
+   const pm=eventText.match(/permission[^\d]*(\d+(?:\.\d+)?)\s*(h|hr|hrs|hour|hours|min|mins|minute|minutes)?/i);
    if(pm){const n=+pm[1];r.permission+=/min/i.test(pm[2]||'')?n/60:n;}
   }
  }
