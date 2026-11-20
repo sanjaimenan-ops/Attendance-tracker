@@ -13,9 +13,14 @@
 body.auth-checking #loginScreen,body.auth-checking .wrap{display:none!important}
 #authLoading{display:none}
 body.auth-checking #authLoading{position:fixed;inset:0;z-index:5000;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;background:#f4f6ff;color:#26386f;font-weight:650}
-#authLoading .auth-loading-spinner{width:34px;height:34px;border:3px solid #dbeafe;border-top-color:#303f7c;border-radius:50%;animation:authSpin .8s linear infinite}
-@keyframes authSpin{to{transform:rotate(360deg)}}
-@media(prefers-reduced-motion:reduce){#authLoading .auth-loading-spinner{animation:none}}
+#authLoading{gap:26px;background:#fff;color:#172554;font-size:24px;font-weight:750;letter-spacing:-.4px}
+#authLoading .auth-loading-ripple{position:relative;width:124px;height:124px;display:grid;place-items:center;isolation:isolate}
+#authLoading .auth-loading-ripple i{position:absolute;inset:8px;border:3px solid #2563eb;border-radius:50%;animation:authRipple 2.1s ease-out infinite}
+#authLoading .auth-loading-ripple i:nth-child(2){animation-delay:.7s}
+#authLoading .auth-loading-ripple i:nth-child(3){animation-delay:1.4s}
+#authLoading .auth-loading-ripple b{width:20px;height:20px;border-radius:50%;background:#2563eb;box-shadow:0 0 18px #2563eb55}
+@keyframes authRipple{0%{transform:scale(.42);opacity:.95}80%,100%{transform:scale(1);opacity:0}}
+@media(prefers-reduced-motion:reduce){#authLoading .auth-loading-ripple i{animation:none;opacity:.28}#authLoading .auth-loading-ripple i:nth-child(2){transform:scale(.78)}#authLoading .auth-loading-ripple i:nth-child(3){transform:scale(.56)}}
 
 /* Split-screen illustrated login */
 body:not(.authenticated) .wrap{display:none}
@@ -306,7 +311,7 @@ body.authenticated .leave-metric-heading strong{font-size:var(--leave-count-font
 }
 </style></head>
 <body class="auth-checking">
-<div id="authLoading" role="status" aria-live="polite"><span class="auth-loading-spinner" aria-hidden="true"></span><span>Checking your secure session…</span></div>
+<div id="authLoading" role="status" aria-live="polite"><span class="auth-loading-ripple" aria-hidden="true"><i></i><i></i><i></i><b></b></span><span>Refreshing</span></div>
 <section id="loginScreen" aria-label="Private login">
   <div class="login-art" aria-hidden="true">
     <svg viewBox="0 0 900 1000" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
