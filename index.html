@@ -228,11 +228,11 @@ body.authenticated .metric{
 body.authenticated .metric:hover{background:#fffaf5!important;transform:translateY(-2px)}
 body.authenticated .metric small{color:#78716c!important;font-weight:650}
 body.authenticated .metric strong{color:#292524!important;font-size:25px}
-body.authenticated .summary-grid .metric:nth-child(7){
+body.authenticated .summary-grid .metric:nth-child(8){
   background:#fff1e6!important;border:1px solid #fdba74!important;border-left:5px solid #ea580c!important
 }
-body.authenticated .summary-grid .metric:nth-child(7) small{color:#9a3412!important}
-body.authenticated .summary-grid .metric:nth-child(7) strong{color:#c2410c!important;font-size:28px}
+body.authenticated .summary-grid .metric:nth-child(8) small{color:#9a3412!important}
+body.authenticated .summary-grid .metric:nth-child(8) strong{color:#c2410c!important;font-size:28px}
 body.authenticated button,body.authenticated .filebtn{
   background:#ea580c!important;color:#fff!important;border:1px solid #ea580c!important;
   border-radius:11px;box-shadow:0 3px 0 #c2410c!important
@@ -263,7 +263,7 @@ body.authenticated .tag{background:#fff1e6!important;color:#9a3412!important;bor
   body.authenticated .wrap>header.top .brand{font-size:21px}
   body.authenticated .panel{border-radius:16px}
   body.authenticated .metric strong{font-size:22px}
-  body.authenticated .summary-grid .metric:nth-child(7) strong{font-size:24px}
+  body.authenticated .summary-grid .metric:nth-child(8) strong{font-size:24px}
 }
 
 
@@ -314,7 +314,7 @@ body.authenticated .leave-date{display:inline-block;flex:0 0 auto;min-width:0;te
 /* Leave count hierarchy and full-width salary card on narrow screens */
 body.authenticated .leave-metric-heading strong{font-size:var(--leave-count-font,15px)!important;line-height:1.2!important}
 @media(max-width:760px){
-  body.authenticated .summary-grid .metric:nth-child(7){grid-column:1/-1}
+  body.authenticated .summary-grid .metric:nth-child(8){grid-column:1/-1}
 }
 </style></head>
 <body class="auth-checking">
@@ -374,7 +374,7 @@ body.authenticated .leave-metric-heading strong{font-size:var(--leave-count-font
 </div>
 </div>
 <div class="staff-legacy-controls" aria-hidden="true"><input id="newStaffName" type="text" maxlength="60" tabindex="-1"><button type="button" id="addStaff" tabindex="-1">Add employee</button><button type="button" id="editStaff" tabindex="-1">Edit profile name</button><button type="button" id="deleteStaff" tabindex="-1">Delete employee</button></div></div><label>Employee name keyword(s)<input id="sender" value="Sanjai" autocomplete="off" placeholder="e.g. Sanjai"></label><label>Month<input id="month" type="month" value="2026-11"></label><label>Shift hours<input id="shift" type="number" min="0" step="0.25" value="10"></label><label>Included lunch hours<input id="lunch" type="number" min="0" step="0.25" value="1"></label><label>Regular rate (₹/h)<input id="rate" type="number" min="0" step="0.01" value="70"></label><label>Overtime rate (₹/h)<input id="otrate" type="number" min="0" step="0.01" value="88"></label><label>Paid leave hours/day<input id="leavepay" type="number" min="0" step="0.25" value="0"></label></div><div class="settings-actions"><button type="button" id="saveStaffSettings">Save salary &amp; work settings</button></div><p class="note">12-hour clock only: enter AM/PM (for example IN 10:00 AM, OUT 09:30 PM = 11.50 clocked hours). Do not enter bare times without AM/PM. Rules: net paid hours = clocked hours − lunch time exceeding the included lunch allowance − permission deduction. Regular hours are capped at shift hours; remaining hours are overtime. Missing lunch punches create no extra lunch deduction. Paid leave defaults to 0 hours until you choose otherwise.</p></section>
-<section class="panel"><div class="top"><div><h3 style="margin:0">Monthly summary</h3><div class="muted">Select a month to view its attendance and salary</div></div><div class="controls noprint"><button class="secondary" id="reset">Reset month</button><button class="secondary" id="csv">Export CSV</button><button id="print">Print / Save PDF</button></div></div><div class="grid summary-grid" style="margin-top:14px"><div class="metric"><small>Present days</small><strong id="present">0</strong></div><div class="metric leave-metric"><div class="leave-metric-heading"><small>Leave days</small><strong id="leaves">4</strong></div><div id="leaveDates" class="leave-dates" aria-label="Leave dates"></div></div><div class="metric"><small>Total clocked hours</small><strong id="clockedHours">0.00</strong></div><div class="metric"><small>Regular hours</small><strong id="regularHours">0.00</strong></div><div class="metric"><small>Overtime hours</small><strong id="overtimeHours">0.00</strong></div><div class="metric"><small>Net paid hours</small><strong id="hours">0.00</strong></div><div class="metric"><small>Estimated salary</small><strong id="salary">₹0.00</strong></div></div><div class="note" id="breakdown" style="margin-top:12px">Clocked: 0.00 h · Regular: 0.00 h · Overtime: 0.00 h · Extra lunch deduction: 0.00 h · Permission deduction: 0.00 h</div>
+<section class="panel"><div class="top"><div><h3 style="margin:0">Monthly summary</h3><div class="muted">Select a month to view its attendance and salary</div></div><div class="controls noprint"><button class="secondary" id="reset">Reset month</button><button class="secondary" id="csv">Export CSV</button><button id="print">Print / Save PDF</button></div></div><div class="grid summary-grid" style="margin-top:14px"><div class="metric"><small>Present days</small><strong id="present">0</strong></div><div class="metric leave-metric"><div class="leave-metric-heading"><small>Leave days</small><strong id="leaves">4</strong></div><div id="leaveDates" class="leave-dates" aria-label="Leave dates"></div></div><div class="metric"><small>Total clocked hours</small><strong id="clockedHours">0.00</strong></div><div class="metric"><small>Regular hours</small><strong id="regularHours">0.00</strong></div><div class="metric"><small>Overtime hours</small><strong id="overtimeHours">0.00</strong></div><div class="metric"><small>Net paid hours</small><strong id="hours">0.00</strong></div><div class="metric lunch-deducted-metric"><small>Lunch deducted hours</small><strong id="lunchDeductedHours">0.00</strong></div><div class="metric"><small>Estimated salary</small><strong id="salary">₹0.00</strong></div></div><div class="note" id="breakdown" style="margin-top:12px">Clocked: 0.00 h · Regular: 0.00 h · Overtime: 0.00 h · Extra lunch deduction: 0.00 h · Permission deduction: 0.00 h</div>
 <div class="note" id="octoberAudit" style="margin-top:10px" aria-live="polite"></div></section>
 
 <section class="panel"><div class="top"><div><h3 style="margin:0">3. Daily attendance</h3><div class="muted">Scroll vertically on mobile; enter times with AM/PM, for example 10:00 AM and 09:30 PM.</div></div><div class="controls noprint"><button class="secondary" id="add">Add day</button></div></div><div class="tablewrap" style="margin-top:12px"><table><thead><tr><th>Date</th><th>Status</th><th>IN (12-hour)</th><th>OUT (12-hour)</th><th>Lunch (h)</th><th>Permission (h)</th><th>Clocked (h)</th><th>Extra lunch (h)</th><th>Net (h)</th><th>Regular (h)</th><th>OT (h)</th><th>Pay (₹)</th><th class="noprint">Action</th></tr></thead><tbody id="rows"><tr><td colspan="13" class="empty">Upload a WhatsApp TXT file or add attendance days manually.</td></tr></tbody></table></div><div class="note warn" id="review" style="margin-top:10px"></div></section>
@@ -543,7 +543,7 @@ function render(){
   leaveDatesBox.style.setProperty('--leave-date-font',leaveDateFont+'px');
   leaveDatesBox.style.setProperty('--leave-count-font',Math.max(10,leaveDateFont-3)+'px');
   leaveDatesBox.setAttribute('aria-label',leaveDates.length?'Leave dates: '+leaveDates.map(date=>date.slice(8,10)).join(', '):'No leave dates');
-  $('clockedHours').textContent=tot.clock.toFixed(2);$('regularHours').textContent=tot.reg.toFixed(2);$('overtimeHours').textContent=tot.ot.toFixed(2);$('hours').textContent=tot.net.toFixed(2);$('salary').textContent='₹'+tot.pay.toFixed(2);
+  $('clockedHours').textContent=tot.clock.toFixed(2);$('regularHours').textContent=tot.reg.toFixed(2);$('overtimeHours').textContent=tot.ot.toFixed(2);$('hours').textContent=tot.net.toFixed(2);$('lunchDeductedHours').textContent=tot.extra.toFixed(2);$('salary').textContent='₹'+tot.pay.toFixed(2);
  $('breakdown').textContent=`Clocked: ${tot.clock.toFixed(2)} h · Regular: ${tot.reg.toFixed(2)} h · Overtime: ${tot.ot.toFixed(2)} h · Extra lunch deduction: ${tot.extra.toFixed(2)} h · Permission deduction: ${tot.perm.toFixed(2)} h`;
  const audit=$('octoberAudit');
  if(month==='2026-10'&&activeStaff==='Sanjai'){
