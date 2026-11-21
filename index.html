@@ -2,6 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#172554">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./icon.svg">
 <title>Private Attendance & Salary Tracker</title>
 <style>
 :root{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#182230;background:#f4f6fa}*{box-sizing:border-box}body{margin:0}.wrap{max-width:1120px;margin:auto;padding:22px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.brand{font-size:22px;font-weight:750}.muted{color:#667085;font-size:13px}.tag{background:#e8f1ff;color:#175cd3;padding:6px 10px;border-radius:20px;font-size:12px;font-weight:650}.panel{background:white;border:1px solid #e4e7ec;border-radius:15px;padding:17px;margin-top:16px;box-shadow:0 2px 8px #10182808}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.metric{background:#f8fafc;border:1px solid #eaecf0;padding:14px;border-radius:12px}.metric small{color:#667085}.metric strong{display:block;font-size:23px;margin-top:5px}.controls{display:flex;gap:9px;flex-wrap:wrap;align-items:center}button,.filebtn{border:0;border-radius:9px;padding:10px 13px;background:#175cd3;color:white;font-weight:650;cursor:pointer;font-size:13px}button.secondary{background:#eef2f6;color:#344054}button.danger{background:#fff0f0;color:#b42318}input,select{border:1px solid #d0d5dd;border-radius:8px;padding:9px;font:inherit;min-width:0}label{font-size:12px;color:#475467;display:flex;flex-direction:column;gap:5px}input[type=file]{display:none}.settings{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;min-width:0}.settings label{min-width:0;width:100%}.settings input,.settings select{display:block;width:100%;max-width:100%;min-width:0}.tablewrap{overflow:visible}table{border-collapse:collapse;width:100%;font-size:13px;min-width:800px}th,td{padding:10px 9px;border-bottom:1px solid #eaecf0;text-align:left;white-space:nowrap}th{background:#f8fafc;color:#475467;font-size:12px;position:sticky;top:0}td input,td select{width:100%;padding:6px} .status{font-size:11px;padding:4px 7px;border-radius:20px;background:#f2f4f7}.status.present{background:#dcfae6;color:#067647}.status.leave{background:#fef0c7;color:#93370d}.status.review{background:#fee4e2;color:#b42318}.note{font-size:12px;line-height:1.5;color:#667085}.drop{border:1.5px dashed #98a2b3;background:#fafbff;border-radius:12px;padding:18px;text-align:center}.hidden{display:none}.right{margin-left:auto}.foot{font-size:11px;color:#667085;margin:18px 2px}.warn{color:#b54708}.settings h3{grid-column:1/-1;margin:0 0 2px;font-size:15px}.small{font-size:12px}.empty{text-align:center;padding:28px;color:#667085}@media(max-width:760px){.wrap{padding:12px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.settings{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.settings label{min-width:0}.settings input,.settings select{width:100%;max-width:100%;min-width:0}.brand{font-size:19px}.panel{padding:13px}.top{align-items:flex-start}.controls{width:100%}.controls button{flex:1}.tablewrap{overflow:visible}table,tbody{display:block;width:100%;min-width:0}thead{display:none}tbody tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;background:#fff;border:1px solid #e4e7ec;border-radius:12px;padding:12px;margin:0 0 12px;box-shadow:0 1px 4px #10182808}tbody td{display:flex;flex-direction:column;gap:5px;white-space:normal;min-width:0;border:0;padding:3px;font-size:13px}tbody td:before{content:attr(data-label);font-size:11px;color:#667085;font-weight:650}tbody td:nth-child(1),tbody td:nth-child(2),tbody td:last-child{grid-column:1/-1}tbody td input,tbody td select{width:100%;min-height:38px}tbody td:last-child:before{content:''}.empty{display:block!important;grid-column:1/-1} .metric strong{font-size:21px}}@media print{body{background:white}.wrap{max-width:none;padding:0}.noprint,button,.drop{display:none!important}.panel{box-shadow:none;break-inside:avoid}.tablewrap{overflow:visible}table{min-width:0;font-size:10px}td,th{padding:5px}}
@@ -985,4 +992,11 @@ load();
 })();
 </script>
 
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js").catch(error => console.error("PWA service worker registration failed:", error));
+  });
+}
+</script>
 </body></html>
