@@ -666,8 +666,11 @@ load();
 
   // Automatically end the authenticated session after three minutes without activity.
   const IDLE_TIMEOUT_MS = 3 * 60 * 1000;
+  const BACKGROUND_TIMEOUT_MS = 60 * 1000;
+  const BACKGROUND_ACTIVITY_KEY = 'attendanceBackgroundSince';
   let idleTimer = null;
   let idleWatchdog = null;
+  let backgroundTimer = null;
   let lastActivityAt = 0;
   let logoutInProgress = false;
   const IDLE_ACTIVITY_KEY = 'attendanceLastActivityAt';
@@ -702,6 +705,9 @@ load();
 
     // Only disable cloud access after the final save attempt has finished.
     cloudReady = false;
+    try { localStorage.removeItem(BACKGROUND_ACTIVITY_KEY); } catch (_) {}
+    if (backgroundTimer !== null) clearTimeout(backgroundTimer);
+    backgroundTimer = null;
 
     clearLoginCredentials();
     try {
@@ -718,6 +724,48 @@ load();
     try { localStorage.setItem(IDLE_ACTIVITY_KEY, String(lastActivityAt)); } catch (_) {}
     stopIdleTimer();
     idleTimer = setTimeout(checkIdleDeadline, IDLE_TIMEOUT_MS);
+  }
+
+  function clearBackgroundTimer() {
+    if (backgroundTimer !== null) clearTimeout(backgroundTimer);
+    backgroundTimer = null;
+  }
+
+  function scheduleBackgroundLogout(startedAt) {
+    clearBackgroundTimer();
+    const remaining = Math.max(0, BACKGROUND_TIMEOUT_MS - (Date.now() - startedAt));
+    backgroundTimer = setTimeout(() => {
+      backgroundTimer = null;
+      if (document.visibilityState === 'hidden' && auth && auth.currentUser && cloudReady) {
+        expireIdleSession();
+      }
+    }, remaining);
+  }
+
+  function markAppBackgrounded() {
+    if (!auth || !auth.currentUser || logoutInProgress) return;
+    let startedAt = 0;
+    try { startedAt = Number(localStorage.getItem(BACKGROUND_ACTIVITY_KEY)); } catch (_) {}
+    if (!Number.isFinite(startedAt) || startedAt <= 0) {
+      startedAt = Date.now();
+      try { localStorage.setItem(BACKGROUND_ACTIVITY_KEY, String(startedAt)); } catch (_) {}
+    }
+    if (cloudReady) scheduleBackgroundLogout(startedAt);
+  }
+
+  function handleAppForegrounded() {
+    if (!auth || !auth.currentUser || logoutInProgress) return;
+    clearBackgroundTimer();
+    let startedAt = 0;
+    try { startedAt = Number(localStorage.getItem(BACKGROUND_ACTIVITY_KEY)); } catch (_) {}
+    if (Number.isFinite(startedAt) && startedAt > 0) {
+      if (Date.now() - startedAt >= BACKGROUND_TIMEOUT_MS) {
+        expireIdleSession();
+        return;
+      }
+      try { localStorage.removeItem(BACKGROUND_ACTIVITY_KEY); } catch (_) {}
+    }
+    if (cloudReady) resetIdleTimer();
   }
 
   // Timers can be heavily throttled while a phone is locked or the browser is in the
@@ -741,25 +789,22 @@ load();
     }
   });
 
-  window.addEventListener('pageshow', checkIdleDeadline);
+  window.addEventListener('pageshow', () => {
+    checkIdleDeadline();
+    if (document.visibilityState === 'visible') handleAppForegrounded();
+  });
+  window.addEventListener('pagehide', markAppBackgrounded);
 
   ['pointerdown', 'keydown', 'touchstart', 'scroll', 'click'].forEach(eventName => {
     document.addEventListener(eventName, resetIdleTimer, {passive: true});
   });
 
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && auth && auth.currentUser && cloudReady) {
-      if (Date.now() - lastActivityAt >= IDLE_TIMEOUT_MS) expireIdleSession();
-      else resetIdleTimer();
-    }
+    if (document.visibilityState === 'hidden') markAppBackgrounded();
+    else handleAppForegrounded();
   });
 
-  window.addEventListener('focus', () => {
-    if (auth && auth.currentUser && cloudReady) {
-      if (Date.now() - lastActivityAt >= IDLE_TIMEOUT_MS) expireIdleSession();
-      else resetIdleTimer();
-    }
-  });
+  window.addEventListener('focus', handleAppForegrounded);
 
   function localState() {
     try {
@@ -869,6 +914,7 @@ load();
       try {
         // A fresh, successful sign-in starts a new inactivity window.
         localStorage.setItem(IDLE_ACTIVITY_KEY, String(Date.now()));
+        localStorage.removeItem(BACKGROUND_ACTIVITY_KEY);
         const credential = await auth.signInWithEmailAndPassword(
           document.getElementById('loginEmail').value.trim(),
           document.getElementById('loginPassword').value
@@ -913,6 +959,8 @@ load();
       cloudReady = false;
       cloudDoc = null;
       try { localStorage.removeItem(IDLE_ACTIVITY_KEY); } catch (_) {}
+      try { localStorage.removeItem(BACKGROUND_ACTIVITY_KEY); } catch (_) {}
+      clearBackgroundTimer();
       try { await auth.signOut(); }
       finally { logoutInProgress = false; }
     });
@@ -964,6 +1012,16 @@ load();
           });
         }
         cloudReady = true;
+        let backgroundSince = 0;
+        try { backgroundSince = Number(localStorage.getItem(BACKGROUND_ACTIVITY_KEY)); } catch (_) {}
+        if (Number.isFinite(backgroundSince) && backgroundSince > 0) {
+          if (Date.now() - backgroundSince >= BACKGROUND_TIMEOUT_MS) {
+            await expireIdleSession();
+            return;
+          }
+          if (document.visibilityState === 'hidden') scheduleBackgroundLogout(backgroundSince);
+          else { try { localStorage.removeItem(BACKGROUND_ACTIVITY_KEY); } catch (_) {} }
+        }
         if (window.attendanceCloudMergeNeeded) {
           window.attendanceCloudMergeNeeded = false;
           window.scheduleAttendanceCloudSave();
