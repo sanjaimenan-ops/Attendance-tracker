@@ -303,10 +303,10 @@ body.authenticated .employee-picker-option[aria-selected="true"] .employee-picke
 body.authenticated .leave-metric{min-width:0;overflow:hidden}
 body.authenticated .leave-metric-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
 body.authenticated .leave-metric-heading strong{margin-top:0!important;flex:0 0 auto}
-body.authenticated .leave-dates{display:grid;grid-template-columns:repeat(auto-fit,minmax(18px,1fr));gap:3px 2px;margin-top:8px;min-width:0}
-body.authenticated .leave-date{display:block;min-width:0;text-align:center;font-size:var(--leave-date-font,16px);line-height:1.2;font-weight:750;color:#292524;white-space:nowrap}
+body.authenticated .leave-dates{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-start;column-gap:9px;row-gap:4px;margin-top:8px;min-width:0;max-width:100%}
+body.authenticated .leave-date{display:inline-block;flex:0 0 auto;min-width:0;text-align:center;font-size:var(--leave-date-font,16px);line-height:1.2;font-weight:750;color:#292524;white-space:nowrap}
 @media(max-width:760px){
-  body.authenticated .leave-dates{grid-template-columns:repeat(auto-fit,minmax(17px,1fr));gap:3px 1px}
+  body.authenticated .leave-dates{column-gap:8px;row-gap:4px}
   body.authenticated .leave-date{font-size:var(--leave-date-font,14px)}
 }
 
