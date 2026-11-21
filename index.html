@@ -397,7 +397,7 @@ $('employeePickerTrigger').addEventListener('click',()=>{const menu=$('employeeP
 document.addEventListener('click',event=>{const picker=$('employeePicker');if(picker&&!picker.contains(event.target))closeEmployeePicker()});
 document.addEventListener('keydown',event=>{if(event.key==='Escape')closeEmployeePicker()});
 function switchStaff(name){if(!staffStore[name])return;save();activeStaff=name;resetMonths=new Set(Array.isArray(resetMonthsByStaff[name])?resetMonthsByStaff[name]:[]);renderStaffOptions();applySnapshot(staffStore[name]);$('review').textContent='Showing attendance profile: '+name}
-function applySnapshot(data){data=data||{};records=Array.isArray(data.records)?data.records:[];if(data.settings)Object.entries(data.settings).forEach(([k,v])=>{if($(k))$(k).value=v});if(!$('sender').value.trim())$('sender').value=activeStaff;records.forEach(r=>{correctNov15Out(r);delete r.payOverride;if(r.status==='Leave'&&parseInputTime(r.in)!=null&&parseInputTime(r.out)!=null){r.status='Present';r.notes=Array.isArray(r.notes)?r.notes:[];r.notes.push('Status corrected to Present because both IN and OUT punches exist');}});if(activeStaff==='Sanjai'&&!resetMonths.has('2026-11')){ensureNov4Attendance();ensureNov13Permission()}render()}
+function applySnapshot(data){data=data||{};records=Array.isArray(data.records)?data.records:[];if(data.settings)Object.entries(data.settings).forEach(([k,v])=>{if($(k))$(k).value=v});if(!$('sender').value.trim())$('sender').value=activeStaff;records.forEach(r=>{correctNov15Out(r);delete r.payOverride;const autoStatusNote='Status corrected to Present because both IN and OUT punches exist';if(r.status==='Present'&&Array.isArray(r.notes)&&r.notes.includes(autoStatusNote)){r.status='Leave';r.notes=r.notes.filter(note=>note!==autoStatusNote);window.attendanceLeaveRestoreNeeded=true;}});if(activeStaff==='Sanjai'&&!resetMonths.has('2026-11')){ensureNov4Attendance();ensureNov13Permission()}render()}
 
 function dateKey(y,m,d){return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`}
 function parseTime(s, requireMeridiem=false){
@@ -966,6 +966,10 @@ load();
         cloudReady = true;
         if (window.attendanceCloudMergeNeeded) {
           window.attendanceCloudMergeNeeded = false;
+          window.scheduleAttendanceCloudSave();
+        }
+        if (window.attendanceLeaveRestoreNeeded) {
+          window.attendanceLeaveRestoreNeeded = false;
           window.scheduleAttendanceCloudSave();
         }
         document.body.classList.add('authenticated');
