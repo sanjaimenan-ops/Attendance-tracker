@@ -507,7 +507,9 @@ function parseChat(raw,senderOverride){
   }
  }
  for(const [date,imported] of map){
-  if(imported._lunchOut!=null)imported.lunchOut=fmtTime(imported._lunchOut);\n   if(imported._lunchIn!=null)imported.lunchIn=fmtTime(imported._lunchIn);\n   if(imported._lunchOut!=null&&imported._lunchIn!=null)imported.lunch=hoursBetween(imported._lunchOut,imported._lunchIn);
+  if(imported._lunchOut!=null)imported.lunchOut=fmtTime(imported._lunchOut);
+   if(imported._lunchIn!=null)imported.lunchIn=fmtTime(imported._lunchIn);
+   if(imported._lunchOut!=null&&imported._lunchIn!=null)imported.lunch=hoursBetween(imported._lunchOut,imported._lunchIn);
   if(imported._permissionOut!=null&&imported._permissionIn!=null)imported.permission=hoursBetween(imported._permissionOut,imported._permissionIn);
   delete imported._lunchOut;delete imported._lunchIn;delete imported._permissionOut;delete imported._permissionIn;delete imported._hasPunchMessage;
   const existing=records.find(x=>x.date===date);
@@ -515,7 +517,9 @@ function parseChat(raw,senderOverride){
   // Re-import is non-destructive: existing manual values and status always win.
   if(!existing.in&&imported.in)existing.in=imported.in;
   if(!existing.out&&imported.out)existing.out=imported.out;
-  if(!existing.lunchOut&&imported.lunchOut)existing.lunchOut=imported.lunchOut;\n   if(!existing.lunchIn&&imported.lunchIn)existing.lunchIn=imported.lunchIn;\n   if(!(+existing.lunch>0)&&(+imported.lunch>0))existing.lunch=imported.lunch;
+  if(!existing.lunchOut&&imported.lunchOut)existing.lunchOut=imported.lunchOut;
+   if(!existing.lunchIn&&imported.lunchIn)existing.lunchIn=imported.lunchIn;
+   if(!(+existing.lunch>0)&&(+imported.lunch>0))existing.lunch=imported.lunch;
   if(!(+existing.permission>0)&&(+imported.permission>0))existing.permission=imported.permission;
   if(!existing.status)existing.status=imported.status||'Present';
   existing.notes=Array.isArray(existing.notes)?existing.notes:[];
