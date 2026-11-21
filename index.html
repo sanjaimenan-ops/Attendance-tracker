@@ -712,7 +712,7 @@ load();
     clearLoginCredentials();
     try {
       await auth.signOut();
-      showError('You were logged out automatically after 3 minutes of inactivity. Sign in again to continue.');
+      showError('You were logged out automatically after 1 minute in the background. Sign in again to continue.');
     } finally {
       logoutInProgress = false;
     }
@@ -794,6 +794,8 @@ load();
     if (document.visibilityState === 'visible') handleAppForegrounded();
   });
   window.addEventListener('pagehide', markAppBackgrounded);
+  // Android Home can blur an installed PWA without reliably firing pagehide.
+  window.addEventListener('blur', markAppBackgrounded);
 
   ['pointerdown', 'keydown', 'touchstart', 'scroll', 'click'].forEach(eventName => {
     document.addEventListener(eventName, resetIdleTimer, {passive: true});
