@@ -546,7 +546,7 @@ function render(){
   $('clockedHours').textContent=tot.clock.toFixed(2);$('regularHours').textContent=tot.reg.toFixed(2);$('overtimeHours').textContent=tot.ot.toFixed(2);$('hours').textContent=tot.net.toFixed(2);$('salary').textContent='₹'+tot.pay.toFixed(2);
  $('breakdown').textContent=`Clocked: ${tot.clock.toFixed(2)} h · Regular: ${tot.reg.toFixed(2)} h · Overtime: ${tot.ot.toFixed(2)} h · Extra lunch deduction: ${tot.extra.toFixed(2)} h · Permission deduction: ${tot.perm.toFixed(2)} h`;
  const audit=$('octoberAudit');
- if(month==='2026-10'){
+ if(month==='2026-10'&&activeStaff==='Sanjai'){
    const reference={clock:311.67,reg:275.30,ot:36.37,pay:22471.27,extra:0};
    const overLunch=monthRecords.filter(({r})=>calc(r).extra>0).map(({r})=>({date:r.date,lunch:(+r.lunch||0),extra:calc(r).extra}));
    const diffs=[['Clocked',tot.clock,reference.clock,'h'],['Regular',tot.reg,reference.reg,'h'],['Overtime',tot.ot,reference.ot,'h'],['Extra lunch',tot.extra,reference.extra,'h'],['Pay',tot.pay,reference.pay,'₹']].filter(([,actual,expected])=>Math.abs(actual-expected)>0.005);
