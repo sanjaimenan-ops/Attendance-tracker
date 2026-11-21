@@ -356,7 +356,7 @@ body.authenticated .leave-metric-heading strong{font-size:var(--leave-count-font
 </section>
 <main class="wrap">
 <header class="top"><div><div class="brand">Attendance & Salary</div><div class="muted">Private, browser-based tracker · Your uploaded chat stays on this device</div></div><div class="auth-actions noprint"><span class="tag">PRIVATE · LOCAL DATA</span><button class="secondary" id="logoutButton" type="button">Log out</button></div></header>
-<section class="panel noprint"><h3 style="margin:0 0 8px">1. Import WhatsApp attendance</h3><div class="drop"><div style="font-weight:700">Upload WhatsApp chat export (.txt)</div><div class="muted" style="margin:6px 0 12px">WhatsApp group → Export chat → choose the .txt file. Captions on photo messages are read; photo-only messages need review.</div><label class="filebtn" style="display:inline-block"><input id="file" type="file" accept=".txt,text/plain">Choose WhatsApp TXT</label><div id="fileName" class="muted" style="margin-top:8px"></div><div id="uploadState" class="upload-state" role="status" aria-live="polite"><span class="spinner"></span><span id="uploadStateText">Reading WhatsApp chat…</span></div></div><p class="note">The app matches the employee name keyword(s) below against WhatsApp sender names (case-insensitive; extra sender-name words are allowed). It recognises common IN/OUT, lunch, permission and leave wording, including photo captions such as “In purchase”, “Godown work in” and “Lunch in IOB”. Photo-only messages are never treated as punches. Always review extracted entries before relying on salary totals.</p></section>
+<section class="panel noprint"><h3 style="margin:0 0 8px">1. Import WhatsApp attendance</h3><div class="drop"><div style="font-weight:700">Upload WhatsApp chat export (.txt)</div><div class="muted" style="margin:6px 0 12px">WhatsApp group → Export chat → choose the .txt file. The import saves matching attendance from every month in that export, so you can switch months without importing again. Captions on photo messages are read; photo-only messages need review.</div><label class="filebtn" style="display:inline-block"><input id="file" type="file" accept=".txt,text/plain">Choose WhatsApp TXT</label><div id="fileName" class="muted" style="margin-top:8px"></div><div id="uploadState" class="upload-state" role="status" aria-live="polite"><span class="spinner"></span><span id="uploadStateText">Reading WhatsApp chat…</span></div></div><p class="note">The app matches the employee name keyword(s) below against WhatsApp sender names (case-insensitive; extra sender-name words are allowed). It recognises common IN/OUT, lunch, permission and leave wording, including photo captions such as “In purchase”, “Godown work in” and “Lunch in IOB”. Photo-only messages are never treated as punches. Always review extracted entries before relying on salary totals.</p></section>
 
 <section class="panel noprint"><h3 style="margin:0 0 12px">2. Calculation settings</h3><div class="settings"><div class="staff-controls"><label class="employee-picker-label">Employee profile
 <div class="employee-picker" id="employeePicker">
@@ -440,17 +440,17 @@ function parseChat(raw,senderOverride){
  const msgs=splitMessages(raw),keywords=nameKeywords(senderOverride||$('sender').value);
  const mine=keywords.length?msgs.filter(x=>{const senderWords=new Set(nameKeywords(x.sender));return keywords.every(word=>senderWords.has(word));}):[];
  if(!mine.length)return 0;
- const month=$('month').value,map=new Map();
+ const map=new Map();
  const blankRecord=(date,status='Present')=>({date,status,in:'',out:'',lunch:0,permission:0,notes:[],_lunchOut:null,_lunchIn:null,_permissionOut:null,_permissionIn:null});
  const getRecord=(date,status='Present')=>{
-  if(!date||!date.startsWith(month+'-'))return null;
+  if(!date)return null;
   if(!map.has(date))map.set(date,blankRecord(date,status));
   const row=map.get(date);
   if(status==='Leave'&&!row._hasPunchMessage)row.status='Leave';
   return row;
  };
  for(const m of mine){
-  if(!m.date||!m.date.startsWith(month+'-'))continue;
+  if(!m.date)continue;
   const r=getRecord(m.date);
   const rawText=String(m.text||'');
   const hasAttachment=/(?:IMG|VID)-\d{8}-WA\d+\.(?:jpg|jpeg|png|mp4|webp)\s*\(file attached\)/i.test(rawText)||/\bmedia omitted\b|\bimage omitted\b|\bsticker omitted\b/i.test(rawText);
@@ -520,7 +520,7 @@ function parseChat(raw,senderOverride){
  records.forEach(correctNov15Out);
  if(activeStaff==='Sanjai'&&month==='2026-11'){ensureNov4Attendance();ensureNov13Permission();}
  records.sort((a,b)=>a.date.localeCompare(b.date));save();render();
- $('review').textContent='Read '+msgs.length+' messages; matched '+mine.length+' messages from "'+(senderOverride||$('sender').value)+'"; extracted '+map.size+' dates for '+activeStaff+'. Existing manual values were preserved. Review media-only and ambiguous leave entries before salary totals.';
+ $('review').textContent='Read '+msgs.length+' messages; matched '+mine.length+' messages from "'+(senderOverride||$('sender').value)+'"; extracted '+map.size+' dates across all months for '+activeStaff+'. Existing manual values were preserved. You can switch months without importing again. Review media-only and ambiguous leave entries before salary totals.';
  return mine.length;
 }
 function fmtTime(min){let h=Math.floor(min/60)%24,ap=h>=12?'PM':'AM';h=h%12||12;return String(h).padStart(2,'0')+':'+String(min%60).padStart(2,'0')+' '+ap}
