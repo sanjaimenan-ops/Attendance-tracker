@@ -1,0 +1,28 @@
+name: Verify current main startup syntax
+on:
+  push:
+    branches: [debug/verify-current-main]
+  pull_request:
+    branches: [main]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Syntax-check every inline script
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          html = Path("index.html").read_text()
+          scripts = re.findall(r"<script(?:\\s[^>]*)?>([\\s\\S]*?)</script>", html, re.I)
+          for i, script in enumerate(scripts, 1):
+              Path(f"/tmp/inline-{i}.js").write_text(script)
+          print(f"Extracted {len(scripts)} inline scripts")
+          PY
+          for file in /tmp/inline-*.js; do node --check "$file"; done
+          node --check performance.js
+          node --check service-worker.js
