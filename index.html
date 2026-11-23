@@ -409,6 +409,33 @@ body.authenticated .settings-menu-save{width:100%!important;min-height:38px!impo
 }
 @media(max-width:360px){.settings-menu-grid{grid-template-columns:1fr}}
 </style>
+<style>
+/* Fix settings popover clipping and keep employee/month selectors on one row. */
+#calculationSettings.collapsible-panel{overflow:visible!important}
+#calculationSettings>.collapsible-content{overflow:visible!important}
+#calculationSettings .settings{overflow:visible!important}
+#calculationSettings .staff-controls{display:flex!important;align-items:end!important;gap:9px!important;flex-wrap:nowrap!important}
+#calculationSettings .staff-controls>.employee-picker-label,
+#calculationSettings .staff-controls>.month-picker-label{flex:1 1 0!important;min-width:0!important;width:auto!important}
+#calculationSettings .staff-controls .employee-picker,
+#calculationSettings .staff-controls>.month-picker-label input{width:100%!important;min-width:0!important}
+#calculationSettings .staff-actions-wrap{flex:0 0 38px!important;margin:0!important;align-self:end!important}
+#calculationSettings .staff-actions-menu{position:absolute!important;z-index:9999!important;right:0!important;top:calc(100% + 8px)!important;width:min(380px,calc(100vw - 36px))!important;max-height:min(70vh,560px)!important;overflow-y:auto!important}
+#calculationSettings .staff-actions-menu.hidden{display:none!important}
+#calculationSettings .settings-menu-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+#calculationSettings .settings-menu-grid label{min-width:0!important;width:100%!important}
+#calculationSettings .settings-menu-grid input{width:100%!important;min-width:0!important}
+@media(max-width:760px){
+ #calculationSettings .staff-controls{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 36px!important;gap:7px!important;align-items:end!important}
+ #calculationSettings .staff-controls>.employee-picker-label,
+ #calculationSettings .staff-controls>.month-picker-label{min-width:0!important}
+ #calculationSettings .staff-actions-wrap{grid-column:auto!important;justify-self:end!important;flex-basis:36px!important}
+ #calculationSettings .staff-more-trigger{width:34px!important;min-width:34px!important;height:40px!important;min-height:40px!important}
+ #calculationSettings .staff-actions-menu{right:0!important;width:min(360px,calc(100vw - 28px))!important;max-height:65vh!important}
+ #calculationSettings .settings-menu-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+}
+@media(max-width:360px){#calculationSettings .settings-menu-grid{grid-template-columns:1fr!important}}
+</style>
 </head>
 <body class="auth-checking">
 <div id="authLoading" role="status" aria-live="polite"><span class="auth-loading-ripple" aria-hidden="true"><i></i><i></i><i></i><b></b></span><span>Refreshing</span></div>
@@ -458,7 +485,7 @@ body.authenticated .settings-menu-save{width:100%!important;min-height:38px!impo
   </button>
   <div class="employee-picker-menu hidden" id="employeePickerMenu" role="listbox" aria-label="Choose employee"></div>
   <select id="staffSelect" aria-label="Employee profile" tabindex="-1" aria-hidden="true"></select>
-</div></label><div class="staff-actions-wrap">
+</div></label><label class="month-picker-label">Month<input id="month" type="month" value="2026-11"></label><div class="staff-actions-wrap">
 <button type="button" class="staff-more-trigger" id="staffMoreTrigger" aria-label="Calculation options" aria-haspopup="dialog" aria-expanded="false">⋮</button>
 <div class="staff-actions-menu hidden" id="staffActionsMenu" role="dialog" aria-label="Calculation and employee options">
   <div class="settings-menu-title">Calculation options</div>
@@ -478,7 +505,7 @@ body.authenticated .settings-menu-save{width:100%!important;min-height:38px!impo
   <button type="button" class="staff-action-item danger" id="staffMenuDelete" role="menuitem">Delete employee</button>
 </div>
 </div>
-<div class="staff-legacy-controls" aria-hidden="true"><input id="newStaffName" type="text" maxlength="60" tabindex="-1"><button type="button" id="addStaff" tabindex="-1">Add employee</button><button type="button" id="editStaff" tabindex="-1">Edit profile name</button><button type="button" id="deleteStaff" tabindex="-1">Delete employee</button></div></div><label class="month-picker-label">Month<input id="month" type="month" value="2026-11"></label></div></div></details>
+<div class="staff-legacy-controls" aria-hidden="true"><input id="newStaffName" type="text" maxlength="60" tabindex="-1"><button type="button" id="addStaff" tabindex="-1">Add employee</button><button type="button" id="editStaff" tabindex="-1">Edit profile name</button><button type="button" id="deleteStaff" tabindex="-1">Delete employee</button></div></div></div></details>
 <details class="panel collapsible-panel" id="monthlySummary"><summary class="collapsible-heading"><h3>Monthly summary</h3><span class="muted">Attendance totals &amp; salary</span></summary><div class="collapsible-content"><div class="top"><div class="controls noprint"><button class="secondary" id="reset">Reset month</button><button class="secondary" id="csv">Export CSV</button><button id="print">Print / Save PDF</button></div></div><div class="grid summary-grid" style="margin-top:14px"><div class="metric"><small>Present days</small><strong id="present">0</strong></div><div class="metric leave-metric"><div class="leave-metric-heading"><small>Leave days</small><strong id="leaves">4</strong></div><div id="leaveDates" class="leave-dates" aria-label="Leave dates"></div></div><div class="metric"><small>Total clocked hours</small><strong id="clockedHours">0.00</strong></div><div class="metric"><small>Regular hours</small><strong id="regularHours">0.00</strong></div><div class="metric"><small>Overtime hours</small><strong id="overtimeHours">0.00</strong></div><div class="metric"><small>Net paid hours</small><strong id="hours">0.00</strong></div><div class="metric lunch-deducted-metric"><small>Lunch deducted hours</small><strong id="lunchDeductedHours">0.00</strong></div><div class="metric"><small>Estimated salary</small><strong id="salary">₹0.00</strong></div></div>
 </div></details>
 
