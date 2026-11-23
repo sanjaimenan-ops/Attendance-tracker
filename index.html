@@ -1498,12 +1498,19 @@ load();
         let backgroundSince = 0;
         try { backgroundSince = Number(localStorage.getItem(BACKGROUND_ACTIVITY_KEY)); } catch (_) {}
         if (Number.isFinite(backgroundSince) && backgroundSince > 0) {
-          if (Date.now() - backgroundSince >= BACKGROUND_TIMEOUT_MS) {
+          if (AUTO_LOGOUT_ENABLED && Date.now() - backgroundSince >= BACKGROUND_TIMEOUT_MS) {
+            clearTimeout(loadingWatchdog);
             await expireIdleSession();
             return;
           }
-          if (document.visibilityState === 'hidden') scheduleBackgroundLogout(backgroundSince);
-          else { try { localStorage.removeItem(BACKGROUND_ACTIVITY_KEY); } catch (_) {} }
+          // Automatic logout is currently disabled during desktop/mobile testing.
+          // Discard any stale background marker left by an earlier app version;
+          // otherwise startup can return early and leave the login/loading state stuck.
+          if (!AUTO_LOGOUT_ENABLED || document.visibilityState !== 'hidden') {
+            try { localStorage.removeItem(BACKGROUND_ACTIVITY_KEY); } catch (_) {}
+          } else {
+            scheduleBackgroundLogout(backgroundSince);
+          }
         }
         if (window.attendanceCloudMergeNeeded) {
           window.attendanceCloudMergeNeeded = false;
