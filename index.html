@@ -838,6 +838,12 @@ document.addEventListener('click',event=>{const picker=$('employeePicker');if(pi
 document.addEventListener('keydown',event=>{if(event.key==='Escape')closeEmployeePicker()});
 function switchStaff(name){if(!staffStore[name])return;save();activeStaff=name;resetMonths=new Set(Array.isArray(resetMonthsByStaff[name])?resetMonthsByStaff[name]:[]);renderStaffOptions();applySnapshot(staffStore[name]);$('review').textContent='Showing attendance profile: '+name}
 function applySnapshot(data){data=data||{};records=Array.isArray(data.records)?data.records:[];if(data.settings)Object.entries(data.settings).forEach(([k,v])=>{if($(k))$(k).value=v});if(!$('sender').value.trim())$('sender').value=activeStaff;records.forEach(r=>{delete r.payOverride;r.notes=Array.isArray(r.notes)?r.notes:[];});render()}
+// Expose the staff helpers for the Firebase cloud-restore layer.
+window.attendanceTrackerBridge = window.attendanceTrackerBridge || {};
+window.attendanceTrackerBridge.renderStaffOptions = renderStaffOptions;
+window.attendanceTrackerBridge.applySnapshot = applySnapshot;
+window.attendanceTrackerBridge.defaultStaffData = defaultStaffData;
+
 
 function dateKey(y,m,d){return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`}
 function parseTime(s, requireMeridiem=false){
