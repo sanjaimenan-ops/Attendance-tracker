@@ -1008,7 +1008,14 @@ function parseChat(raw,senderOverride){
   // Update only the punch type actually present in this import. A missing event in a partial export is not a deletion.
   if(imported._hasInMessage)existing.in=imported.in||'';
   if(imported._hasOutMessage)existing.out=imported.out||'';
-  if(imported._hasLunchMessage){existing.lunchOut=imported.lunchOut||'';existing.lunchIn=imported.lunchIn||'';existing.lunch=imported._lunchOut!=null&&imported._lunchIn!=null?imported.lunch:0;}
+  if(imported._hasLunchMessage){
+   // Preserve the other lunch endpoint and existing duration when an import contains only one side.
+   if(imported._lunchOut!=null)existing.lunchOut=imported.lunchOut;
+   if(imported._lunchIn!=null)existing.lunchIn=imported.lunchIn;
+   const savedLunchOut=parseInputTime(existing.lunchOut),savedLunchIn=parseInputTime(existing.lunchIn);
+   if(savedLunchOut!=null&&savedLunchIn!=null)existing.lunch=hoursBetween(savedLunchOut,savedLunchIn);
+   else existing.notes.push('Lunch message was only partially imported; existing lunch duration was preserved for review.');
+  }
   if(imported._hasPermissionMessage){
    if(imported._permissionOut!=null&&imported._permissionIn!=null)existing.permission=imported.permission;
    else if(imported.permission>0)existing.permission=imported.permission;
