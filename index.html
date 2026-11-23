@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#172554">
+<meta name="theme-color" content="#EAF4FF">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -414,6 +414,99 @@ body.authenticated .leave-metric-heading strong{font-size:var(--leave-count-font
     padding: 8px 4px !important;
   }
 }
+
+/* Approved UI-only theme: ice blue background + mostly-white surfaces */
+:root{
+  color-scheme:light;
+  --ui-ice:#EAF4FF;
+  --ui-ice-deep:#DCEEFF;
+  --ui-white:#FFFFFF;
+  --ui-navy:#173B65;
+  --ui-muted:#71849B;
+  --ui-border:#D8E7F7;
+}
+html,body{background:var(--ui-ice);color:var(--ui-navy)}
+body.authenticated{background:linear-gradient(145deg,#EAF4FF 0%,#F7FBFF 52%,#E4F0FC 100%)}
+body.authenticated .wrap{background:transparent}
+body.authenticated .top{
+  background:linear-gradient(120deg,#FFFFFF 0%,#EAF4FF 100%);
+  color:var(--ui-navy);border:1px solid var(--ui-border);
+  box-shadow:0 8px 24px #173B6510;border-radius:20px
+}
+body.authenticated .top .brand{color:var(--ui-navy)}
+body.authenticated .top .muted{color:var(--ui-muted)}
+body.authenticated .top .tag{background:#EAF4FF;color:var(--ui-navy);border:1px solid var(--ui-border)}
+body.authenticated .panel{
+  background:#FFFFFF;border:1px solid var(--ui-border);
+  box-shadow:0 7px 22px #173B650D;border-radius:18px
+}
+body.authenticated .panel:hover{background:#FFFFFF;border-color:#C8DDF2;box-shadow:0 12px 26px #173B6512}
+body.authenticated .panel h3{color:var(--ui-navy)}
+body.authenticated .metric{
+  background:linear-gradient(145deg,#FFFFFF 0%,#F1F7FF 100%);
+  border:1px solid var(--ui-border);box-shadow:none
+}
+body.authenticated .metric:hover{background:linear-gradient(145deg,#FFFFFF 0%,#EAF4FF 100%);box-shadow:0 7px 18px #173B6510}
+body.authenticated .metric small{color:var(--ui-muted)}
+body.authenticated .metric strong{color:var(--ui-navy)}
+body.authenticated button,body.authenticated .filebtn{
+  background:linear-gradient(135deg,#DCEEFF 0%,#FFFFFF 100%);
+  color:var(--ui-navy);border:1px solid #C9DFF4;
+  box-shadow:0 2px 0 #C8DDF2
+}
+body.authenticated button:hover,body.authenticated .filebtn:hover{
+  background:linear-gradient(135deg,#CFE6FF 0%,#F8FBFF 100%);
+  box-shadow:0 4px 0 #C8DDF2,0 7px 14px #173B6510
+}
+body.authenticated button:active,body.authenticated .filebtn:active{box-shadow:0 1px 0 #C8DDF2}
+body.authenticated button.secondary{
+  background:#F4F8FD;color:var(--ui-navy);border-color:var(--ui-border);box-shadow:none
+}
+body.authenticated button.secondary:hover{background:#EAF4FF}
+body.authenticated button.danger{background:#FFF5F4;color:#A12C23;border-color:#F1D5D1;box-shadow:none}
+body.authenticated input,body.authenticated select{
+  background:#FFFFFF;color:var(--ui-navy);border:1px solid #D3E1EF
+}
+body.authenticated input:focus,body.authenticated select:focus{
+  outline:0;border-color:#9FC6ED;box-shadow:0 0 0 3px #DCEEFF;background:#FFFFFF
+}
+body.authenticated .drop{
+  background:linear-gradient(135deg,#FFFFFF 0%,#F0F7FF 100%);
+  border:1.5px dashed #AFCDEB
+}
+body.authenticated .drop.uploading{background:#EAF4FF;border-color:#7EAFE0}
+body.authenticated .tablewrap{background:#FFFFFF;border:1px solid var(--ui-border)}
+body.authenticated th{background:#EAF4FF;color:var(--ui-navy);border-bottom:1px solid var(--ui-border)}
+body.authenticated td{color:#294967;border-bottom:1px solid #EDF3FA}
+body.authenticated tbody tr:nth-child(even){background:#F8FBFF}
+body.authenticated tbody tr:nth-child(odd){background:#FFFFFF}
+body.authenticated tbody tr:hover{background:#EFF6FF}
+body.authenticated .note,body.authenticated .muted{color:var(--ui-muted)}
+body.authenticated .foot{color:var(--ui-muted)}
+/* Keep semantic attendance status colours for clear present/leave/review cues. */
+#loginScreen{background:linear-gradient(145deg,#EAF4FF 0%,#FFFFFF 100%)}
+.login-art{background:linear-gradient(145deg,#EAF4FF 0%,#FFFFFF 100%)}
+.login-card{
+  background:linear-gradient(145deg,#FFFFFF 0%,#EAF4FF 100%);
+  border:1px solid var(--ui-border);color:var(--ui-navy);
+  box-shadow:0 16px 42px #173B6512
+}
+.login-card h1{color:var(--ui-navy)}
+.login-card p,.login-card label{color:#526B85}
+.login-card input{background:#FFFFFF;color:var(--ui-navy);border:1px solid var(--ui-border)}
+.login-card input:focus{outline:2px solid #AFCDEB}
+.login-card button#loginButton{
+  background:linear-gradient(135deg,#DCEEFF 0%,#FFFFFF 100%);
+  color:var(--ui-navy);border:1px solid #C9DFF4;box-shadow:0 4px 0 #C8DDF2
+}
+#authLoading{background:linear-gradient(145deg,#EAF4FF 0%,#FFFFFF 100%);color:var(--ui-navy)}
+#authLoading .auth-loading-ripple i{border-color:#AFCDEB}
+#authLoading .auth-loading-ripple b{background:#7EAFE0;box-shadow:0 0 18px #7EAFE055}
+@media(max-width:760px){
+  body.authenticated .top{background:linear-gradient(145deg,#FFFFFF 0%,#EAF4FF 100%)}
+  body.authenticated .panel{background:#FFFFFF}
+}
+
 </style>
 <style>
 .collapsible-panel{padding:0;overflow:hidden}
