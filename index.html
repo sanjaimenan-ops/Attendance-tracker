@@ -348,6 +348,42 @@ body.authenticated .leave-metric-heading strong{font-size:var(--leave-count-font
 .collapsible-panel>.collapsible-content{padding:0 16px 16px}
 @media(max-width:760px){.collapsible-panel>.collapsible-heading{padding:14px}.collapsible-panel>.collapsible-content{padding:0 13px 13px}}
 </style>
+<style>
+/* Compact button sizing across authenticated tracker cards and controls. */
+body.authenticated .panel button,
+body.authenticated .panel .filebtn,
+body.authenticated .wrap>header button,
+body.authenticated .staff-actions-menu button{
+  min-height:28px!important;
+  height:auto!important;
+  padding:5px 8px!important;
+  font-size:11px!important;
+  line-height:1.2!important;
+  border-radius:7px!important;
+  box-shadow:0 1px 0 rgba(15,23,42,.12)!important;
+}
+body.authenticated .panel .controls{gap:6px!important}
+body.authenticated .panel .controls button{flex:0 1 auto;min-width:0}
+body.authenticated .staff-more-trigger{
+  width:30px!important;min-width:30px!important;
+  height:30px!important;min-height:30px!important;
+  padding:0!important;font-size:18px!important;
+  border-radius:8px!important;
+}
+body.authenticated .staff-actions-menu .staff-action-item{
+  min-height:28px!important;padding:6px 8px!important;
+  font-size:11px!important;text-align:left;
+}
+body.authenticated .panel button svg,
+body.authenticated .wrap>header button svg{width:14px;height:14px}
+@media(max-width:760px){
+  body.authenticated .panel button,
+  body.authenticated .panel .filebtn{
+    min-height:26px!important;padding:4px 7px!important;font-size:10px!important
+  }
+  body.authenticated .panel .controls{gap:5px!important}
+}
+</style>
 </head>
 <body class="auth-checking">
 <div id="authLoading" role="status" aria-live="polite"><span class="auth-loading-ripple" aria-hidden="true"><i></i><i></i><i></i><b></b></span><span>Refreshing</span></div>
