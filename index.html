@@ -829,7 +829,7 @@ const key='privateAttendanceNov2026_v1';
 let resetMonths=new Set();let resetMonthsByStaff={};
 function defaultStaffData(name){return {records:[],settings:{sender:name,month:'2026-11',shift:'10',lunch:'1',rate:'0',otrate:'0',leavepay:'0'}}}
 function snapshot(){return {records:JSON.parse(JSON.stringify(records)),settings:getSettings()}}
-function save(){try{for(const month of [...resetMonths]){const allowed=activeStaff==='Sanjai'&&month==='2026-11'?new Set([5,7,8,9]):new Set();if(records.some(r=>String(r.date||'').startsWith(month+'-')&&(!allowed.has(Number(String(r.date).slice(8,10)))||r.status!=='Leave')))resetMonths.delete(month);}resetMonthsByStaff[activeStaff]=[...resetMonths];staffStore[activeStaff]=snapshot();localStorage.setItem(key,JSON.stringify({staffStore,activeStaff,resetMonths:[...(resetMonthsByStaff.Sanjai||[])],resetMonthsByStaff,incentivePool}));if(window.scheduleAttendanceCloudSave)window.scheduleAttendanceCloudSave()}catch(e){}}
+function save(){try{resetMonthsByStaff[activeStaff]=[...resetMonths];staffStore[activeStaff]=snapshot();localStorage.setItem(key,JSON.stringify({staffStore,activeStaff,resetMonths:[...(resetMonthsByStaff.Sanjai||[])],resetMonthsByStaff,incentivePool}));if(window.scheduleAttendanceCloudSave)window.scheduleAttendanceCloudSave()}catch(e){}}
 function renderStaffOptions(){const select=$('staffSelect');if(!select)return;select.innerHTML='';Object.keys(staffStore).sort((a,b)=>a.localeCompare(b)).forEach(name=>{const option=document.createElement('option');option.value=name;option.textContent=name;select.appendChild(option)});select.value=activeStaff;renderEmployeePicker()}
 function renderEmployeePicker(){const select=$('staffSelect'),menu=$('employeePickerMenu'),value=$('employeePickerValue');if(!select||!menu||!value)return;value.textContent=select.value||activeStaff;menu.innerHTML='';[...select.options].forEach(option=>{const item=document.createElement('button');item.type='button';item.className='employee-picker-option';item.setAttribute('role','option');item.setAttribute('aria-selected',String(option.value===select.value));item.innerHTML='<span></span><span class="employee-picker-check" aria-hidden="true">'+(option.value===select.value?'✓':'')+'</span>';item.firstElementChild.textContent=option.textContent;item.addEventListener('click',()=>{select.value=option.value;select.dispatchEvent(new Event('change',{bubbles:true}));closeEmployeePicker()});menu.appendChild(item)})}
 function closeEmployeePicker(){const menu=$('employeePickerMenu'),trigger=$('employeePickerTrigger');if(menu)menu.classList.add('hidden');if(trigger)trigger.setAttribute('aria-expanded','false')}
@@ -937,7 +937,7 @@ function parseChat(raw,senderOverride){
   if(/\bpermission\s*in\b/i.test(eventText)){r._hasPermissionMessage=true;r._permissionIn=parseEventTime(eventText,m.time,'permission\\s*in');}
   if(!/\bpermission\s*(?:out|in)\b/i.test(m.text)){
    const pm=eventText.match(/permission[^\d]*(\d+(?:\.\d+)?)\s*(h|hr|hrs|hour|hours|min|mins|minute|minutes)?/i);
-   if(pm){const n=+pm[1];r.permission+=/min/i.test(pm[2]||'')?n/60:n;}
+   if(pm){const n=+pm[1];r.permission+=/min/i.test(pm[2]||'')?n/60:n;r._hasPermissionMessage=true;}
   }
  }
  for(const [date,imported] of map){
@@ -960,7 +960,7 @@ function parseChat(raw,senderOverride){
  // Verified Sanjai corrections remain limited to dates with independently confirmed punch evidence.
 
  records.sort((a,b)=>a.date.localeCompare(b.date));save();render();
- $('review').textContent='Read '+msgs.length+' messages; matched '+mine.length+' messages from "'+(senderOverride||$('sender').value)+'"; extracted '+map.size+' dates across all months for '+activeStaff+'. Existing manual values were preserved. You can switch months without importing again. Review media-only and ambiguous leave entries before salary totals.';
+ $('review').textContent='Read '+msgs.length+' messages; matched '+mine.length+' messages from "'+(senderOverride||$('sender').value)+'"; extracted '+map.size+' dates across all months for '+activeStaff+'. Matching punch, lunch, permission and explicit status values were refreshed from this import. Review ambiguous messages before salary totals. Review media-only and ambiguous leave entries before salary totals.';
  return mine.length;
 }
 function fmtTime(min){let h=Math.floor(min/60)%24,ap=h>=12?'PM':'AM';h=h%12||12;return String(h).padStart(2,'0')+':'+String(min%60).padStart(2,'0')+' '+ap}
