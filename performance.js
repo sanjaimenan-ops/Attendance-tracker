@@ -14,7 +14,23 @@
     #performancePanel .performance-rank{display:inline-grid;place-items:center;min-width:28px;height:28px;padding:0 7px;border-radius:9px;background:#172554;color:#fff;font-weight:750}
     #performancePanel .performance-payout{font-weight:750;color:#145c3b}
     #performancePanel .performance-total-row{font-weight:750;background:#fff1d3!important}
-    @media(max-width:760px){#performancePanel .controls{width:100%}#performancePanel .controls label{flex:1 1 150px}}
+    @media(max-width:760px){
+      #performancePanel .controls{width:100%}
+      #performancePanel .controls label{flex:1 1 150px}
+      #performancePanel .tablewrap{width:100%;max-width:100%;overflow:visible}
+      #performancePanel .performance-table{display:block;width:100%;min-width:0;table-layout:fixed}
+      #performancePanel .performance-table thead{display:none}
+      #performancePanel .performance-table tbody{display:block;width:100%;min-width:0}
+      #performancePanel .performance-table tbody tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 14px;width:100%;min-width:0;box-sizing:border-box;padding:14px;margin:0 0 12px;border:1px solid #eadfcf;border-radius:14px;background:#fff;box-shadow:0 1px 4px #1018280a}
+      #performancePanel .performance-table tbody td{display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:5px;min-width:0;width:100%;box-sizing:border-box;padding:2px 0;border:0;white-space:normal;overflow-wrap:anywhere;font-size:14px}
+      #performancePanel .performance-table tbody td:before{content:attr(data-label);font-size:11px;line-height:1.3;color:#667085;font-weight:650}
+      #performancePanel .performance-table tbody td:nth-child(1),#performancePanel .performance-table tbody td:nth-child(2),#performancePanel .performance-table tbody td:last-child{grid-column:1/-1}
+      #performancePanel .performance-table .performance-rank{display:inline-flex;align-items:center;justify-content:center;align-self:flex-start;width:auto;min-width:38px;height:30px;padding:0 10px;border-radius:8px;background:#172554;color:#fff;font-size:14px;line-height:1;font-weight:750}
+      #performancePanel .performance-table .performance-bar{width:100%;min-width:0}
+      #performancePanel .performance-table .performance-payout{font-size:17px}
+      #performancePanel .performance-table .performance-total-row{background:#fff7e6!important}
+      #performancePanel .performance-table .empty{display:block!important;grid-column:1/-1}
+    }
   `;
   document.head.appendChild(style);
 
