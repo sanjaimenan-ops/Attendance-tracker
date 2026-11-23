@@ -1035,6 +1035,22 @@ body.authenticated .panel:has(> .tablewrap) .tablewrap > table:not(.performance-
  border-color:#222!important;
 }
 
+
+/* Keep section headings inside white cards clean; reserve the dark top-bar style for the app header */
+body.authenticated .panel > .top{
+ background:transparent!important;
+ color:#000!important;
+ border:0!important;
+ box-shadow:none!important;
+ outline:0!important;
+ padding:0!important;
+}
+body.authenticated .panel > .top h3,
+body.authenticated .panel > .top .brand,
+body.authenticated .panel > .top .muted{
+ color:#000!important;
+}
+
 </style>
 
 </head>
