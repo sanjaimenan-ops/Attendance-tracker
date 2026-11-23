@@ -931,6 +931,89 @@ body.authenticated .filebtn.imported{background:#16a34a!important;color:#fff!imp
 @media(prefers-reduced-motion:reduce){
  body.authenticated .panel,body.authenticated .metric,body.authenticated button,body.authenticated .filebtn{transition:none!important}
 }
+
+/* Final monochrome typography and AM/PM control override */
+body.authenticated :is(.wrap,.top,.panel,.metric,.tablewrap,th,td,label,summary,p,small,strong,b,span,div,h1,h2,h3,h4,h5,h6,.muted,.note,.foot,.status,.tag,.brand,.empty),
+#loginScreen :is(h1,h2,h3,p,label,span,small,strong,b,div){
+ color:#000!important;
+ font-weight:700!important;
+}
+body.authenticated .top,
+body.authenticated .panel,
+body.authenticated .metric,
+body.authenticated .tablewrap,
+.login-card{
+ background:#fff!important;
+ color:#000!important;
+}
+body.authenticated .top .brand,
+body.authenticated .top .muted,
+body.authenticated .top .tag,
+body.authenticated .panel h3,
+body.authenticated .metric small,
+body.authenticated .metric strong,
+body.authenticated .note,
+body.authenticated .muted,
+body.authenticated .foot,
+body.authenticated td,
+body.authenticated th,
+body.authenticated .status,
+.login-card h1,
+.login-card p,
+.login-card label{
+ color:#000!important;
+ font-weight:700!important;
+}
+body.authenticated th{
+ background:#f0f0f0!important;
+ border-color:#ddd!important;
+}
+body.authenticated .period-button,
+body.authenticated button.period-button,
+body.authenticated [data-period-toggle]{
+ background:#000!important;
+ color:#fff!important;
+ border:1px solid #000!important;
+ font-weight:800!important;
+}
+body.authenticated button,
+body.authenticated .filebtn,
+.login-card button#loginButton{
+ background:#000!important;
+ color:#fff!important;
+ border-color:#000!important;
+ font-weight:800!important;
+}
+body.authenticated button.secondary{
+ background:#fff!important;
+ color:#000!important;
+ border:1px solid #000!important;
+}
+body.authenticated button.danger{
+ background:#fff!important;
+ color:#000!important;
+ border:1px solid #000!important;
+}
+body.authenticated input,
+body.authenticated select,
+body.authenticated textarea,
+.login-card input{
+ color:#000!important;
+ font-weight:700!important;
+}
+body.authenticated input::placeholder,
+.login-card input::placeholder{
+ color:#333!important;
+ opacity:1!important;
+ font-weight:700!important;
+}
+body.authenticated .status.present,
+body.authenticated .status.leave,
+body.authenticated .status.review{
+ color:#000!important;
+ font-weight:800!important;
+}
+
 </style>
 
 </head>
