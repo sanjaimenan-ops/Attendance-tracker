@@ -870,6 +870,69 @@ body.authenticated tbody tr:hover{background:#EFF6FF!important}
 @media(max-width:760px){body.authenticated .top{background:linear-gradient(145deg,#FFFFFF 0%,#EAF4FF 100%)!important}body.authenticated .panel{background:#FFFFFF!important}}
 </style>
 
+
+<style id="approved-black-white-theme">
+:root{color-scheme:light}
+html,body{background:#f5f5f5!important;color:#222!important}
+body.authenticated{background:#f5f5f5!important}
+body.authenticated .wrap{background:transparent!important}
+body.authenticated .top{background:#111!important;color:#fff!important;border:1px solid #111!important;box-shadow:0 8px 22px #00000012!important}
+body.authenticated .top .brand{color:#fff!important}
+body.authenticated .top .muted{color:#e5e5e5!important}
+body.authenticated .top .tag{background:#fff!important;color:#111!important;border:1px solid #e5e5e5!important}
+body.authenticated .panel{background:#fff!important;color:#222!important;border:1px solid #e5e5e5!important;box-shadow:0 3px 14px #0000000a!important}
+body.authenticated .panel:hover{background:#fff!important;border-color:#d4d4d4!important;box-shadow:0 6px 18px #00000010!important}
+body.authenticated .panel h3,body.authenticated .brand{color:#111!important}
+body.authenticated .metric{background:#f5f5f5!important;border:1px solid #e5e5e5!important}
+body.authenticated .metric:hover{background:#f0f0f0!important;box-shadow:0 4px 12px #0000000c!important}
+body.authenticated .metric small{color:#555!important}
+body.authenticated .metric strong{color:#111!important}
+body.authenticated button,body.authenticated .filebtn{background:#111!important;color:#fff!important;border:1px solid #111!important;box-shadow:0 2px 0 #000!important}
+body.authenticated button:hover,body.authenticated .filebtn:hover{background:#333!important;color:#fff!important;box-shadow:0 3px 0 #000,0 5px 12px #00000018!important}
+body.authenticated button:active,body.authenticated .filebtn:active{background:#000!important}
+body.authenticated button.secondary{background:#f1f1f1!important;color:#222!important;border:1px solid #dedede!important;box-shadow:none!important}
+body.authenticated button.secondary:hover{background:#e7e7e7!important}
+body.authenticated button.danger{background:#fff0ee!important;color:#a12c23!important;border-color:#f1c8c1!important;box-shadow:none!important}
+body.authenticated input,body.authenticated select{background:#fff!important;color:#222!important;border:1px solid #d4d4d4!important}
+body.authenticated input:focus,body.authenticated select:focus{background:#fff!important;border-color:#555!important;box-shadow:0 0 0 3px #11111116!important;outline:0!important}
+body.authenticated .drop{background:#fafafa!important;border:2px dashed #aaa!important;color:#222!important}
+body.authenticated .drop.uploading{background:#f0f0f0!important;border-color:#555!important}
+body.authenticated .tablewrap{background:#fff!important;border:1px solid #e5e5e5!important}
+body.authenticated th{background:#111!important;color:#fff!important;border-color:#111!important}
+body.authenticated td{color:#222!important;border-bottom-color:#eaeaea!important}
+body.authenticated tbody tr:nth-child(even),body.authenticated tbody tr:nth-child(odd){background:#fff!important}
+body.authenticated tbody tr:hover{background:#f5f5f5!important}
+body.authenticated tbody tr{border-color:#e5e5e5!important}
+body.authenticated .status{background:#f0f0f0!important;color:#444!important}
+body.authenticated .status.present{background:#d8f3e4!important;color:#12613b!important}
+body.authenticated .status.leave{background:#ffedc8!important;color:#754b0b!important}
+body.authenticated .status.review{background:#ffe2dd!important;color:#9f2d23!important}
+body.authenticated .note,body.authenticated .muted,body.authenticated .foot{color:#666!important}
+body.authenticated .filebtn.imported{background:#16a34a!important;color:#fff!important;border-color:#15803d!important}
+#loginScreen{background:#f5f5f5!important}
+.login-art{background:#f5f5f5!important}
+.login-card{background:#fff!important;color:#222!important;border:1px solid #e5e5e5!important;border-radius:24px!important;box-shadow:0 12px 36px #00000010!important}
+.login-card h1{color:#111!important}
+.login-card p,.login-card label{color:#555!important}
+.login-card input{background:#fafafa!important;color:#222!important;border:1px solid #ddd!important}
+.login-card input:focus{outline:2px solid #555!important}
+.login-card button#loginButton{background:#111!important;color:#fff!important;box-shadow:0 3px 0 #000!important}
+#authLoading{background:#fff!important;color:#111!important}
+#authLoading .auth-loading-ripple i{border-color:#111!important}
+#authLoading .auth-loading-ripple b{background:#111!important;box-shadow:0 0 18px #11111122!important}
+.upload-state{color:#333!important}
+.spinner{border-color:#e5e5e5!important;border-top-color:#111!important}
+.drop.uploading{border-color:#555!important;background:#f5f5f5!important}
+@media(max-width:760px){
+ body.authenticated .top{background:#111!important}
+ body.authenticated .panel{background:#fff!important}
+ body.authenticated tbody tr{background:#fff!important;border-color:#e5e5e5!important}
+}
+@media(prefers-reduced-motion:reduce){
+ body.authenticated .panel,body.authenticated .metric,body.authenticated button,body.authenticated .filebtn{transition:none!important}
+}
+</style>
+
 </head>
 <body class="auth-checking">
 <div id="authLoading" role="status" aria-live="polite"><span class="auth-loading-ripple" aria-hidden="true"><i></i><i></i><i></i><b></b></span><span>Refreshing</span></div>
