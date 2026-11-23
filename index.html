@@ -1110,6 +1110,8 @@ $('csv').onclick=()=>{
  notify('Exported '+monthRows.length+' attendance records with monthly totals.');
 };
 load();
+// Expose the attendance UI helpers needed by the separate Firebase module.
+window.attendanceTrackerBridge = { renderStaffOptions, applySnapshot, defaultStaffData };
 </script>
 <script src="./performance.js?v=sharedcalc1"></script>
 <!-- Firebase Authentication and private Firestore sync -->
@@ -1221,7 +1223,7 @@ load();
       const localSource = localStore[name] || null;
       const source = cloudSource
         ? {...cloudSource, settings:{...(localSource?.settings||{}),...(cloudSource.settings||{})}}
-        : (localSource ? {...localSource} : defaultStaffData(name));
+        : (localSource ? {...localSource} : window.attendanceTrackerBridge.defaultStaffData(name));
       const blockedMonths = new Set(Array.isArray(resetMonthsByStaff[name]) ? resetMonthsByStaff[name] : []);
       if (localSource && !cloudSource) mergedFromLocal = true;
       if (localSource && Array.isArray(localSource.records)) {
@@ -1252,8 +1254,8 @@ load();
     }
     activeStaff = staffStore[data.activeStaff] ? data.activeStaff : (staffStore[local.activeStaff] ? local.activeStaff : 'Sanjai');
     resetMonths = new Set(Array.isArray(resetMonthsByStaff[activeStaff]) ? resetMonthsByStaff[activeStaff] : []);
-    renderStaffOptions();
-    applySnapshot(staffStore[activeStaff]);
+    window.attendanceTrackerBridge.renderStaffOptions();
+    window.attendanceTrackerBridge.applySnapshot(staffStore[activeStaff]);
     localStorage.setItem('privateAttendanceNov2026_v1', JSON.stringify({staffStore, activeStaff, resetMonths:[...(resetMonthsByStaff.Sanjai||[])], resetMonthsByStaff}));
     window.attendanceCloudMergeNeeded = mergedFromLocal || Object.values(resetMonthsByStaff).some(months=>Array.isArray(months)&&months.length>0);
     return true;
@@ -1389,12 +1391,12 @@ load();
           staffStore = local.staffStore && typeof local.staffStore === 'object'
             ? {...local.staffStore}
             : {Sanjai:{records:local.records||[],settings:local.settings||{sender:'Sanjai',month:'2026-11',shift:'10',lunch:'1',rate:'70',otrate:'88',leavepay:'0'}}};
-          if (!staffStore.Sanjai) staffStore.Sanjai = defaultStaffData('Sanjai');
+          if (!staffStore.Sanjai) staffStore.Sanjai = window.attendanceTrackerBridge.defaultStaffData('Sanjai');
           resetMonthsByStaff = local.resetMonthsByStaff && typeof local.resetMonthsByStaff === 'object' ? {...local.resetMonthsByStaff} : {Sanjai:Array.isArray(local.resetMonths)?local.resetMonths:[]};
           activeStaff = staffStore[local.activeStaff] ? local.activeStaff : 'Sanjai';
           resetMonths = new Set(Array.isArray(resetMonthsByStaff[activeStaff]) ? resetMonthsByStaff[activeStaff] : []);
-          renderStaffOptions();
-          applySnapshot(staffStore[activeStaff]);
+          window.attendanceTrackerBridge.renderStaffOptions();
+          window.attendanceTrackerBridge.applySnapshot(staffStore[activeStaff]);
           loadingStage = 'saving initial attendance data to Firestore';
           await withTimeout(cloudDoc.set({
             staffStore: staffStore,
