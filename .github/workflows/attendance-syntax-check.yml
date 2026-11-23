@@ -1,0 +1,27 @@
+name: Attendance startup syntax check
+on:
+  push:
+    branches: [debug/attendance-startup-syntax]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Extract and syntax-check first inline app script
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          html = Path("index.html").read_text()
+          scripts = re.findall(r"<script(?:\\s[^>]*)?>([\\s\\S]*?)</script>", html, re.I)
+          if not scripts:
+              raise SystemExit("No inline scripts found")
+          Path("/tmp/app.js").write_text(scripts[0])
+          print("Extracted first inline script:", len(scripts[0]), "characters")
+          PY
+          node --check /tmp/app.js
+      - name: Syntax-check performance script
+        run: node --check performance.js
