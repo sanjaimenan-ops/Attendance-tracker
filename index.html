@@ -980,7 +980,6 @@ function parseChat(raw,senderOverride){
     const amount=/^(half|a|an)$/i.test(rawAmount)?0.5:/^one$/i.test(rawAmount)?1:Number(rawAmount);
     const duration=/min/i.test(unit)?amount/60:amount;
     if(Number.isFinite(duration)&&duration>0){r.permission+=duration;r._hasPermissionMessage=true;}
-   }
   }
   }
  }
