@@ -859,7 +859,9 @@ function parseEventTime(text,messageTime,eventLabels){
   if(explicit!==null&&/\b(?:AM|PM)\b/i.test(raw))return explicit;
   const parts=raw.match(/^(\d{1,2})[:.](\d{2})$/);
   if(parts&&+parts[1]>12)return parseTime(raw,false);
-  if(parts&&stamp!==null){const ap=stamp>=720?'PM':'AM',inferred=parseTime(raw+' '+ap,true);if(inferred!==null)return inferred;}
+  // A 1–12 hour value without AM/PM is ambiguous. Do not silently
+  // convert it using the WhatsApp message timestamp; leave it for review.
+  if(parts&&+parts[1]>=1&&+parts[1]<=12)return null;
  }
  return stamp;
 }
@@ -952,12 +954,12 @@ function parseChat(raw,senderOverride){
   }
   const inMatch=/^\s*(?:in|check\s*in|punch\s*in|entry|duty\s*in)\b/i.test(eventText)||/^(?:(?:purchase|godown|work|customer|site|residency|belviza|delivery|mill|shop|store|aalin?wood|marinos)(?:\s+[\p{L}\p{N}().'-]+){0,5})\s+(?:in|entry)\s*$/iu.test(eventText);
   const outMatch=/^\s*(?:out|check\s*out|punch\s*out|exit|duty\s*out)\b/i.test(eventText);
-  if(inMatch){r._hasPunchMessage=true;r._hasInMessage=true;const value=parsePunchText(eventText,m.time);if(value)r.in=value;else r.notes.push('IN needs review: '+eventText);if(timeNeedsReview(eventText,'duty\\s*(?:in|out)|punch\\s*(?:in|out)|check\\s*(?:in|out)|in|out|entry|exit'))r.notes.push('IN time AM/PM inferred from WhatsApp timestamp; verify: '+eventText);}
-  if(outMatch){r._hasPunchMessage=true;r._hasOutMessage=true;const value=parsePunchText(eventText,m.time);if(value)r.out=value;else r.notes.push('OUT needs review: '+eventText);if(timeNeedsReview(eventText,'duty\\s*(?:in|out)|punch\\s*(?:in|out)|check\\s*(?:in|out)|in|out|entry|exit'))r.notes.push('OUT time AM/PM inferred from WhatsApp timestamp; verify: '+eventText);}
-  if(/lunch\s*(out|start)|break\s*out/.test(t)){r._hasLunchMessage=true;r._lunchOut=parseLunchEventTime(eventText,m.time);if(timeNeedsReview(eventText,'lunch\\s*(?:out|in|start|end)|break\\s*(?:out|in)'))r.notes.push('Lunch OUT AM/PM inferred from WhatsApp timestamp; verify: '+eventText);}
-  if(/lunch\s*(in|end)|break\s*in/.test(t)){r._hasLunchMessage=true;r._lunchIn=parseLunchEventTime(eventText,m.time);if(timeNeedsReview(eventText,'lunch\\s*(?:out|in|start|end)|break\\s*(?:out|in)'))r.notes.push('Lunch IN AM/PM inferred from WhatsApp timestamp; verify: '+eventText);}
-  if(/\bpermission\s*out\b/i.test(eventText)){r._hasPermissionMessage=true;r._permissionOut=parseEventTime(eventText,m.time,'permission\\s*out');if(timeNeedsReview(eventText,'permission\\s*out'))r.notes.push('Permission OUT AM/PM inferred from WhatsApp timestamp; verify: '+eventText);}
-  if(/\bpermission\s*in\b/i.test(eventText)){r._hasPermissionMessage=true;r._permissionIn=parseEventTime(eventText,m.time,'permission\\s*in');if(timeNeedsReview(eventText,'permission\\s*in'))r.notes.push('Permission IN AM/PM inferred from WhatsApp timestamp; verify: '+eventText);}
+  if(inMatch){r._hasPunchMessage=true;r._hasInMessage=true;const value=parsePunchText(eventText,m.time);if(value)r.in=value;else r.notes.push('IN needs review: '+eventText);if(timeNeedsReview(eventText,'duty\\s*(?:in|out)|punch\\s*(?:in|out)|check\\s*(?:in|out)|in|out|entry|exit'))r.notes.push('IN time AM/PM missing; confirm the event time: '+eventText);}
+  if(outMatch){r._hasPunchMessage=true;r._hasOutMessage=true;const value=parsePunchText(eventText,m.time);if(value)r.out=value;else r.notes.push('OUT needs review: '+eventText);if(timeNeedsReview(eventText,'duty\\s*(?:in|out)|punch\\s*(?:in|out)|check\\s*(?:in|out)|in|out|entry|exit'))r.notes.push('OUT time AM/PM missing; confirm the event time: '+eventText);}
+  if(/lunch\s*(out|start)|break\s*out/.test(t)){r._hasLunchMessage=true;r._lunchOut=parseLunchEventTime(eventText,m.time);if(timeNeedsReview(eventText,'lunch\\s*(?:out|in|start|end)|break\\s*(?:out|in)'))r.notes.push('Lunch OUT AM/PM missing; confirm the event time: '+eventText);}
+  if(/lunch\s*(in|end)|break\s*in/.test(t)){r._hasLunchMessage=true;r._lunchIn=parseLunchEventTime(eventText,m.time);if(timeNeedsReview(eventText,'lunch\\s*(?:out|in|start|end)|break\\s*(?:out|in)'))r.notes.push('Lunch IN AM/PM missing; confirm the event time: '+eventText);}
+  if(/\bpermission\s*out\b/i.test(eventText)){r._hasPermissionMessage=true;r._permissionOut=parseEventTime(eventText,m.time,'permission\\s*out');if(timeNeedsReview(eventText,'permission\\s*out'))r.notes.push('Permission OUT AM/PM missing; confirm the event time: '+eventText);}
+  if(/\bpermission\s*in\b/i.test(eventText)){r._hasPermissionMessage=true;r._permissionIn=parseEventTime(eventText,m.time,'permission\\s*in');if(timeNeedsReview(eventText,'permission\\s*in'))r.notes.push('Permission IN AM/PM missing; confirm the event time: '+eventText);}
   if(!/\bpermission\s*(?:out|in)\b/i.test(m.text)){
    const pm=eventText.match(/permission[^\d]*(\d+(?:\.\d+)?)\s*(h|hr|hrs|hour|hours|min|mins|minute|minutes)?/i);
    if(pm){const n=+pm[1];r.permission+=/min/i.test(pm[2]||'')?n/60:n;r._hasPermissionMessage=true;}
