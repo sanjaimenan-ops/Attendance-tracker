@@ -865,8 +865,8 @@ function parseEventTime(text,messageTime,eventLabels){
 }
 function timeNeedsReview(text,eventLabels){
  const match=String(text||'').match(new RegExp('\\b(?:'+(eventLabels||'')+')\\b[^\\d]*(\\d{1,2}[:.]\\d{2}\\s*(?:AM|PM)?)','i'));
- if(!match||/\\b(?:AM|PM)\\b/i.test(match[1]))return false;
- const parts=match[1].match(/^(\\d{1,2})[:.](\\d{2})$/);
+ if(!match||/\b(?:AM|PM)\b/i.test(match[1]))return false;
+ const parts=match[1].match(/^(\d{1,2})[:.](\d{2})$/);
  return !!parts&&Number(parts[1])>=1&&Number(parts[1])<=12;
 }
 function parseLunchEventTime(text,messageTime){return parseEventTime(text,messageTime,'lunch\\s*(?:out|in|start|end)|break\\s*(?:out|in)');}
