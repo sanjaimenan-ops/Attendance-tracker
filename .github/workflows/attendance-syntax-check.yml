@@ -2,6 +2,8 @@ name: Attendance startup syntax check
 on:
   push:
     branches: [debug/attendance-startup-syntax]
+  pull_request:
+    branches: [main]
 jobs:
   check:
     runs-on: ubuntu-latest
