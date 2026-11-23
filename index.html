@@ -1108,7 +1108,9 @@ load();
     errorBox.textContent = message;
   }
 
-  // Automatically end the authenticated session after three minutes without activity.
+  // Temporarily disable automatic logout while desktop testing is in progress.
+  // Manual logout remains available. Re-enable only after the user requests it.
+  const AUTO_LOGOUT_ENABLED = false;
   const IDLE_TIMEOUT_MS = 3 * 60 * 1000;
   const BACKGROUND_TIMEOUT_MS = 60 * 1000;
   const BACKGROUND_ACTIVITY_KEY = 'attendanceBackgroundSince';
@@ -1125,6 +1127,7 @@ load();
   }
 
   async function expireIdleSession() {
+    if (!AUTO_LOGOUT_ENABLED) return;
     if (logoutInProgress || !auth || !auth.currentUser) return;
     logoutInProgress = true;
     stopIdleTimer();
@@ -1163,6 +1166,7 @@ load();
   }
 
   function resetIdleTimer() {
+    if (!AUTO_LOGOUT_ENABLED) return;
     if (!auth || !auth.currentUser || !cloudReady || logoutInProgress) return;
     lastActivityAt = Date.now();
     try { localStorage.setItem(IDLE_ACTIVITY_KEY, String(lastActivityAt)); } catch (_) {}
@@ -1176,6 +1180,7 @@ load();
   }
 
   function scheduleBackgroundLogout(startedAt) {
+    if (!AUTO_LOGOUT_ENABLED) return;
     clearBackgroundTimer();
     const remaining = Math.max(0, BACKGROUND_TIMEOUT_MS - (Date.now() - startedAt));
     backgroundTimer = setTimeout(() => {
@@ -1187,6 +1192,7 @@ load();
   }
 
   function markAppBackgrounded() {
+    if (!AUTO_LOGOUT_ENABLED) return;
     if (!auth || !auth.currentUser || logoutInProgress) return;
     let startedAt = 0;
     try { startedAt = Number(localStorage.getItem(BACKGROUND_ACTIVITY_KEY)); } catch (_) {}
@@ -1198,6 +1204,7 @@ load();
   }
 
   function handleAppForegrounded() {
+    if (!AUTO_LOGOUT_ENABLED) return;
     if (!auth || !auth.currentUser || logoutInProgress) return;
     clearBackgroundTimer();
     let startedAt = 0;
@@ -1215,6 +1222,7 @@ load();
   // Timers can be heavily throttled while a phone is locked or the browser is in the
   // background. Re-check the real elapsed time rather than trusting a single timeout.
   function checkIdleDeadline() {
+    if (!AUTO_LOGOUT_ENABLED) return;
     if (!auth || !auth.currentUser || !cloudReady || logoutInProgress) return;
     if (Date.now() - lastActivityAt >= IDLE_TIMEOUT_MS) expireIdleSession();
   }
@@ -1483,7 +1491,7 @@ load();
         document.body.classList.remove('auth-checking');
         const savedActivity = Number(localStorage.getItem(IDLE_ACTIVITY_KEY));
         lastActivityAt = Number.isFinite(savedActivity) && savedActivity > 0 ? savedActivity : Date.now();
-        if (Date.now() - lastActivityAt >= IDLE_TIMEOUT_MS) {
+        if (AUTO_LOGOUT_ENABLED && Date.now() - lastActivityAt >= IDLE_TIMEOUT_MS) {
           await expireIdleSession();
           return;
         }
