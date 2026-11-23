@@ -77,7 +77,7 @@
     let workedHours = 0, leaveDays = 0, presentDays = 0;
     for (const record of rows) {
       if (record.status === 'Leave') leaveDays++;
-      if (record.status !== 'Present' || !record.in || !record.out) continue;
+      if (!['Present','Holiday'].includes(record.status) || !record.in || !record.out) continue;
       const calculation = typeof window.calculateAttendance === 'function'
         ? window.calculateAttendance(record, settings)
         : {net:Math.max(0, hoursBetween(parseInputTime(record.in), parseInputTime(record.out)) - Math.max(0, (Number(record.lunch)||0) - (Number(settings.lunch)||0)) - Math.max(0, Number(record.permission)||0))};
