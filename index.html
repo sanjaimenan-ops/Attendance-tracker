@@ -831,6 +831,45 @@ body.authenticated .settings-menu-save{width:100%!important;min-height:38px!impo
   }
 }
 </style>
+
+<style id="approved-ice-blue-theme-final">
+/* Final UI-only cascade fix: override legacy orange rules without changing app logic. */
+:root{color-scheme:light;--ui-ice:#EAF4FF;--ui-ice-deep:#DCEEFF;--ui-white:#FFFFFF;--ui-navy:#173B65;--ui-muted:#71849B;--ui-border:#D8E7F7}
+html,body{background:#EAF4FF!important;color:#173B65!important}
+body.authenticated{background:linear-gradient(145deg,#EAF4FF 0%,#F7FBFF 52%,#E4F0FC 100%)!important;color:#173B65!important}
+body.authenticated .wrap{background:transparent!important}
+body.authenticated .top,body.authenticated .wrap>header.top{background:linear-gradient(120deg,#FFFFFF 0%,#EAF4FF 100%)!important;color:#173B65!important;border:1px solid #D8E7F7!important;box-shadow:0 8px 24px #173B6510!important}
+body.authenticated .top .brand,body.authenticated .panel h3{color:#173B65!important}
+body.authenticated .top .muted,body.authenticated .note,body.authenticated .muted,body.authenticated .foot{color:#71849B!important}
+body.authenticated .top .tag,body.authenticated .tag{background:#EAF4FF!important;color:#173B65!important;border:1px solid #D8E7F7!important}
+body.authenticated .panel{background:#FFFFFF!important;border:1px solid #D8E7F7!important;box-shadow:0 7px 22px #173B650D!important}
+body.authenticated .panel:hover{background:#FFFFFF!important;border-color:#C8DDF2!important;box-shadow:0 12px 26px #173B6512!important}
+body.authenticated .metric{background:linear-gradient(145deg,#FFFFFF 0%,#F1F7FF 100%)!important;border:1px solid #D8E7F7!important}
+body.authenticated .metric small{color:#71849B!important}
+body.authenticated .metric strong{color:#173B65!important}
+body.authenticated button:not(.danger):not(.secondary),body.authenticated .filebtn{background:linear-gradient(135deg,#DCEEFF 0%,#FFFFFF 100%)!important;color:#173B65!important;border:1px solid #C9DFF4!important;box-shadow:0 2px 0 #C8DDF2!important}
+body.authenticated button:not(.danger):not(.secondary):hover,body.authenticated .filebtn:hover{background:linear-gradient(135deg,#CFE6FF 0%,#F8FBFF 100%)!important}
+body.authenticated button.secondary{background:#F4F8FD!important;color:#173B65!important;border-color:#D8E7F7!important}
+body.authenticated button.danger{background:#FFF5F4!important;color:#A12C23!important;border-color:#F1D5D1!important}
+body.authenticated input,body.authenticated select{background:#FFFFFF!important;color:#173B65!important;border:1px solid #D3E1EF!important}
+body.authenticated input:focus,body.authenticated select:focus{border-color:#9FC6ED!important;box-shadow:0 0 0 3px #DCEEFF!important}
+body.authenticated .drop{background:linear-gradient(135deg,#FFFFFF 0%,#F0F7FF 100%)!important;border:1.5px dashed #AFCDEB!important}
+body.authenticated .drop.uploading{background:#EAF4FF!important;border-color:#7EAFE0!important}
+body.authenticated .tablewrap{background:#FFFFFF!important;border:1px solid #D8E7F7!important}
+body.authenticated th{background:#EAF4FF!important;color:#173B65!important;border-bottom:1px solid #D8E7F7!important}
+body.authenticated td{color:#294967!important;border-bottom:1px solid #EDF3FA!important}
+body.authenticated tbody tr:nth-child(even){background:#F8FBFF!important}
+body.authenticated tbody tr:nth-child(odd){background:#FFFFFF!important}
+body.authenticated tbody tr:hover{background:#EFF6FF!important}
+#loginScreen,#authLoading,.login-art{background:linear-gradient(145deg,#EAF4FF 0%,#FFFFFF 100%)!important}
+.login-card{background:linear-gradient(145deg,#FFFFFF 0%,#EAF4FF 100%)!important;border:1px solid #D8E7F7!important;color:#173B65!important}
+.login-card h1{color:#173B65!important}
+.login-card p,.login-card label{color:#526B85!important}
+.login-card input{background:#FFFFFF!important;color:#173B65!important;border:1px solid #D8E7F7!important}
+.login-card button#loginButton{background:linear-gradient(135deg,#DCEEFF 0%,#FFFFFF 100%)!important;color:#173B65!important;border:1px solid #C9DFF4!important}
+@media(max-width:760px){body.authenticated .top{background:linear-gradient(145deg,#FFFFFF 0%,#EAF4FF 100%)!important}body.authenticated .panel{background:#FFFFFF!important}}
+</style>
+
 </head>
 <body class="auth-checking">
 <div id="authLoading" role="status" aria-live="polite"><span class="auth-loading-ripple" aria-hidden="true"><i></i><i></i><i></i><b></b></span><span>Refreshing</span></div>
