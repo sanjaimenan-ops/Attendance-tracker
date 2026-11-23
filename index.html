@@ -830,6 +830,10 @@ let resetMonths=new Set();let resetMonthsByStaff={};
 function defaultStaffData(name){return {records:[],settings:{sender:name,month:'2026-11',shift:'10',lunch:'1',rate:'0',otrate:'0',leavepay:'0'}}}
 function snapshot(){return {records:JSON.parse(JSON.stringify(records)),settings:getSettings()}}
 function save(){try{resetMonthsByStaff[activeStaff]=[...resetMonths];staffStore[activeStaff]=snapshot();localStorage.setItem(key,JSON.stringify({staffStore,activeStaff,resetMonths:[...(resetMonthsByStaff.Sanjai||[])],resetMonthsByStaff,incentivePool}));if(window.scheduleAttendanceCloudSave)window.scheduleAttendanceCloudSave()}catch(e){}}
+window.attendanceTrackerBridge = window.attendanceTrackerBridge || {};
+window.attendanceTrackerBridge.renderStaffOptions = renderStaffOptions;
+window.attendanceTrackerBridge.applySnapshot = applySnapshot;
+window.attendanceTrackerBridge.defaultStaffData = defaultStaffData;
 function renderStaffOptions(){const select=$('staffSelect');if(!select)return;select.innerHTML='';Object.keys(staffStore).sort((a,b)=>a.localeCompare(b)).forEach(name=>{const option=document.createElement('option');option.value=name;option.textContent=name;select.appendChild(option)});select.value=activeStaff;renderEmployeePicker()}
 function renderEmployeePicker(){const select=$('staffSelect'),menu=$('employeePickerMenu'),value=$('employeePickerValue');if(!select||!menu||!value)return;value.textContent=select.value||activeStaff;menu.innerHTML='';[...select.options].forEach(option=>{const item=document.createElement('button');item.type='button';item.className='employee-picker-option';item.setAttribute('role','option');item.setAttribute('aria-selected',String(option.value===select.value));item.innerHTML='<span></span><span class="employee-picker-check" aria-hidden="true">'+(option.value===select.value?'✓':'')+'</span>';item.firstElementChild.textContent=option.textContent;item.addEventListener('click',()=>{select.value=option.value;select.dispatchEvent(new Event('change',{bubbles:true}));closeEmployeePicker()});menu.appendChild(item)})}
 function closeEmployeePicker(){const menu=$('employeePickerMenu'),trigger=$('employeePickerTrigger');if(menu)menu.classList.add('hidden');if(trigger)trigger.setAttribute('aria-expanded','false')}
@@ -838,12 +842,6 @@ document.addEventListener('click',event=>{const picker=$('employeePicker');if(pi
 document.addEventListener('keydown',event=>{if(event.key==='Escape')closeEmployeePicker()});
 function switchStaff(name){if(!staffStore[name])return;save();activeStaff=name;resetMonths=new Set(Array.isArray(resetMonthsByStaff[name])?resetMonthsByStaff[name]:[]);renderStaffOptions();applySnapshot(staffStore[name]);$('review').textContent='Showing attendance profile: '+name}
 function applySnapshot(data){data=data||{};records=Array.isArray(data.records)?data.records:[];if(data.settings)Object.entries(data.settings).forEach(([k,v])=>{if($(k))$(k).value=v});if(!$('sender').value.trim())$('sender').value=activeStaff;records.forEach(r=>{delete r.payOverride;r.notes=Array.isArray(r.notes)?r.notes:[];});render()}
-// Expose the staff helpers for the Firebase cloud-restore layer.
-window.attendanceTrackerBridge = window.attendanceTrackerBridge || {};
-window.attendanceTrackerBridge.renderStaffOptions = renderStaffOptions;
-window.attendanceTrackerBridge.applySnapshot = applySnapshot;
-window.attendanceTrackerBridge.defaultStaffData = defaultStaffData;
-
 
 function dateKey(y,m,d){return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`}
 function parseTime(s, requireMeridiem=false){
@@ -865,9 +863,19 @@ function parseEventTime(text,messageTime,eventLabels){
   if(explicit!==null&&/\b(?:AM|PM)\b/i.test(raw))return explicit;
   const parts=raw.match(/^(\d{1,2})[:.](\d{2})$/);
   if(parts&&+parts[1]>12)return parseTime(raw,false);
-  if(parts&&stamp!==null){const ap=stamp>=720?'PM':'AM',inferred=parseTime(raw+' '+ap,true);if(inferred!==null)return inferred;}
+  // A 1–12 hour value without AM/PM is ambiguous. Do not silently
+  // convert it using the WhatsApp message timestamp; leave it for review.
+  if(parts&&+parts[1]>=1&&+parts[1]<=12)return null;
+  // Do not fall back to the WhatsApp message timestamp when an event time was supplied but is ambiguous.
+  return null;
  }
  return stamp;
+}
+function timeNeedsReview(text,eventLabels){
+ const match=String(text||'').match(new RegExp('\\b(?:'+(eventLabels||'')+')\\b[^\\d]*(\\d{1,2}[:.]\\d{2}\\s*(?:AM|PM)?)','i'));
+ if(!match||/\b(?:AM|PM)\b/i.test(match[1]))return false;
+ const parts=match[1].match(/^(\d{1,2})[:.](\d{2})$/);
+ return !!parts&&Number(parts[1])>=1&&Number(parts[1])<=12;
 }
 function parseLunchEventTime(text,messageTime){return parseEventTime(text,messageTime,'lunch\\s*(?:out|in|start|end)|break\\s*(?:out|in)');}
 function parsePunchText(text,messageTime){
@@ -878,7 +886,7 @@ function parsePunchText(text,messageTime){
 
 function parseInputTime(s){return parseTime(s,true)}
 function hoursBetween(a,b){if(a==null||b==null)return 0;let diff=b-a;if(diff<0)diff+=1440;return diff/60}
-function parseDate(s){let m=String(s).match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);if(!m)return null;let day=+m[1],month=+m[2],y=+m[3];if(y<100)y+=2000;if(month<1||month>12||day<1||day>31)return null;return dateKey(y,month,day)}
+function parseDate(s){let m=String(s).match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);if(!m)return null;let day=+m[1],month=+m[2],y=+m[3];if(y<100)y+=2000;const d=new Date(y,month-1,day);if(d.getFullYear()!==y||d.getMonth()!==month-1||d.getDate()!==day)return null;return dateKey(y,month,day)}
 function splitMessages(raw){let lines=raw.replace(/^\uFEFF/,'').replace(/[\u202f\u00a0]/g,' ').split(/\r?\n/),out=[],cur=null;const start=/^(?:\[)?(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}),?\s+(\d{1,2}:\d{2}\s*(?:[ap]m)?)(?:\])?\s*[-–]\s*([^:]+):\s?(.*)$/i;for(const line of lines){let m=line.match(start);if(m){if(cur)out.push(cur);cur={date:parseDate(m[1]),time:m[2].trim(),sender:m[3].trim(),text:m[4]};}else if(cur)cur.text+=' '+line.trim();}if(cur)out.push(cur);return out}
 function nameKeywords(value){return String(value||'').toLocaleLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^\p{L}\p{N}]+/gu,' ').trim().split(/\s+/).filter(Boolean)}
 function parseChat(raw,senderOverride){
@@ -912,22 +920,39 @@ function parseChat(raw,senderOverride){
    else r.notes.push('Photo/media attached without a readable attendance caption; review manually. No punch time was inferred from the photo alone.');
   }
   if(hasLeaveWord){
-   if(partialLeave){
-    r.notes.push('Partial-day leave mentioned; attendance punches are retained and full-day leave is not assumed: '+m.text);
+   if(uniqueDates.length){
+    const dateMentions=[...String(m.text||'').matchAll(/\b(\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4})\b/g)];
+    for(let di=0;di<dateMentions.length;di++){
+     const mention=dateMentions[di],targetDate=parseDate(mention[1]);
+     if(!targetDate)continue;
+     const segmentStart=di===0?0:dateMentions[di-1].index+dateMentions[di-1][0].length;
+     const segmentEnd=di+1<dateMentions.length?dateMentions[di+1].index:String(m.text||'').length;
+     const dateText=String(m.text||'').slice(segmentStart,segmentEnd);
+     const isPartial=/\b(?:1st|first|2nd|second)\s*half\b|\bhalf[- ]day\b|\b(?:morning|afternoon)\s+(?:half|leave)\b/i.test(dateText);
+     const target=getRecord(targetDate,hasHolidayWord?'Holiday':(isPartial?'Present':'Leave'));
+     if(!target)continue;
+     if(hasHolidayWord){target.status='Holiday';target._statusExplicit=true;}
+     else if(isPartial){
+      target._partialLeaveAnnounced=true;
+      target.notes.push('Half-day leave announced; IN/OUT punches will determine actual attendance: '+m.text);
+     }else{
+      target.status='Leave';target._statusExplicit=true;target._fullLeaveExplicit=true;
+      target.notes.push('Full-day leave announced for '+targetDate+': '+m.text);
+     }
+     target.notes.push('Leave date explicitly stated in message sent '+m.date+': '+m.text);
+    }
+    r.notes.push('Leave announcement with explicit dates: '+m.text);
    }else if(/\btomorrow\s+(?:leave|on leave)\b/i.test(m.text)){
     const next=new Date(m.date+'T12:00:00');next.setDate(next.getDate()+1);
     const targetDate=next.getFullYear()+'-'+String(next.getMonth()+1).padStart(2,'0')+'-'+String(next.getDate()).padStart(2,'0');
     const target=getRecord(targetDate,'Leave');
-    if(target){target.status='Leave';target._statusExplicit=true;target.notes.push('Leave announced the previous day: '+m.text);}
+    if(target){target.status='Leave';target._statusExplicit=true;target._fullLeaveExplicit=true;target.notes.push('Leave announced the previous day: '+m.text);}
     r.notes.push(m.text);
-   }else if(uniqueDates.length){
-    r.notes.push('Leave/holiday announced for '+uniqueDates.join(', ')+': '+m.text);
-    for(const targetDate of uniqueDates){
-     const target=getRecord(targetDate,hasHolidayWord?'Holiday':'Leave');
-     if(target){target.status=hasHolidayWord?'Holiday':'Leave';target._statusExplicit=true;target.notes.push('Leave/holiday date explicitly stated in message sent '+m.date+': '+m.text);}
-    }
+   }else if(partialLeave){
+    r._partialLeaveAnnounced=true;
+    r.notes.push('Half-day leave announced; IN/OUT punches will determine actual attendance: '+m.text);
    }else if(/\b(?:today\s+leave|today\s+is\s+(?:a\s+)?holiday|on leave today)\b/i.test(m.text)||!/\b(?:sunday|monday|tuesday|wednesday|thursday|friday|saturday|coming|next)\b/i.test(m.text)){
-    r.status=/\babsent\b/i.test(eventText)?'Absent':'Leave';r._statusExplicit=true;
+    r.status=/\babsent\b/i.test(eventText)?'Absent':'Leave';r._statusExplicit=true;r._fullLeaveExplicit=true;
     r.notes.push(m.text);
    }else{
     r.notes.push('Leave announcement needs date review: '+m.text);
@@ -935,15 +960,44 @@ function parseChat(raw,senderOverride){
   }
   const inMatch=/^\s*(?:in|check\s*in|punch\s*in|entry|duty\s*in)\b/i.test(eventText)||/^(?:(?:purchase|godown|work|customer|site|residency|belviza|delivery|mill|shop|store|aalin?wood|marinos)(?:\s+[\p{L}\p{N}().'-]+){0,5})\s+(?:in|entry)\s*$/iu.test(eventText);
   const outMatch=/^\s*(?:out|check\s*out|punch\s*out|exit|duty\s*out)\b/i.test(eventText);
-  if(inMatch){r._hasPunchMessage=true;const value=parsePunchText(eventText,m.time);if(value)r.in=value;else r.notes.push('IN needs review: '+eventText);}
-  if(outMatch){r._hasPunchMessage=true;const value=parsePunchText(eventText,m.time);if(value)r.out=value;else r.notes.push('OUT needs review: '+eventText);}
-  if(/lunch\s*(out|start)|break\s*out/.test(t)){r._hasLunchMessage=true;r._lunchOut=parseLunchEventTime(eventText,m.time);}
-  if(/lunch\s*(in|end)|break\s*in/.test(t)){r._hasLunchMessage=true;r._lunchIn=parseLunchEventTime(eventText,m.time);}
-  if(/\bpermission\s*out\b/i.test(eventText)){r._hasPermissionMessage=true;r._permissionOut=parseEventTime(eventText,m.time,'permission\\s*out');}
-  if(/\bpermission\s*in\b/i.test(eventText)){r._hasPermissionMessage=true;r._permissionIn=parseEventTime(eventText,m.time,'permission\\s*in');}
+  if(inMatch){r._hasPunchMessage=true;r._hasInMessage=true;const value=parsePunchText(eventText,m.time);if(value)r.in=value;else r.notes.push('IN needs review: '+eventText);if(timeNeedsReview(eventText,'duty\\s*(?:in|out)|punch\\s*(?:in|out)|check\\s*(?:in|out)|in|out|entry|exit'))r.notes.push('IN time AM/PM missing; confirm the event time: '+eventText);}
+  if(outMatch){r._hasPunchMessage=true;r._hasOutMessage=true;const value=parsePunchText(eventText,m.time);if(value)r.out=value;else r.notes.push('OUT needs review: '+eventText);if(timeNeedsReview(eventText,'duty\\s*(?:in|out)|punch\\s*(?:in|out)|check\\s*(?:in|out)|in|out|entry|exit'))r.notes.push('OUT time AM/PM missing; confirm the event time: '+eventText);}
+  if(/lunch\s*(out|start)|break\s*out/.test(t)){r._hasLunchMessage=true;r._lunchOut=parseLunchEventTime(eventText,m.time);if(timeNeedsReview(eventText,'lunch\\s*(?:out|in|start|end)|break\\s*(?:out|in)'))r.notes.push('Lunch OUT AM/PM missing; confirm the event time: '+eventText);}
+  if(/lunch\s*(in|end)|break\s*in/.test(t)){r._hasLunchMessage=true;r._lunchIn=parseLunchEventTime(eventText,m.time);if(timeNeedsReview(eventText,'lunch\\s*(?:out|in|start|end)|break\\s*(?:out|in)'))r.notes.push('Lunch IN AM/PM missing; confirm the event time: '+eventText);}
+  if(/\bpermission\s*out\b/i.test(eventText)){r._hasPermissionMessage=true;r._permissionOut=parseEventTime(eventText,m.time,'permission\\s*out');if(timeNeedsReview(eventText,'permission\\s*out'))r.notes.push('Permission OUT AM/PM missing; confirm the event time: '+eventText);}
+  if(/\bpermission\s*in\b/i.test(eventText)){r._hasPermissionMessage=true;r._permissionIn=parseEventTime(eventText,m.time,'permission\\s*in');if(timeNeedsReview(eventText,'permission\\s*in'))r.notes.push('Permission IN AM/PM missing; confirm the event time: '+eventText);}
   if(!/\bpermission\s*(?:out|in)\b/i.test(m.text)){
    const pm=eventText.match(/permission[^\d]*(\d+(?:\.\d+)?)\s*(h|hr|hrs|hour|hours|min|mins|minute|minutes)?/i);
    if(pm){const n=+pm[1];r.permission+=/min/i.test(pm[2]||'')?n/60:n;r._hasPermissionMessage=true;}
+  }
+ }
+ // Reconcile leave only after all messages for this employee and date have been processed.
+ // Actual punch evidence takes precedence over a leave announcement: two punches prove attendance;
+ // one punch is kept for review; no punches leave the date classified as Leave.
+ for(const [date,row] of map){
+  if(row._fullLeaveExplicit){
+   if(row.in&&row.out){
+    row.status='Present';row._statusExplicit=true;
+    row.notes.push('Leave was announced, but both IN and OUT punches were found. Attendance is calculated from actual punches.');
+   }else if(row.in||row.out){
+    row.status='Present';row._statusExplicit=true;
+    row.notes.push('Leave was announced, but one punch was found. Kept as Present with missing-punch review.');
+   }else{
+    row.status='Leave';row._statusExplicit=true;
+    row.notes.push('Leave was announced and no IN/OUT punches were found. Kept as Leave.');
+   }
+   continue;
+  }
+  if(!row._partialLeaveAnnounced)continue;
+  if(row.in&&row.out){
+   row.status='Present';row._statusExplicit=true;
+   row.notes.push('Half-day leave announced, but both IN and OUT punches were found. Attendance hours are calculated from actual punches.');
+  }else if(!row.in&&!row.out){
+   row.status='Leave';row._statusExplicit=true;
+   row.notes.push('Half-day leave announced, but no IN or OUT punch was found. Classified as full-day Leave.');
+  }else{
+   row.status='Present';row._statusExplicit=true;
+   row.notes.push('Half-day leave announced and only one punch was found. Kept as Present with missing-punch review; not assumed to be full-day Leave.');
   }
  }
  for(const [date,imported] of map){
@@ -953,14 +1007,26 @@ function parseChat(raw,senderOverride){
   if(imported._hasPermissionMessage&&imported._permissionOut!=null&&imported._permissionIn!=null)imported.permission=hoursBetween(imported._permissionOut,imported._permissionIn);
   const existing=records.find(x=>x.date===date);
   const cleanImported={...imported};
-  delete cleanImported._lunchOut;delete cleanImported._lunchIn;delete cleanImported._permissionOut;delete cleanImported._permissionIn;
-  if(!existing){delete cleanImported._hasPunchMessage;delete cleanImported._hasLunchMessage;delete cleanImported._hasPermissionMessage;delete cleanImported._statusExplicit;records.push(cleanImported);continue;}
-  // A fresh import is authoritative for event types actually present in the source export.
-  if(imported._hasPunchMessage){existing.in=imported.in||'';existing.out=imported.out||'';}
-  if(imported._hasLunchMessage){existing.lunchOut=imported.lunchOut||'';existing.lunchIn=imported.lunchIn||'';existing.lunch=imported._lunchOut!=null&&imported._lunchIn!=null?imported.lunch:0;}
-  if(imported._hasPermissionMessage){existing.permission=imported._permissionOut!=null&&imported._permissionIn!=null?imported.permission:0;}
-  if(imported._statusExplicit){existing.status=imported.status;}
+  delete cleanImported._lunchOut;delete cleanImported._lunchIn;delete cleanImported._permissionOut;delete cleanImported._permissionIn;delete cleanImported._partialLeaveAnnounced;delete cleanImported._fullLeaveExplicit;
+  if(!existing){delete cleanImported._hasPunchMessage;delete cleanImported._hasInMessage;delete cleanImported._hasOutMessage;delete cleanImported._hasLunchMessage;delete cleanImported._hasPermissionMessage;delete cleanImported._statusExplicit;records.push(cleanImported);continue;}
+  // Update only the punch type actually present in this import. A missing event in a partial export is not a deletion.
   existing.notes=Array.isArray(existing.notes)?existing.notes:[];
+  if(imported._hasInMessage)existing.in=imported.in||'';
+  if(imported._hasOutMessage)existing.out=imported.out||'';
+  if(imported._hasLunchMessage){
+   // Preserve the other lunch endpoint and existing duration when an import contains only one side.
+   if(imported._lunchOut!=null)existing.lunchOut=imported.lunchOut;
+   if(imported._lunchIn!=null)existing.lunchIn=imported.lunchIn;
+   const savedLunchOut=parseInputTime(existing.lunchOut),savedLunchIn=parseInputTime(existing.lunchIn);
+   if(savedLunchOut!=null&&savedLunchIn!=null)existing.lunch=hoursBetween(savedLunchOut,savedLunchIn);
+   else existing.notes.push('Lunch message was only partially imported; existing lunch duration was preserved for review.');
+  }
+  if(imported._hasPermissionMessage){
+   if(imported._permissionOut!=null&&imported._permissionIn!=null)existing.permission=imported.permission;
+   else if(imported.permission>0)existing.permission=imported.permission;
+   else existing.notes.push('Permission message was only partially imported; existing permission deduction was preserved for review.');
+  }
+  if(imported._statusExplicit){existing.status=imported.status;}
   existing.notes=[...new Set([...existing.notes,...(imported.notes||[])])];
  }
  // Verified Sanjai corrections remain limited to dates with independently confirmed punch evidence.
@@ -972,10 +1038,13 @@ function parseChat(raw,senderOverride){
 function fmtTime(min){let h=Math.floor(min/60)%24,ap=h>=12?'PM':'AM';h=h%12||12;return String(h).padStart(2,'0')+':'+String(min%60).padStart(2,'0')+' '+ap}
 function timeParts(value){const mins=parseInputTime(value);if(mins===null)return {time:'',period:'AM'};const h=Math.floor(mins/60),m=mins%60;return {time:String(h%12||12).padStart(2,'0')+':'+String(m).padStart(2,'0'),period:h>=12?'PM':'AM'}}
 function daysInMonth(v){let [y,m]=v.split('-').map(Number);return new Date(y,m,0).getDate()}
-function calc(r){let clock=hoursBetween(parseInputTime(r.in),parseInputTime(r.out));let extra=Math.max(0,(+r.lunch||0)-(+ $('lunch').value||0));let net=r.status==='Leave'?(+$('leavepay').value||0):Math.max(0,clock-extra-(+r.permission||0));let reg=r.status==='Leave'?Math.min(net,+$('shift').value||10):Math.min(net,+$('shift').value||10);let ot=r.status==='Leave'?0:Math.max(0,net-reg);let calculatedPay=reg*(+$('rate').value||0)+ot*(+$('otrate').value||0);return {clock,extra,net,reg,ot,pay:calculatedPay}}
+function escapeHTML(value){return String(value??'').replace(/[&<>\"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',\"'\":'&#39;'}[ch]))}
+function calculateAttendance(r,settings={}){const value=(key,fallback)=>{const n=Number(settings[key]??fallback);return Number.isFinite(n)?Math.max(0,n):0};const clock=hoursBetween(parseInputTime(r?.in),parseInputTime(r?.out));const extra=Math.max(0,(Number(r?.lunch)||0)-value('lunch',$('lunch').value));const permission=Math.max(0,Number(r?.permission)||0);const shift=value('shift',$('shift').value)||10;const regularRate=value('rate',$('rate').value);const overtimeRate=value('otrate',$('otrate').value);let net=0,reg=0,ot=0;if(r?.status==='Present'||r?.status==='Holiday'){net=Math.max(0,clock-extra-permission);reg=Math.min(net,shift);ot=Math.max(0,net-reg);}else if(r?.status==='Leave'){net=value('leavepay',$('leavepay').value);reg=Math.min(net,shift);}const pay=reg*regularRate+ot*overtimeRate;return {clock,extra,net,reg,ot,pay}}
+window.calculateAttendance=calculateAttendance;
+function calc(r){return calculateAttendance(r,{shift:$('shift').value,lunch:$('lunch').value,rate:$('rate').value,otrate:$('otrate').value,leavepay:$('leavepay').value})}
 function syncIncentiveMonthOptions(selectedMonth){
  const picker=$('incentiveMonth');
- if(picker&&/^\\d{4}-\\d{2}$/.test(selectedMonth))picker.value=selectedMonth;
+ if(picker&&/^\d{4}-\d{2}$/.test(selectedMonth))picker.value=selectedMonth;
 }
 function render(){
  const month=$('month').value;
@@ -983,7 +1052,7 @@ function render(){
  const monthRecords=records.map((r,i)=>({r,i})).filter(x=>x.r.date&&x.r.date.startsWith(month+'-'));
  let body=$('rows');
  if(!monthRecords.length){body.innerHTML='<tr><td colspan="15" class="empty">No attendance data for this month. Upload a WhatsApp TXT file or add attendance days manually.</td></tr>'}
- else body.innerHTML=monthRecords.map(({r,i})=>{let c=calc(r),inn=timeParts(r.in),outt=timeParts(r.out),lunchOut=timeParts(r.lunchOut),lunchIn=timeParts(r.lunchIn);let missing=r.status==='Present'&&(!r.in||!r.out);return `<tr><td data-label="Date">${r.date}</td><td data-label="Status"><select data-i="${i}" data-k="status"><option ${r.status==='Present'?'selected':''}>Present</option><option ${r.status==='Leave'?'selected':''}>Leave</option><option ${r.status==='Holiday'?'selected':''}>Holiday</option><option ${r.status==='Absent'?'selected':''}>Absent</option></select>${missing?'<div class="status review">Missing punch</div>':''}</td><td data-label="IN time"><div class="time-entry"><input data-i="${i}" data-k="inClock" type="text" inputmode="numeric" placeholder="10:00" aria-label="IN time" value="${inn.time}"><button type="button" class="period-button" data-i="${i}" data-period-toggle="in" aria-label="Toggle IN AM PM">${inn.period}</button></div></td><td data-label="OUT time"><div class="time-entry"><input data-i="${i}" data-k="outClock" type="text" inputmode="numeric" placeholder="09:30" aria-label="OUT time" value="${outt.time}"><button type="button" class="period-button" data-i="${i}" data-period-toggle="out" aria-label="Toggle OUT AM PM">${outt.period}</button></div></td><td data-label="Lunch Out"><div class="time-entry"><input data-i="${i}" data-k="lunchOutClock" type="text" inputmode="numeric" placeholder="01:00" aria-label="Lunch Out time" value="${lunchOut.time}"><button type="button" class="period-button" data-i="${i}" data-period-toggle="lunchOut" aria-label="Toggle Lunch Out AM PM">${lunchOut.period}</button></div></td><td data-label="Lunch In"><div class="time-entry"><input data-i="${i}" data-k="lunchInClock" type="text" inputmode="numeric" placeholder="02:00" aria-label="Lunch In time" value="${lunchIn.time}"><button type="button" class="period-button" data-i="${i}" data-period-toggle="lunchIn" aria-label="Toggle Lunch In AM PM">${lunchIn.period}</button></div></td><td data-label="Lunch (hours)"><input data-i="${i}" data-k="lunch" type="number" min="0" step="0.01" value="${(+r.lunch||0).toFixed(2)}"></td><td data-label="Permission (hours)"><input data-i="${i}" data-k="permission" type="number" min="0" step="0.01" value="${(+r.permission||0).toFixed(2)}"></td><td data-label="Clocked hours">${c.clock.toFixed(2)}</td><td data-label="Extra lunch (hours)">${c.extra.toFixed(2)}</td><td data-label="Net paid hours"><b>${c.net.toFixed(2)}</b></td><td data-label="Regular hours">${c.reg.toFixed(2)}</td><td data-label="Overtime hours">${c.ot.toFixed(2)}</td><td data-label="Pay">₹${c.pay.toFixed(2)}</td><td class="noprint" data-label="Action"><button class="danger" data-del="${i}">Delete</button></td></tr>`}).join('');
+ else body.innerHTML=monthRecords.map(({r,i})=>{let c=calc(r),inn=timeParts(r.in),outt=timeParts(r.out),lunchOut=timeParts(r.lunchOut),lunchIn=timeParts(r.lunchIn);let missing=r.status==='Present'&&(!r.in||!r.out);return `<tr><td data-label="Date">${r.date}</td><td data-label="Status"><select data-i="${i}" data-k="status"><option ${r.status==='Present'?'selected':''}>Present</option><option ${r.status==='Leave'?'selected':''}>Leave</option><option ${r.status==='Holiday'?'selected':''}>Holiday</option><option ${r.status==='Absent'?'selected':''}>Absent</option></select>${(Array.isArray(r.notes)?r.notes:[]).map(note=>'<div class="note warn">'+escapeHTML(note)+'</div>').join('')}${missing?'<div class="status review">Missing punch</div>':''}</td><td data-label="IN time"><div class="time-entry"><input data-i="${i}" data-k="inClock" type="text" inputmode="numeric" placeholder="10:00" aria-label="IN time" value="${inn.time}"><button type="button" class="period-button" data-i="${i}" data-period-toggle="in" aria-label="Toggle IN AM PM">${inn.period}</button></div></td><td data-label="OUT time"><div class="time-entry"><input data-i="${i}" data-k="outClock" type="text" inputmode="numeric" placeholder="09:30" aria-label="OUT time" value="${outt.time}"><button type="button" class="period-button" data-i="${i}" data-period-toggle="out" aria-label="Toggle OUT AM PM">${outt.period}</button></div></td><td data-label="Lunch Out"><div class="time-entry"><input data-i="${i}" data-k="lunchOutClock" type="text" inputmode="numeric" placeholder="01:00" aria-label="Lunch Out time" value="${lunchOut.time}"><button type="button" class="period-button" data-i="${i}" data-period-toggle="lunchOut" aria-label="Toggle Lunch Out AM PM">${lunchOut.period}</button></div></td><td data-label="Lunch In"><div class="time-entry"><input data-i="${i}" data-k="lunchInClock" type="text" inputmode="numeric" placeholder="02:00" aria-label="Lunch In time" value="${lunchIn.time}"><button type="button" class="period-button" data-i="${i}" data-period-toggle="lunchIn" aria-label="Toggle Lunch In AM PM">${lunchIn.period}</button></div></td><td data-label="Lunch (hours)"><input data-i="${i}" data-k="lunch" type="number" min="0" step="0.01" value="${(+r.lunch||0).toFixed(2)}"></td><td data-label="Permission (hours)"><input data-i="${i}" data-k="permission" type="number" min="0" step="0.01" value="${(+r.permission||0).toFixed(2)}"></td><td data-label="Clocked hours">${c.clock.toFixed(2)}</td><td data-label="Extra lunch (hours)">${c.extra.toFixed(2)}</td><td data-label="Net paid hours"><b>${c.net.toFixed(2)}</b></td><td data-label="Regular hours">${c.reg.toFixed(2)}</td><td data-label="Overtime hours">${c.ot.toFixed(2)}</td><td data-label="Pay">₹${c.pay.toFixed(2)}</td><td class="noprint" data-label="Action"><button class="danger" data-del="${i}">Delete</button></td></tr>`}).join('');
  let present=monthRecords.filter(x=>x.r.status==='Present'&&x.r.in&&x.r.out).length,leaves=monthRecords.filter(x=>x.r.status==='Leave').length,tot={clock:0,net:0,reg:0,ot:0,extra:0,perm:0,pay:0};
  monthRecords.forEach(({r})=>{let c=calc(r);tot.clock+=c.clock;tot.net+=c.net;tot.reg+=c.reg;tot.ot+=c.ot;tot.extra+=c.extra;tot.perm+=(+r.permission||0);tot.pay+=c.pay});
  $('present').textContent=present;$('leaves').textContent=leaves;
@@ -1045,8 +1114,10 @@ $('csv').onclick=()=>{
  notify('Exported '+monthRows.length+' attendance records with monthly totals.');
 };
 load();
+// Expose the attendance UI helpers needed by the separate Firebase module.
+// Bridge is initialized beside the app functions so it exists before Firebase auth callbacks run.
 </script>
-<script src="./performance.js?v=rankbadge3"></script>
+<script src="./performance.js?v=sharedcalc1"></script>
 <!-- Firebase Authentication and private Firestore sync -->
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -1156,7 +1227,7 @@ load();
       const localSource = localStore[name] || null;
       const source = cloudSource
         ? {...cloudSource, settings:{...(localSource?.settings||{}),...(cloudSource.settings||{})}}
-        : (localSource ? {...localSource} : defaultStaffData(name));
+        : (localSource ? {...localSource} : window.attendanceTrackerBridge.defaultStaffData(name));
       const blockedMonths = new Set(Array.isArray(resetMonthsByStaff[name]) ? resetMonthsByStaff[name] : []);
       if (localSource && !cloudSource) mergedFromLocal = true;
       if (localSource && Array.isArray(localSource.records)) {
@@ -1172,7 +1243,8 @@ load();
             return;
           }
           const combined = {...previous, ...record};
-          ['in','out'].forEach(field => {if (!combined[field] && previous[field]) combined[field] = previous[field];});
+          // Cloud wins for dates present in both stores, including intentional blank values.
+          // Keep notes from both copies, but never resurrect a cleared punch from stale local data.
           if (Array.isArray(previous.notes) || Array.isArray(record.notes)) combined.notes = [...new Set([...(previous.notes||[]),...(record.notes||[])])];
           merged.set(record.date, combined);
         });
@@ -1186,8 +1258,8 @@ load();
     }
     activeStaff = staffStore[data.activeStaff] ? data.activeStaff : (staffStore[local.activeStaff] ? local.activeStaff : 'Sanjai');
     resetMonths = new Set(Array.isArray(resetMonthsByStaff[activeStaff]) ? resetMonthsByStaff[activeStaff] : []);
-    renderStaffOptions();
-    applySnapshot(staffStore[activeStaff]);
+    window.attendanceTrackerBridge.renderStaffOptions();
+    window.attendanceTrackerBridge.applySnapshot(staffStore[activeStaff]);
     localStorage.setItem('privateAttendanceNov2026_v1', JSON.stringify({staffStore, activeStaff, resetMonths:[...(resetMonthsByStaff.Sanjai||[])], resetMonthsByStaff}));
     window.attendanceCloudMergeNeeded = mergedFromLocal || Object.values(resetMonthsByStaff).some(months=>Array.isArray(months)&&months.length>0);
     return true;
@@ -1323,12 +1395,12 @@ load();
           staffStore = local.staffStore && typeof local.staffStore === 'object'
             ? {...local.staffStore}
             : {Sanjai:{records:local.records||[],settings:local.settings||{sender:'Sanjai',month:'2026-11',shift:'10',lunch:'1',rate:'70',otrate:'88',leavepay:'0'}}};
-          if (!staffStore.Sanjai) staffStore.Sanjai = defaultStaffData('Sanjai');
+          if (!staffStore.Sanjai) staffStore.Sanjai = window.attendanceTrackerBridge.defaultStaffData('Sanjai');
           resetMonthsByStaff = local.resetMonthsByStaff && typeof local.resetMonthsByStaff === 'object' ? {...local.resetMonthsByStaff} : {Sanjai:Array.isArray(local.resetMonths)?local.resetMonths:[]};
           activeStaff = staffStore[local.activeStaff] ? local.activeStaff : 'Sanjai';
           resetMonths = new Set(Array.isArray(resetMonthsByStaff[activeStaff]) ? resetMonthsByStaff[activeStaff] : []);
-          renderStaffOptions();
-          applySnapshot(staffStore[activeStaff]);
+          window.attendanceTrackerBridge.renderStaffOptions();
+          window.attendanceTrackerBridge.applySnapshot(staffStore[activeStaff]);
           loadingStage = 'saving initial attendance data to Firestore';
           await withTimeout(cloudDoc.set({
             staffStore: staffStore,
@@ -1357,9 +1429,11 @@ load();
         clearTimeout(loadingWatchdog);
         console.error('Firestore initialization failed:', error);
         document.body.classList.remove('authenticated','auth-checking');
-        showError(error && error.message && error.message.includes('timed out')
-          ? error.message
-          : 'Could not load your cloud attendance data. Check Firestore rules and internet connection, then reload.');
+        const errorCode = error && error.code ? error.code : 'unknown';
+        const errorMessage = error && error.message ? String(error.message).slice(0, 180) : 'No error details available.';
+        showError(errorMessage.includes('timed out')
+          ? errorMessage
+          : 'Cloud data error at: ' + loadingStage + ' [' + errorCode + ']. ' + errorMessage);
         auth.signOut().catch(signOutError => console.error('Could not clear the stalled Firebase session:', signOutError));
       }
     });
