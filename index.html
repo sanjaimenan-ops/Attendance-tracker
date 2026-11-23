@@ -1118,157 +1118,8 @@ load();
     return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
   }
 
-  // Temporarily disable automatic logout while desktop testing is in progress.
-  // Manual logout remains available. Re-enable only after the user requests it.
-  const AUTO_LOGOUT_ENABLED = false;
-  const IDLE_TIMEOUT_MS = 3 * 60 * 1000;
-  const BACKGROUND_TIMEOUT_MS = 60 * 1000;
-  const BACKGROUND_ACTIVITY_KEY = 'attendanceBackgroundSince';
-  let idleTimer = null;
-  let idleWatchdog = null;
-  let backgroundTimer = null;
-  let lastActivityAt = 0;
+  // Automatic logout has been removed. Manual logout remains available.
   let logoutInProgress = false;
-  const IDLE_ACTIVITY_KEY = 'attendanceLastActivityAt';
-
-  function stopIdleTimer() {
-    if (idleTimer !== null) clearTimeout(idleTimer);
-    idleTimer = null;
-  }
-
-  async function expireIdleSession() {
-    if (!AUTO_LOGOUT_ENABLED) return;
-    if (logoutInProgress || !auth || !auth.currentUser) return;
-    logoutInProgress = true;
-    stopIdleTimer();
-
-    // IMPORTANT: keep cloudReady enabled while the final write is queued and completed.
-    // Disabling it first makes pushCloudState() return without saving, which can leave
-    // Firebase with stale attendance data when an automatic logout occurs.
-    if (cloudTimer !== null) {
-      clearTimeout(cloudTimer);
-      cloudTimer = null;
-    }
-
-    try {
-      if (cloudDoc && cloudReady) {
-        await pushCloudState();
-        await saveQueue;
-      }
-    } catch (error) {
-      console.error('Could not finish the final attendance save before automatic logout:', error);
-      showError('Automatic logout: the latest cloud save could not be confirmed. Check your connection after signing in again.');
-    }
-
-    // Only disable cloud access after the final save attempt has finished.
-    cloudReady = false;
-    try { localStorage.removeItem(BACKGROUND_ACTIVITY_KEY); } catch (_) {}
-    if (backgroundTimer !== null) clearTimeout(backgroundTimer);
-    backgroundTimer = null;
-
-    clearLoginCredentials();
-    try {
-      await auth.signOut();
-      showError('You were logged out automatically after 1 minute in the background. Sign in again to continue.');
-    } finally {
-      logoutInProgress = false;
-    }
-  }
-
-  function resetIdleTimer() {
-    if (!AUTO_LOGOUT_ENABLED) return;
-    if (!auth || !auth.currentUser || !cloudReady || logoutInProgress) return;
-    lastActivityAt = Date.now();
-    try { localStorage.setItem(IDLE_ACTIVITY_KEY, String(lastActivityAt)); } catch (_) {}
-    stopIdleTimer();
-    idleTimer = setTimeout(checkIdleDeadline, IDLE_TIMEOUT_MS);
-  }
-
-  function clearBackgroundTimer() {
-    if (backgroundTimer !== null) clearTimeout(backgroundTimer);
-    backgroundTimer = null;
-  }
-
-  function scheduleBackgroundLogout(startedAt) {
-    if (!AUTO_LOGOUT_ENABLED) return;
-    clearBackgroundTimer();
-    const remaining = Math.max(0, BACKGROUND_TIMEOUT_MS - (Date.now() - startedAt));
-    backgroundTimer = setTimeout(() => {
-      backgroundTimer = null;
-      if (document.visibilityState === 'hidden' && auth && auth.currentUser && cloudReady) {
-        expireIdleSession();
-      }
-    }, remaining);
-  }
-
-  function markAppBackgrounded() {
-    if (!AUTO_LOGOUT_ENABLED) return;
-    if (!auth || !auth.currentUser || logoutInProgress) return;
-    let startedAt = 0;
-    try { startedAt = Number(localStorage.getItem(BACKGROUND_ACTIVITY_KEY)); } catch (_) {}
-    if (!Number.isFinite(startedAt) || startedAt <= 0) {
-      startedAt = Date.now();
-      try { localStorage.setItem(BACKGROUND_ACTIVITY_KEY, String(startedAt)); } catch (_) {}
-    }
-    if (cloudReady) scheduleBackgroundLogout(startedAt);
-  }
-
-  function handleAppForegrounded() {
-    if (!AUTO_LOGOUT_ENABLED) return;
-    if (!auth || !auth.currentUser || logoutInProgress) return;
-    clearBackgroundTimer();
-    let startedAt = 0;
-    try { startedAt = Number(localStorage.getItem(BACKGROUND_ACTIVITY_KEY)); } catch (_) {}
-    if (Number.isFinite(startedAt) && startedAt > 0) {
-      if (Date.now() - startedAt >= BACKGROUND_TIMEOUT_MS) {
-        expireIdleSession();
-        return;
-      }
-      try { localStorage.removeItem(BACKGROUND_ACTIVITY_KEY); } catch (_) {}
-    }
-    if (cloudReady) resetIdleTimer();
-  }
-
-  // Timers can be heavily throttled while a phone is locked or the browser is in the
-  // background. Re-check the real elapsed time rather than trusting a single timeout.
-  function checkIdleDeadline() {
-    if (!AUTO_LOGOUT_ENABLED) return;
-    if (!auth || !auth.currentUser || !cloudReady || logoutInProgress) return;
-    if (Date.now() - lastActivityAt >= IDLE_TIMEOUT_MS) expireIdleSession();
-  }
-
-  idleWatchdog = setInterval(checkIdleDeadline, 1000);
-
-  window.addEventListener('storage', event => {
-    if (event.key !== IDLE_ACTIVITY_KEY || !event.newValue) return;
-    const sharedActivity = Number(event.newValue);
-    if (Number.isFinite(sharedActivity) && sharedActivity > lastActivityAt) {
-      lastActivityAt = sharedActivity;
-      if (auth && auth.currentUser && cloudReady && !logoutInProgress) {
-        stopIdleTimer();
-        idleTimer = setTimeout(checkIdleDeadline, Math.max(0, IDLE_TIMEOUT_MS - (Date.now() - lastActivityAt)));
-      }
-    }
-  });
-
-  window.addEventListener('pageshow', () => {
-    checkIdleDeadline();
-    if (document.visibilityState === 'visible') handleAppForegrounded();
-  });
-  window.addEventListener('pagehide', markAppBackgrounded);
-  // Android Home can blur an installed PWA without reliably firing pagehide.
-  window.addEventListener('blur', markAppBackgrounded);
-
-  ['pointerdown', 'keydown', 'touchstart', 'scroll', 'click'].forEach(eventName => {
-    document.addEventListener(eventName, resetIdleTimer, {passive: true});
-  });
-
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') markAppBackgrounded();
-    else handleAppForegrounded();
-  });
-
-  window.addEventListener('focus', handleAppForegrounded);
 
   function localState() {
     try {
@@ -1379,8 +1230,6 @@ load();
       loginButton.textContent = 'Signing in…';
       try {
         // A fresh, successful sign-in starts a new inactivity window.
-        localStorage.setItem(IDLE_ACTIVITY_KEY, String(Date.now()));
-        localStorage.removeItem(BACKGROUND_ACTIVITY_KEY);
         const credential = await auth.signInWithEmailAndPassword(
           document.getElementById('loginEmail').value.trim(),
           document.getElementById('loginPassword').value
@@ -1408,7 +1257,6 @@ load();
       if (logoutInProgress) return;
       logoutInProgress = true;
       clearLoginCredentials();
-      stopIdleTimer();
       if (cloudTimer !== null) {
         clearTimeout(cloudTimer);
         cloudTimer = null;
@@ -1424,9 +1272,6 @@ load();
       }
       cloudReady = false;
       cloudDoc = null;
-      try { localStorage.removeItem(IDLE_ACTIVITY_KEY); } catch (_) {}
-      try { localStorage.removeItem(BACKGROUND_ACTIVITY_KEY); } catch (_) {}
-      clearBackgroundTimer();
       try { await auth.signOut(); }
       finally { logoutInProgress = false; }
     });
@@ -1440,7 +1285,6 @@ load();
           showError('Startup timed out while: ' + loadingStage + '. Reload and share this message.');
         }
       }, 15000);
-      stopIdleTimer();
       cloudReady = false;
       cloudDoc = null;
 
@@ -1495,23 +1339,6 @@ load();
         }
         loadingStage = 'finishing dashboard setup';
         cloudReady = true;
-        let backgroundSince = 0;
-        try { backgroundSince = Number(localStorage.getItem(BACKGROUND_ACTIVITY_KEY)); } catch (_) {}
-        if (Number.isFinite(backgroundSince) && backgroundSince > 0) {
-          if (AUTO_LOGOUT_ENABLED && Date.now() - backgroundSince >= BACKGROUND_TIMEOUT_MS) {
-            clearTimeout(loadingWatchdog);
-            await expireIdleSession();
-            return;
-          }
-          // Automatic logout is currently disabled during desktop/mobile testing.
-          // Discard any stale background marker left by an earlier app version;
-          // otherwise startup can return early and leave the login/loading state stuck.
-          if (!AUTO_LOGOUT_ENABLED || document.visibilityState !== 'hidden') {
-            try { localStorage.removeItem(BACKGROUND_ACTIVITY_KEY); } catch (_) {}
-          } else {
-            scheduleBackgroundLogout(backgroundSince);
-          }
-        }
         if (window.attendanceCloudMergeNeeded) {
           window.attendanceCloudMergeNeeded = false;
           window.scheduleAttendanceCloudSave();
@@ -1523,13 +1350,6 @@ load();
         clearTimeout(loadingWatchdog);
         document.body.classList.add('authenticated');
         document.body.classList.remove('auth-checking');
-        const savedActivity = Number(localStorage.getItem(IDLE_ACTIVITY_KEY));
-        lastActivityAt = Number.isFinite(savedActivity) && savedActivity > 0 ? savedActivity : Date.now();
-        if (AUTO_LOGOUT_ENABLED && Date.now() - lastActivityAt >= IDLE_TIMEOUT_MS) {
-          await expireIdleSession();
-          return;
-        }
-        resetIdleTimer();
         showError('');
       } catch (error) {
         clearTimeout(loadingWatchdog);
