@@ -30,6 +30,16 @@
       #performancePanel .performance-table .performance-payout{font-size:17px}
       #performancePanel .performance-table .performance-total-row{background:#fff7e6!important}
       #performancePanel .performance-table .empty{display:block!important;grid-column:1/-1}
+      /* Hard-stop any horizontal overflow inside the performance panel on phones. */
+      #performancePanel,#performancePanel .top,#performancePanel .tablewrap,#performancePanel .performance-table,#performancePanel .performance-table tbody,#performancePanel .performance-table tr,#performancePanel .performance-table td{box-sizing:border-box!important;max-width:100%!important;min-width:0!important}
+      #performancePanel{width:100%;max-width:100%;overflow-x:hidden!important}
+      #performancePanel .tablewrap{overflow-x:hidden!important;overflow-y:visible!important}
+      #performancePanel .performance-table{width:100%!important;table-layout:fixed!important;border-collapse:separate}
+      #performancePanel .performance-table tbody tr{width:100%!important;overflow:hidden!important}
+      #performancePanel .performance-table tbody td{overflow-wrap:anywhere!important;word-break:normal!important}
+      #performancePanel .performance-table tbody td:first-child{display:flex!important;align-items:center!important;min-height:34px}
+      #performancePanel .performance-table .performance-rank{display:inline-flex!important;flex:0 0 40px!important;width:40px!important;min-width:40px!important;max-width:40px!important;height:30px!important;padding:0!important;align-items:center!important;justify-content:center!important;white-space:nowrap!important;overflow:hidden!important}
+      #performancePanel .performance-table .performance-bar{width:100%!important;max-width:100%!important;min-width:0!important}
     }
   `;
   document.head.appendChild(style);
