@@ -970,9 +970,18 @@ function parseChat(raw,senderOverride){
   if(/lunch\s*(in|end)|break\s*in/.test(t)){r._hasLunchMessage=true;r._lunchIn=parseLunchEventTime(eventText,m.time);if(timeNeedsReview(eventText,'lunch\\s*(?:out|in|start|end)|break\\s*(?:out|in)'))r.notes.push('Lunch IN AM/PM missing; confirm the event time: '+eventText);}
   if(/\bpermission\s*out\b/i.test(eventText)){r._hasPermissionMessage=true;r._permissionOut=parseEventTime(eventText,m.time,'permission\\s*out');if(timeNeedsReview(eventText,'permission\\s*out'))r.notes.push('Permission OUT AM/PM missing; confirm the event time: '+eventText);}
   if(/\bpermission\s*in\b/i.test(eventText)){r._hasPermissionMessage=true;r._permissionIn=parseEventTime(eventText,m.time,'permission\\s*in');if(timeNeedsReview(eventText,'permission\\s*in'))r.notes.push('Permission IN AM/PM missing; confirm the event time: '+eventText);}
-  if(!/\bpermission\s*(?:out|in)\b/i.test(m.text)){
-   const pm=eventText.match(/permission[^\d]*(\d+(?:\.\d+)?)\s*(h|hr|hrs|hour|hours|min|mins|minute|minutes)?/i);
-   if(pm){const n=+pm[1];r.permission+=/min/i.test(pm[2]||'')?n/60:n;r._hasPermissionMessage=true;}
+  if(!/\bpermission\s*(?:out|in)\b/i.test(eventText)){
+   // WhatsApp commonly writes the duration before the word permission.
+   // Support '1 hr permission', 'half hour permission', '30 min permission',
+   // and 'permission 1 hr' without treating Permission OUT/IN as durations.
+   const pm=eventText.match(/\b(half|one|a|an|\d+(?:\.\d+)?)\s*(h|hr|hrs|hour|hours|min|mins|minute|minutes)?\s*permission\b|\bpermission\s*(?:for|of)?\s*(half|one|a|an|\d+(?:\.\d+)?)\s*(h|hr|hrs|hour|hours|min|mins|minute|minutes)?\b/i);
+   if(pm){
+    const rawAmount=pm[1]||pm[3],unit=(pm[2]||pm[4]||'hour').toLowerCase();
+    const amount=/^(half|a|an)$/i.test(rawAmount)?0.5:/^one$/i.test(rawAmount)?1:Number(rawAmount);
+    const duration=/min/i.test(unit)?amount/60:amount;
+    if(Number.isFinite(duration)&&duration>0){r.permission+=duration;r._hasPermissionMessage=true;}
+   }
+  }
   }
  }
  // Reconcile leave only after all messages for this employee and date have been processed.
