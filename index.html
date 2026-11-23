@@ -1006,6 +1006,7 @@ function parseChat(raw,senderOverride){
   delete cleanImported._lunchOut;delete cleanImported._lunchIn;delete cleanImported._permissionOut;delete cleanImported._permissionIn;delete cleanImported._partialLeaveAnnounced;delete cleanImported._fullLeaveExplicit;
   if(!existing){delete cleanImported._hasPunchMessage;delete cleanImported._hasInMessage;delete cleanImported._hasOutMessage;delete cleanImported._hasLunchMessage;delete cleanImported._hasPermissionMessage;delete cleanImported._statusExplicit;records.push(cleanImported);continue;}
   // Update only the punch type actually present in this import. A missing event in a partial export is not a deletion.
+  existing.notes=Array.isArray(existing.notes)?existing.notes:[];
   if(imported._hasInMessage)existing.in=imported.in||'';
   if(imported._hasOutMessage)existing.out=imported.out||'';
   if(imported._hasLunchMessage){
@@ -1022,7 +1023,6 @@ function parseChat(raw,senderOverride){
    else existing.notes.push('Permission message was only partially imported; existing permission deduction was preserved for review.');
   }
   if(imported._statusExplicit){existing.status=imported.status;}
-  existing.notes=Array.isArray(existing.notes)?existing.notes:[];
   existing.notes=[...new Set([...existing.notes,...(imported.notes||[])])];
  }
  // Verified Sanjai corrections remain limited to dates with independently confirmed punch evidence.
