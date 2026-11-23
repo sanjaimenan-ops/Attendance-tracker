@@ -1028,7 +1028,7 @@ window.calculateAttendance=calculateAttendance;
 function calc(r){return calculateAttendance(r,{shift:$('shift').value,lunch:$('lunch').value,rate:$('rate').value,otrate:$('otrate').value,leavepay:$('leavepay').value})}
 function syncIncentiveMonthOptions(selectedMonth){
  const picker=$('incentiveMonth');
- if(picker&&/^\\d{4}-\\d{2}$/.test(selectedMonth))picker.value=selectedMonth;
+ if(picker&&/^\d{4}-\d{2}$/.test(selectedMonth))picker.value=selectedMonth;
 }
 function render(){
  const month=$('month').value;
