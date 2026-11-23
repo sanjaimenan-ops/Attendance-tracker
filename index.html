@@ -1432,10 +1432,12 @@ load();
     });
 
     auth.onAuthStateChanged(async user => {
+      let loadingStage = 'waiting for Firebase authentication';
       const loadingWatchdog = setTimeout(() => {
         if (document.body.classList.contains('auth-checking')) {
+          console.error('Attendance startup timed out at stage:', loadingStage);
           document.body.classList.remove('auth-checking');
-          showError('Firebase is taking too long to respond. Check your internet connection, then reload this page.');
+          showError('Startup timed out while: ' + loadingStage + '. Reload and share this message.');
         }
       }, 15000);
       stopIdleTimer();
@@ -1459,14 +1461,18 @@ load();
         return;
       }
 
+      loadingStage = 'opening the private Firestore document';
       cloudDoc = db.collection('users').doc(user.uid)
         .collection('private').doc('attendanceTracker');
 
       try {
+        loadingStage = 'reading cloud attendance data';
         const doc = await withTimeout(cloudDoc.get(), 'Loading cloud attendance data');
         if (doc.exists) {
+          loadingStage = 'processing cloud attendance data';
           applyCloudState(doc.data());
         } else {
+          loadingStage = 'preparing local attendance data for cloud initialization';
           const local = localState();
           staffStore = local.staffStore && typeof local.staffStore === 'object'
             ? {...local.staffStore}
@@ -1477,6 +1483,7 @@ load();
           resetMonths = new Set(Array.isArray(resetMonthsByStaff[activeStaff]) ? resetMonthsByStaff[activeStaff] : []);
           renderStaffOptions();
           applySnapshot(staffStore[activeStaff]);
+          loadingStage = 'saving initial attendance data to Firestore';
           await withTimeout(cloudDoc.set({
             staffStore: staffStore,
             activeStaff: activeStaff,
@@ -1486,6 +1493,7 @@ load();
             resetMonthsByStaff: resetMonthsByStaff
           }), 'Initializing cloud attendance data');
         }
+        loadingStage = 'finishing dashboard setup';
         cloudReady = true;
         let backgroundSince = 0;
         try { backgroundSince = Number(localStorage.getItem(BACKGROUND_ACTIVITY_KEY)); } catch (_) {}
