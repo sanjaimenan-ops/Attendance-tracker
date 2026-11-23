@@ -825,7 +825,7 @@ function timeParts(value){const mins=parseInputTime(value);if(mins===null)return
 function daysInMonth(v){let [y,m]=v.split('-').map(Number);return new Date(y,m,0).getDate()}
 function calc(r){let clock=hoursBetween(parseInputTime(r.in),parseInputTime(r.out));let extra=Math.max(0,(+r.lunch||0)-(+ $('lunch').value||0));let net=r.status==='Leave'?(+$('leavepay').value||0):Math.max(0,clock-extra-(+r.permission||0));let reg=r.status==='Leave'?Math.min(net,+$('shift').value||10):Math.min(net,+$('shift').value||10);let ot=r.status==='Leave'?0:Math.max(0,net-reg);let calculatedPay=reg*(+$('rate').value||0)+ot*(+$('otrate').value||0);return {clock,extra,net,reg,ot,pay:calculatedPay}}
 function syncIncentiveMonthOptions(selectedMonth){
- const select=$('incentiveMonth');if(!select||!/^\\d{4}-\\d{2}$/.test(selectedMonth))return;
+ const select=$('incentiveMonth');if(!select||!/^\d{4}-\d{2}$/.test(selectedMonth))return;
  const [year,month]=selectedMonth.split('-').map(Number);
  const center=new Date(year,month-1,1);
  const options=[];
