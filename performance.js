@@ -50,6 +50,21 @@
       #performancePanel .performance-table .performance-payout{font-size:17px}
       #performancePanel .performance-table tbody td:first-child .performance-rank{display:flex!important;flex:0 0 42px!important;box-sizing:border-box!important;width:42px!important;min-width:42px!important;max-width:42px!important;height:32px!important;margin:0!important;padding:0!important;align-items:center!important;justify-content:center!important;background:#172554!important;color:#fff!important;border-radius:8px!important;font-size:14px!important;line-height:32px!important;font-weight:800!important;white-space:nowrap!important;overflow:visible!important;visibility:visible!important;opacity:1!important}
       #performancePanel .performance-table .performance-bar{width:100%!important;max-width:100%!important;min-width:0!important}
+      /* Keep every value inside its own grid cell/card. */
+      #performancePanel .performance-table tbody tr{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+      #performancePanel .performance-table tbody td,
+      #performancePanel .performance-table tbody td *,
+      #performancePanel .performance-table tbody td strong,
+      #performancePanel .performance-table tbody td span{min-width:0!important;max-width:100%!important;box-sizing:border-box!important;overflow-wrap:anywhere!important;word-break:break-word!important}
+      #performancePanel .performance-table tbody td{font-size:clamp(11px,3.2vw,14px)!important;line-height:1.35}
+      #performancePanel .performance-table tbody td:before{font-size:clamp(9px,2.8vw,11px)!important;overflow-wrap:anywhere!important}
+      #performancePanel .performance-table tbody td:nth-child(3),
+      #performancePanel .performance-table tbody td:nth-child(4),
+      #performancePanel .performance-table tbody td:nth-child(5){grid-column:span 1!important}
+      #performancePanel .performance-table tbody td:nth-child(6){grid-column:span 2!important}
+      #performancePanel .performance-table tbody td:last-child{grid-column:1/-1!important}
+      #performancePanel .performance-table .performance-payout{font-size:clamp(14px,4vw,17px)!important;line-height:1.25;white-space:normal!important}
+      #performancePanel .metric,#performancePanel .metric strong{min-width:0!important;max-width:100%!important;overflow-wrap:anywhere!important;word-break:break-word!important}
     }
   `;
   document.head.appendChild(style);
