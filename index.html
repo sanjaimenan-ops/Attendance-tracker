@@ -830,6 +830,10 @@ let resetMonths=new Set();let resetMonthsByStaff={};
 function defaultStaffData(name){return {records:[],settings:{sender:name,month:'2026-11',shift:'10',lunch:'1',rate:'0',otrate:'0',leavepay:'0'}}}
 function snapshot(){return {records:JSON.parse(JSON.stringify(records)),settings:getSettings()}}
 function save(){try{resetMonthsByStaff[activeStaff]=[...resetMonths];staffStore[activeStaff]=snapshot();localStorage.setItem(key,JSON.stringify({staffStore,activeStaff,resetMonths:[...(resetMonthsByStaff.Sanjai||[])],resetMonthsByStaff,incentivePool}));if(window.scheduleAttendanceCloudSave)window.scheduleAttendanceCloudSave()}catch(e){}}
+window.attendanceTrackerBridge = window.attendanceTrackerBridge || {};
+window.attendanceTrackerBridge.renderStaffOptions = renderStaffOptions;
+window.attendanceTrackerBridge.applySnapshot = applySnapshot;
+window.attendanceTrackerBridge.defaultStaffData = defaultStaffData;
 function renderStaffOptions(){const select=$('staffSelect');if(!select)return;select.innerHTML='';Object.keys(staffStore).sort((a,b)=>a.localeCompare(b)).forEach(name=>{const option=document.createElement('option');option.value=name;option.textContent=name;select.appendChild(option)});select.value=activeStaff;renderEmployeePicker()}
 function renderEmployeePicker(){const select=$('staffSelect'),menu=$('employeePickerMenu'),value=$('employeePickerValue');if(!select||!menu||!value)return;value.textContent=select.value||activeStaff;menu.innerHTML='';[...select.options].forEach(option=>{const item=document.createElement('button');item.type='button';item.className='employee-picker-option';item.setAttribute('role','option');item.setAttribute('aria-selected',String(option.value===select.value));item.innerHTML='<span></span><span class="employee-picker-check" aria-hidden="true">'+(option.value===select.value?'✓':'')+'</span>';item.firstElementChild.textContent=option.textContent;item.addEventListener('click',()=>{select.value=option.value;select.dispatchEvent(new Event('change',{bubbles:true}));closeEmployeePicker()});menu.appendChild(item)})}
 function closeEmployeePicker(){const menu=$('employeePickerMenu'),trigger=$('employeePickerTrigger');if(menu)menu.classList.add('hidden');if(trigger)trigger.setAttribute('aria-expanded','false')}
@@ -1111,7 +1115,7 @@ $('csv').onclick=()=>{
 };
 load();
 // Expose the attendance UI helpers needed by the separate Firebase module.
-window.attendanceTrackerBridge = { renderStaffOptions, applySnapshot, defaultStaffData };
+// Bridge is initialized beside the app functions so it exists before Firebase auth callbacks run.
 </script>
 <script src="./performance.js?v=sharedcalc1"></script>
 <!-- Firebase Authentication and private Firestore sync -->
