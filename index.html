@@ -862,6 +862,8 @@ function parseEventTime(text,messageTime,eventLabels){
   // A 1–12 hour value without AM/PM is ambiguous. Do not silently
   // convert it using the WhatsApp message timestamp; leave it for review.
   if(parts&&+parts[1]>=1&&+parts[1]<=12)return null;
+  // Do not fall back to the WhatsApp message timestamp when an event time was supplied but is ambiguous.
+  return null;
  }
  return stamp;
 }
