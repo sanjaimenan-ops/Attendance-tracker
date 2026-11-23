@@ -487,6 +487,42 @@ body.authenticated .settings-menu-save{width:100%!important;min-height:38px!impo
  #calculationSettings .settings-menu-grid{grid-template-columns:1fr!important}
 }
 </style>
+<style>
+/* Keep calculation options in normal layout flow so they never cover the Monthly summary card or its dropdown arrow. */
+#calculationSettings .staff-controls{
+ display:grid!important;
+ grid-template-columns:minmax(0,1fr) minmax(0,1fr) 40px!important;
+ align-items:end!important;
+ gap:9px!important;
+ overflow:visible!important;
+}
+#calculationSettings .staff-controls>.employee-picker-label,
+#calculationSettings .staff-controls>.month-picker-label{min-width:0!important;width:auto!important}
+#calculationSettings .staff-actions-wrap{display:contents!important}
+#calculationSettings .staff-more-trigger{grid-column:3!important;grid-row:1!important;justify-self:end!important}
+#calculationSettings .staff-actions-menu{
+ position:relative!important;
+ inset:auto!important;
+ grid-column:1/-1!important;
+ grid-row:2!important;
+ width:100%!important;
+ max-width:none!important;
+ max-height:min(58vh,560px)!important;
+ margin:2px 0 8px!important;
+ box-sizing:border-box!important;
+ overflow-y:auto!important;
+ z-index:1!important;
+}
+#calculationSettings .staff-actions-menu.hidden{display:none!important}
+#calculationSettings.collapsible-panel{overflow:visible!important}
+#calculationSettings>.collapsible-content{overflow:visible!important}
+#monthlySummary{position:relative!important;z-index:0!important;clear:both!important}
+#monthlySummary>.collapsible-heading{position:relative!important;z-index:0!important}
+@media(max-width:760px){
+ #calculationSettings .staff-controls{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 36px!important;gap:7px!important}
+ #calculationSettings .staff-actions-menu{width:100%!important;max-height:55vh!important}
+}
+</style>
 </head>
 <body class="auth-checking">
 <div id="authLoading" role="status" aria-live="polite"><span class="auth-loading-ripple" aria-hidden="true"><i></i><i></i><i></i><b></b></span><span>Refreshing</span></div>
