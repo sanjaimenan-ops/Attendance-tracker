@@ -384,6 +384,31 @@ body.authenticated .wrap>header button svg{width:14px;height:14px}
   body.authenticated .panel .controls{gap:5px!important}
 }
 </style>
+<style>
+/* Calculation settings: keep employee + month visible; move remaining settings into the options popover. */
+.staff-controls{display:flex;align-items:end;gap:10px;flex-wrap:nowrap;margin:0 0 12px}
+.staff-controls .employee-picker-label,.staff-controls .month-picker-label{flex:1 1 0;min-width:0}
+.staff-controls .employee-picker,.staff-controls .month-picker-label input{width:100%;min-width:0}
+.staff-actions-wrap{position:relative;flex:0 0 42px;margin-left:0}
+body.authenticated .staff-more-trigger{width:42px!important;min-width:42px!important;height:48px!important;min-height:48px!important;font-size:23px!important}
+.staff-actions-menu{width:min(380px,calc(100vw - 40px));max-height:min(72vh,560px);overflow-y:auto;padding:14px;right:0;top:calc(100% + 8px);border:1px solid #fed7aa;border-radius:15px;box-shadow:0 16px 38px #7c2d1230}
+.settings-menu-title{font-size:14px;font-weight:750;color:#292524;margin:0 0 10px}
+.settings-menu-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.settings-menu-grid label{min-width:0;width:100%;font-size:12px;color:#57534e;font-weight:650;display:flex;flex-direction:column;gap:5px}
+.settings-menu-grid input{width:100%;min-width:0;min-height:40px;padding:8px 9px}
+body.authenticated .settings-menu-save{width:100%!important;min-height:38px!important;margin-top:12px;padding:9px 12px!important;font-size:12px!important}
+.settings-menu-divider{height:1px;background:#fed7aa;margin:14px 0}
+.staff-actions-menu .staff-action-item{width:100%!important}
+@media(max-width:760px){
+ .staff-controls{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:9px!important;align-items:end}
+ .staff-controls .employee-picker-label,.staff-controls .month-picker-label{min-width:0}
+ .staff-actions-wrap{grid-column:1/-1;justify-self:end;flex-basis:30px}
+ body.authenticated .staff-more-trigger{width:34px!important;min-width:34px!important;height:34px!important;min-height:34px!important}
+ .staff-actions-menu{width:min(360px,calc(100vw - 28px));right:0}
+ .settings-menu-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+}
+@media(max-width:360px){.settings-menu-grid{grid-template-columns:1fr}}
+</style>
 </head>
 <body class="auth-checking">
 <div id="authLoading" role="status" aria-live="polite"><span class="auth-loading-ripple" aria-hidden="true"><i></i><i></i><i></i><b></b></span><span>Refreshing</span></div>
@@ -434,14 +459,26 @@ body.authenticated .wrap>header button svg{width:14px;height:14px}
   <div class="employee-picker-menu hidden" id="employeePickerMenu" role="listbox" aria-label="Choose employee"></div>
   <select id="staffSelect" aria-label="Employee profile" tabindex="-1" aria-hidden="true"></select>
 </div></label><div class="staff-actions-wrap">
-<button type="button" class="staff-more-trigger" id="staffMoreTrigger" aria-label="Employee options" aria-haspopup="menu" aria-expanded="false">⋮</button>
-<div class="staff-actions-menu hidden" id="staffActionsMenu" role="menu" aria-label="Employee options">
-<button type="button" class="staff-action-item" id="staffMenuAdd" role="menuitem">Add employee</button>
-<button type="button" class="staff-action-item" id="staffMenuEdit" role="menuitem">Edit profile name</button>
-<button type="button" class="staff-action-item danger" id="staffMenuDelete" role="menuitem">Delete employee</button>
+<button type="button" class="staff-more-trigger" id="staffMoreTrigger" aria-label="Calculation options" aria-haspopup="dialog" aria-expanded="false">⋮</button>
+<div class="staff-actions-menu hidden" id="staffActionsMenu" role="dialog" aria-label="Calculation and employee options">
+  <div class="settings-menu-title">Calculation options</div>
+  <div class="settings-menu-grid">
+    <label>Employee name keyword(s)<input id="sender" value="Sanjai" autocomplete="off" placeholder="e.g. Sanjai"></label>
+    <label>Shift hours<input id="shift" type="number" min="0" step="0.25" value="10"></label>
+    <label>Included lunch hours<input id="lunch" type="number" min="0" step="0.25" value="1"></label>
+    <label>Regular rate (₹/h)<input id="rate" type="number" min="0" step="0.01" value="70"></label>
+    <label>Overtime rate (₹/h)<input id="otrate" type="number" min="0" step="0.01" value="88"></label>
+    <label>Paid leave hours/day<input id="leavepay" type="number" min="0" step="0.25" value="0"></label>
+  </div>
+  <button type="button" id="saveStaffSettings" class="settings-menu-save">Save salary &amp; work settings</button>
+  <div class="settings-menu-divider"></div>
+  <div class="settings-menu-title">Employee management</div>
+  <button type="button" class="staff-action-item" id="staffMenuAdd" role="menuitem">Add employee</button>
+  <button type="button" class="staff-action-item" id="staffMenuEdit" role="menuitem">Edit profile name</button>
+  <button type="button" class="staff-action-item danger" id="staffMenuDelete" role="menuitem">Delete employee</button>
 </div>
 </div>
-<div class="staff-legacy-controls" aria-hidden="true"><input id="newStaffName" type="text" maxlength="60" tabindex="-1"><button type="button" id="addStaff" tabindex="-1">Add employee</button><button type="button" id="editStaff" tabindex="-1">Edit profile name</button><button type="button" id="deleteStaff" tabindex="-1">Delete employee</button></div></div><label>Employee name keyword(s)<input id="sender" value="Sanjai" autocomplete="off" placeholder="e.g. Sanjai"></label><label>Month<input id="month" type="month" value="2026-11"></label><label>Shift hours<input id="shift" type="number" min="0" step="0.25" value="10"></label><label>Included lunch hours<input id="lunch" type="number" min="0" step="0.25" value="1"></label><label>Regular rate (₹/h)<input id="rate" type="number" min="0" step="0.01" value="70"></label><label>Overtime rate (₹/h)<input id="otrate" type="number" min="0" step="0.01" value="88"></label><label>Paid leave hours/day<input id="leavepay" type="number" min="0" step="0.25" value="0"></label></div><div class="settings-actions"><button type="button" id="saveStaffSettings">Save salary &amp; work settings</button></div></div></details>
+<div class="staff-legacy-controls" aria-hidden="true"><input id="newStaffName" type="text" maxlength="60" tabindex="-1"><button type="button" id="addStaff" tabindex="-1">Add employee</button><button type="button" id="editStaff" tabindex="-1">Edit profile name</button><button type="button" id="deleteStaff" tabindex="-1">Delete employee</button></div></div><label class="month-picker-label">Month<input id="month" type="month" value="2026-11"></label></div></div></details>
 <details class="panel collapsible-panel" id="monthlySummary"><summary class="collapsible-heading"><h3>Monthly summary</h3><span class="muted">Attendance totals &amp; salary</span></summary><div class="collapsible-content"><div class="top"><div class="controls noprint"><button class="secondary" id="reset">Reset month</button><button class="secondary" id="csv">Export CSV</button><button id="print">Print / Save PDF</button></div></div><div class="grid summary-grid" style="margin-top:14px"><div class="metric"><small>Present days</small><strong id="present">0</strong></div><div class="metric leave-metric"><div class="leave-metric-heading"><small>Leave days</small><strong id="leaves">4</strong></div><div id="leaveDates" class="leave-dates" aria-label="Leave dates"></div></div><div class="metric"><small>Total clocked hours</small><strong id="clockedHours">0.00</strong></div><div class="metric"><small>Regular hours</small><strong id="regularHours">0.00</strong></div><div class="metric"><small>Overtime hours</small><strong id="overtimeHours">0.00</strong></div><div class="metric"><small>Net paid hours</small><strong id="hours">0.00</strong></div><div class="metric lunch-deducted-metric"><small>Lunch deducted hours</small><strong id="lunchDeductedHours">0.00</strong></div><div class="metric"><small>Estimated salary</small><strong id="salary">₹0.00</strong></div></div>
 </div></details>
 
