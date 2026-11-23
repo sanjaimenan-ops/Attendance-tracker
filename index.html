@@ -1035,8 +1035,7 @@ function parseChat(raw,senderOverride){
   }
   if(imported._hasPermissionMessage){
    if(imported._permissionOut!=null&&imported._permissionIn!=null)existing.permission=imported.permission;
-   else existing.permission=0;
-   else existing.notes.push('Permission message was only partially imported; existing permission deduction was preserved for review.');
+   else {existing.permission=0;existing.notes.push('Permission was announced without a complete OUT/IN pair; no separate deduction applied.');}
   }
   if(imported._statusExplicit){existing.status=imported.status;}
   existing.notes=[...new Set([...existing.notes,...(imported.notes||[])])];
@@ -1070,8 +1069,10 @@ function parseAllStaffChat(raw){
   const cursor=new Date(first);
   while(cursor<=last){
    const date=dateKey(cursor.getFullYear(),cursor.getMonth()+1,cursor.getDate());
-   if(!messageDates.has(date)&&!existingDates.has(date)){
-    records.push({date,status:'Leave',in:'',out:'',lunchOut:'',lunchIn:'',lunch:0,permission:0,notes:['No WhatsApp messages from this employee on this date; classified as Leave.']});
+   if(!messageDates.has(date)){
+    const existing=records.find(r=>r.date===date);
+    if(existing){existing.status='Leave';existing.in='';existing.out='';existing.lunchOut='';existing.lunchIn='';existing.lunch=0;existing.permission=0;existing.notes=[...(existing.notes||[]),'No WhatsApp messages from this employee on this date; classified as Leave.'];}
+    else records.push({date,status:'Leave',in:'',out:'',lunchOut:'',lunchIn:'',lunch:0,permission:0,notes:['No WhatsApp messages from this employee on this date; classified as Leave.']});
     existingDates.add(date);
    }
    cursor.setDate(cursor.getDate()+1);
