@@ -523,6 +523,43 @@ body.authenticated .settings-menu-save{width:100%!important;min-height:38px!impo
  #calculationSettings .staff-actions-menu{width:100%!important;max-height:55vh!important}
 }
 </style>
+<style>
+/* Separate employee management from calculation options */
+#calculationSettings .employee-management-wrap{display:contents!important}
+#calculationSettings .employee-management-trigger{
+ grid-column:1/-1!important;
+ grid-row:3!important;
+ justify-self:start!important;
+ width:auto!important;
+ min-height:36px!important;
+ padding:8px 13px!important;
+ background:#fff1d9!important;
+ color:#704b17!important;
+ border:1px solid #e9c477!important;
+ border-radius:10px!important;
+ box-shadow:none!important;
+ font-size:12px!important;
+}
+#calculationSettings .employee-management-menu{
+ position:relative!important;
+ inset:auto!important;
+ grid-column:1/-1!important;
+ grid-row:4!important;
+ width:100%!important;
+ max-width:none!important;
+ margin:0 0 8px!important;
+ padding:12px!important;
+ box-sizing:border-box!important;
+ border:1px solid #fed7aa!important;
+ border-radius:14px!important;
+ background:#fff!important;
+ box-shadow:0 8px 20px #7c2d1220!important;
+ z-index:1!important;
+}
+#calculationSettings .employee-management-menu.hidden{display:none!important}
+#calculationSettings .employee-management-menu .staff-action-item{width:100%!important;min-height:38px!important;margin:3px 0!important}
+#calculationSettings .staff-actions-menu{grid-row:2!important}
+</style>
 </head>
 <body class="auth-checking">
 <div id="authLoading" role="status" aria-live="polite"><span class="auth-loading-ripple" aria-hidden="true"><i></i><i></i><i></i><b></b></span><span>Refreshing</span></div>
@@ -574,7 +611,7 @@ body.authenticated .settings-menu-save{width:100%!important;min-height:38px!impo
   <select id="staffSelect" aria-label="Employee profile" tabindex="-1" aria-hidden="true"></select>
 </div></label><label class="month-picker-label">Month<input id="month" type="month" value="2026-11"></label><div class="staff-actions-wrap">
 <button type="button" class="staff-more-trigger" id="staffMoreTrigger" aria-label="Calculation options" aria-haspopup="dialog" aria-expanded="false">⋮</button>
-<div class="staff-actions-menu hidden" id="staffActionsMenu" role="dialog" aria-label="Calculation and employee options">
+<div class="staff-actions-menu hidden" id="staffActionsMenu" role="dialog" aria-label="Calculation options">
   <div class="settings-menu-title">Calculation options</div>
   <div class="settings-menu-grid">
     <label>Employee name keyword(s)<input id="sender" value="Sanjai" autocomplete="off" placeholder="e.g. Sanjai"></label>
@@ -585,11 +622,16 @@ body.authenticated .settings-menu-save{width:100%!important;min-height:38px!impo
     <label>Paid leave hours/day<input id="leavepay" type="number" min="0" step="0.25" value="0"></label>
   </div>
   <button type="button" id="saveStaffSettings" class="settings-menu-save">Save salary &amp; work settings</button>
-  <div class="settings-menu-divider"></div>
-  <div class="settings-menu-title">Employee management</div>
-  <button type="button" class="staff-action-item" id="staffMenuAdd" role="menuitem">Add employee</button>
-  <button type="button" class="staff-action-item" id="staffMenuEdit" role="menuitem">Edit profile name</button>
-  <button type="button" class="staff-action-item danger" id="staffMenuDelete" role="menuitem">Delete employee</button>
+</div>
+</div>
+<div class="employee-management-wrap">
+  <button type="button" class="employee-management-trigger" id="staffManageTrigger" aria-haspopup="dialog" aria-expanded="false">Employee management</button>
+  <div class="employee-management-menu hidden" id="staffManagementMenu" role="dialog" aria-label="Employee management">
+    <div class="settings-menu-title">Employee management</div>
+    <button type="button" class="staff-action-item" id="staffMenuAdd" role="menuitem">Add employee</button>
+    <button type="button" class="staff-action-item" id="staffMenuEdit" role="menuitem">Edit profile name</button>
+    <button type="button" class="staff-action-item danger" id="staffMenuDelete" role="menuitem">Delete employee</button>
+  </div>
 </div>
 </div>
 <div class="staff-legacy-controls" aria-hidden="true"><input id="newStaffName" type="text" maxlength="60" tabindex="-1"><button type="button" id="addStaff" tabindex="-1">Add employee</button><button type="button" id="editStaff" tabindex="-1">Edit profile name</button><button type="button" id="deleteStaff" tabindex="-1">Delete employee</button></div></div></div></details>
@@ -778,12 +820,14 @@ $('addStaff').addEventListener('click',()=>{const name=$('newStaffName').value.t
 $('editStaff').addEventListener('click',()=>{const oldName=activeStaff;const proposed=window.prompt('Enter the new employee profile name:',oldName);if(proposed===null)return;const newName=proposed.trim();if(!newName){notify('Employee name cannot be empty.','error');return;}const collision=Object.keys(staffStore).find(name=>name.toLowerCase()===newName.toLowerCase()&&name!==oldName);if(collision){notify('An employee profile with that name already exists.','error');return;}if(newName===oldName){notify('No name changes made.');return;}save();const profile=staffStore[oldName];if(profile?.settings?.sender===oldName)profile.settings.sender=newName;staffStore[newName]=profile;delete staffStore[oldName];if(resetMonthsByStaff[oldName]){resetMonthsByStaff[newName]=resetMonthsByStaff[oldName];delete resetMonthsByStaff[oldName];}activeStaff=newName;resetMonths=new Set(Array.isArray(resetMonthsByStaff[newName])?resetMonthsByStaff[newName]:[]);renderStaffOptions();applySnapshot(staffStore[newName]);save();notify('Employee profile renamed to '+newName+'.');});
 $('deleteStaff').addEventListener('click',()=>{if(activeStaff==='Sanjai'){notify('The original Sanjai profile is protected to preserve existing attendance records.','error');return;}const count=Array.isArray(staffStore[activeStaff]?.records)?staffStore[activeStaff].records.length:0;if(!window.confirm('Delete '+activeStaff+' and all '+count+' attendance records and settings in this profile? This cannot be undone.'))return;const deleted=activeStaff;delete staffStore[deleted];delete resetMonthsByStaff[deleted];activeStaff='Sanjai';resetMonths=new Set(Array.isArray(resetMonthsByStaff.Sanjai)?resetMonthsByStaff.Sanjai:[]);renderStaffOptions();applySnapshot(staffStore.Sanjai||defaultStaffData('Sanjai'));save();notify(deleted+' profile deleted.');});
 function closeStaffActionsMenu(){const menu=$('staffActionsMenu'),trigger=$('staffMoreTrigger');if(menu)menu.classList.add('hidden');if(trigger)trigger.setAttribute('aria-expanded','false')}
-$('staffMoreTrigger').addEventListener('click',()=>{const menu=$('staffActionsMenu'),trigger=$('staffMoreTrigger'),opening=menu.classList.contains('hidden');menu.classList.toggle('hidden',!opening);trigger.setAttribute('aria-expanded',String(opening))});
-$('staffMenuAdd').addEventListener('click',()=>{closeStaffActionsMenu();const name=window.prompt('Enter the new employee name:');if(name===null)return;$('newStaffName').value=name;$('addStaff').click()});
-$('staffMenuEdit').addEventListener('click',()=>{closeStaffActionsMenu();$('editStaff').click()});
-$('staffMenuDelete').addEventListener('click',()=>{closeStaffActionsMenu();$('deleteStaff').click()});
-document.addEventListener('click',event=>{const wrap=$('staffActionsMenu')?.parentElement;if(wrap&&!wrap.contains(event.target))closeStaffActionsMenu()});
-document.addEventListener('keydown',event=>{if(event.key==='Escape')closeStaffActionsMenu()});
+function closeEmployeeManagementMenu(){const menu=$('staffManagementMenu'),trigger=$('staffManageTrigger');if(menu)menu.classList.add('hidden');if(trigger)trigger.setAttribute('aria-expanded','false')}
+$('staffMoreTrigger').addEventListener('click',()=>{closeEmployeeManagementMenu();const menu=$('staffActionsMenu'),trigger=$('staffMoreTrigger'),opening=menu.classList.contains('hidden');menu.classList.toggle('hidden',!opening);trigger.setAttribute('aria-expanded',String(opening))});
+$('staffManageTrigger').addEventListener('click',()=>{closeStaffActionsMenu();const menu=$('staffManagementMenu'),trigger=$('staffManageTrigger'),opening=menu.classList.contains('hidden');menu.classList.toggle('hidden',!opening);trigger.setAttribute('aria-expanded',String(opening))});
+$('staffMenuAdd').addEventListener('click',()=>{closeEmployeeManagementMenu();const name=window.prompt('Enter the new employee name:');if(name===null)return;$('newStaffName').value=name;$('addStaff').click()});
+$('staffMenuEdit').addEventListener('click',()=>{closeEmployeeManagementMenu();$('editStaff').click()});
+$('staffMenuDelete').addEventListener('click',()=>{closeEmployeeManagementMenu();$('deleteStaff').click()});
+document.addEventListener('click',event=>{if(!$('staffActionsMenu')?.parentElement?.contains(event.target))closeStaffActionsMenu();if(!$('staffManagementMenu')?.parentElement?.contains(event.target))closeEmployeeManagementMenu()});
+document.addEventListener('keydown',event=>{if(event.key==='Escape'){closeStaffActionsMenu();closeEmployeeManagementMenu()}});
 $('saveStaffSettings').addEventListener('click',()=>{save();notify('Salary and working settings saved for '+activeStaff+'.');});
 $('file').addEventListener('change',async e=>{let f=e.target.files[0];if(!f)return;const importButton=$('importFileButton');importButton.classList.remove('imported');importButton.lastChild.textContent='Choose WhatsApp TXT';$('fileName').textContent=f.name;uploadBusy(true);try{const raw=await f.text();if(!raw.trim())throw new Error('The selected file is empty.');const sender=$('sender').value.trim();if(!sender)throw new Error('Enter at least one employee-name keyword before importing.');const matched=parseChat(raw,sender);if(!matched)throw new Error('No WhatsApp sender matched the employee-name keyword(s) “'+sender+'”. Check the name and try again.');save();importButton.classList.add('imported');importButton.lastChild.textContent='Imported ✓';uploadBusy(false);notify('Imported '+matched+' messages for '+activeStaff+'.');}catch(err){uploadBusy(false);notify(err.message||'Upload failed. Please choose a WhatsApp TXT export.','error');}finally{e.target.value='';}});
 document.addEventListener('change',e=>{let i=e.target.dataset.i,k=e.target.dataset.k;if(i!==undefined&&k){let value=e.target.value.trim();if(['inClock','outClock','lunchOutClock','lunchInClock'].includes(k)){const field=({inClock:'in',outClock:'out',lunchOutClock:'lunchOut',lunchInClock:'lunchIn'})[k],periodButton=e.target.parentElement.querySelector('[data-period-toggle]'),period=periodButton?.textContent.trim()||'AM';if(value){const mins=parseInputTime(value+' '+period);if(mins===null){e.target.setCustomValidity('Enter a valid time such as 10:00.');e.target.reportValidity();return;}value=fmtTime(mins);}e.target.setCustomValidity('');records[+i][field]=value;if(field==='lunchOut'||field==='lunchIn'){const lunchStart=parseInputTime(records[+i].lunchOut),lunchEnd=parseInputTime(records[+i].lunchIn);if(lunchStart!==null&&lunchEnd!==null)records[+i].lunch=hoursBetween(lunchStart,lunchEnd);}}else{records[+i][k]=value;if(k==='lunch'||k==='permission')records[+i][k]=+e.target.value||0;}save();render()}else if(['sender','month','shift','lunch','rate','otrate','leavepay'].includes(e.target.id)){save();render()}});
