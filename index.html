@@ -1108,6 +1108,16 @@ load();
     errorBox.textContent = message;
   }
 
+  // Bound Firebase startup waits so a stalled network request cannot leave the
+  // full-screen "Refreshing" layer visible forever.
+  function withTimeout(promise, label, ms = 12000) {
+    let timer;
+    const timeout = new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error(label + ' timed out. Check your connection and retry.')), ms);
+    });
+    return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+  }
+
   // Temporarily disable automatic logout while desktop testing is in progress.
   // Manual logout remains available. Re-enable only after the user requests it.
   const AUTO_LOGOUT_ENABLED = false;
@@ -1422,6 +1432,12 @@ load();
     });
 
     auth.onAuthStateChanged(async user => {
+      const loadingWatchdog = setTimeout(() => {
+        if (document.body.classList.contains('auth-checking')) {
+          document.body.classList.remove('auth-checking');
+          showError('Firebase is taking too long to respond. Check your internet connection, then reload this page.');
+        }
+      }, 15000);
       stopIdleTimer();
       cloudReady = false;
       cloudDoc = null;
@@ -1429,15 +1445,17 @@ load();
       // Keep the loading screen visible until Firebase has resolved the session.
       // Do not expose the login form briefly while a valid session is being restored.
       if (!user) {
+        clearTimeout(loadingWatchdog);
         document.body.classList.remove('authenticated','auth-checking');
         clearLoginCredentials();
         return;
       }
 
       if (user.uid !== OWNER_UID) {
-        await auth.signOut();
+        clearTimeout(loadingWatchdog);
         document.body.classList.remove('authenticated','auth-checking');
         showError('This account is not authorized for this private tracker.');
+        auth.signOut().catch(error => console.error('Could not sign out unauthorized account:', error));
         return;
       }
 
@@ -1445,7 +1463,7 @@ load();
         .collection('private').doc('attendanceTracker');
 
       try {
-        const doc = await cloudDoc.get();
+        const doc = await withTimeout(cloudDoc.get(), 'Loading cloud attendance data');
         if (doc.exists) {
           applyCloudState(doc.data());
         } else {
@@ -1459,14 +1477,14 @@ load();
           resetMonths = new Set(Array.isArray(resetMonthsByStaff[activeStaff]) ? resetMonthsByStaff[activeStaff] : []);
           renderStaffOptions();
           applySnapshot(staffStore[activeStaff]);
-          await cloudDoc.set({
+          await withTimeout(cloudDoc.set({
             staffStore: staffStore,
             activeStaff: activeStaff,
             incentivePool: incentivePool,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
             resetMonths: [...(resetMonthsByStaff.Sanjai||[])],
             resetMonthsByStaff: resetMonthsByStaff
-          });
+          }), 'Initializing cloud attendance data');
         }
         cloudReady = true;
         let backgroundSince = 0;
@@ -1487,6 +1505,7 @@ load();
           window.attendanceLeaveRestoreNeeded = false;
           window.scheduleAttendanceCloudSave();
         }
+        clearTimeout(loadingWatchdog);
         document.body.classList.add('authenticated');
         document.body.classList.remove('auth-checking');
         const savedActivity = Number(localStorage.getItem(IDLE_ACTIVITY_KEY));
@@ -1498,10 +1517,13 @@ load();
         resetIdleTimer();
         showError('');
       } catch (error) {
+        clearTimeout(loadingWatchdog);
         console.error('Firestore initialization failed:', error);
-        await auth.signOut();
         document.body.classList.remove('authenticated','auth-checking');
-        showError('Could not load your cloud attendance data. Check Firestore rules and internet connection.');
+        showError(error && error.message && error.message.includes('timed out')
+          ? error.message
+          : 'Could not load your cloud attendance data. Check Firestore rules and internet connection, then reload.');
+        auth.signOut().catch(signOutError => console.error('Could not clear the stalled Firebase session:', signOutError));
       }
     });
   } catch (error) {
