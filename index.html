@@ -957,10 +957,24 @@ function parseChat(raw,senderOverride){
    if(pm){const n=+pm[1];r.permission+=/min/i.test(pm[2]||'')?n/60:n;r._hasPermissionMessage=true;}
   }
  }
- // Reconcile announced half-day leave only after all of this employee's messages have been read.
- // Both punches mean attendance is proven; no punches mean the planned half-day became a full-day absence.
+ // Reconcile leave only after all messages for this employee and date have been processed.
+ // Actual punch evidence takes precedence over a leave announcement: two punches prove attendance;
+ // one punch is kept for review; no punches leave the date classified as Leave.
  for(const [date,row] of map){
-  if(!row._partialLeaveAnnounced||row._fullLeaveExplicit)continue;
+  if(row._fullLeaveExplicit){
+   if(row.in&&row.out){
+    row.status='Present';row._statusExplicit=true;
+    row.notes.push('Leave was announced, but both IN and OUT punches were found. Attendance is calculated from actual punches.');
+   }else if(row.in||row.out){
+    row.status='Present';row._statusExplicit=true;
+    row.notes.push('Leave was announced, but one punch was found. Kept as Present with missing-punch review.');
+   }else{
+    row.status='Leave';row._statusExplicit=true;
+    row.notes.push('Leave was announced and no IN/OUT punches were found. Kept as Leave.');
+   }
+   continue;
+  }
+  if(!row._partialLeaveAnnounced)continue;
   if(row.in&&row.out){
    row.status='Present';row._statusExplicit=true;
    row.notes.push('Half-day leave announced, but both IN and OUT punches were found. Attendance hours are calculated from actual punches.');
