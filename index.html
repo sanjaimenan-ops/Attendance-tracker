@@ -560,6 +560,23 @@ body.authenticated .settings-menu-save{width:100%!important;min-height:38px!impo
 #calculationSettings .employee-management-menu .staff-action-item{width:100%!important;min-height:38px!important;margin:3px 0!important}
 #calculationSettings .staff-actions-menu{grid-row:2!important}
 </style>
+<style>
+/* Fit performance metric values inside each card without changing displayed amounts. */
+#performancePanel .summary-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;min-width:0!important}
+#performancePanel .summary-grid>.metric{min-width:0!important;max-width:100%!important;overflow:hidden!important}
+#performancePanel .summary-grid>.metric>small{display:block!important;min-width:0!important;line-height:1.25!important;overflow-wrap:break-word!important}
+#performancePanel .summary-grid>.metric>strong{
+ display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;
+ font-size:clamp(15px,2.1vw,25px)!important;line-height:1.15!important;letter-spacing:-.035em!important;
+ white-space:normal!important;overflow-wrap:anywhere!important;word-break:normal!important;font-variant-numeric:tabular-nums!important;
+}
+@media(max-width:760px){
+ #performancePanel .summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}
+ #performancePanel .summary-grid>.metric{padding:12px!important}
+ #performancePanel .summary-grid>.metric>strong{font-size:clamp(14px,4.2vw,21px)!important;letter-spacing:-.04em!important}
+ #performancePanel .summary-grid>.metric>small{font-size:11px!important}
+}
+</style>
 </head>
 <body class="auth-checking">
 <div id="authLoading" role="status" aria-live="polite"><span class="auth-loading-ripple" aria-hidden="true"><i></i><i></i><i></i><b></b></span><span>Refreshing</span></div>
