@@ -18,7 +18,7 @@ jobs:
           from pathlib import Path
           import re
           html = Path("index.html").read_text()
-          scripts = re.findall(r"<script(?:\\s[^>]*)?>([\\s\\S]*?)</script>", html, re.I)
+          scripts = re.findall(r"<script[^>]*>(.*?)</script>", html, re.I | re.S)
           for i, script in enumerate(scripts, 1):
               Path(f"/tmp/inline-{i}.js").write_text(script)
           print(f"Extracted {len(scripts)} inline scripts")
