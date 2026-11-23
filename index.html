@@ -1423,9 +1423,11 @@ load();
         clearTimeout(loadingWatchdog);
         console.error('Firestore initialization failed:', error);
         document.body.classList.remove('authenticated','auth-checking');
-        showError(error && error.message && error.message.includes('timed out')
-          ? error.message
-          : 'Could not load your cloud attendance data. Check Firestore rules and internet connection, then reload.');
+        const errorCode = error && error.code ? error.code : 'unknown';
+        const errorMessage = error && error.message ? String(error.message).slice(0, 180) : 'No error details available.';
+        showError(errorMessage.includes('timed out')
+          ? errorMessage
+          : 'Cloud data error at: ' + loadingStage + ' [' + errorCode + ']. ' + errorMessage);
         auth.signOut().catch(signOutError => console.error('Could not clear the stalled Firebase session:', signOutError));
       }
     });
