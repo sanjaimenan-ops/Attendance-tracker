@@ -38,7 +38,9 @@
       #performancePanel .performance-table tbody tr{width:100%!important;overflow:hidden!important}
       #performancePanel .performance-table tbody td{overflow-wrap:anywhere!important;word-break:normal!important}
       #performancePanel .performance-table tbody td:first-child{display:flex!important;align-items:center!important;min-height:34px}
-      #performancePanel .performance-table .performance-rank{display:inline-flex!important;flex:0 0 40px!important;width:40px!important;min-width:40px!important;max-width:40px!important;height:30px!important;padding:0!important;align-items:center!important;justify-content:center!important;white-space:nowrap!important;overflow:hidden!important}
+      #performancePanel .performance-table tbody td:first-child{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:flex-start!important;overflow:hidden!important}
+      #performancePanel .performance-table tbody td:first-child:before{flex:0 0 auto!important;display:block!important}
+      #performancePanel .performance-table tbody td:first-child .performance-rank{display:flex!important;flex:0 0 42px!important;box-sizing:border-box!important;width:42px!important;min-width:42px!important;max-width:42px!important;height:32px!important;margin:0!important;padding:0!important;align-items:center!important;justify-content:center!important;background:#172554!important;color:#fff!important;border-radius:8px!important;font-size:14px!important;line-height:32px!important;font-weight:800!important;white-space:nowrap!important;overflow:visible!important;visibility:visible!important;opacity:1!important}
       #performancePanel .performance-table .performance-bar{width:100%!important;max-width:100%!important;min-width:0!important}
     }
   `;
