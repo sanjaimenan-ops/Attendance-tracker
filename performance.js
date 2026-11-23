@@ -78,11 +78,10 @@
     for (const record of rows) {
       if (record.status === 'Leave') leaveDays++;
       if (record.status !== 'Present' || !record.in || !record.out) continue;
-      const clocked = hoursBetween(parseInputTime(record.in), parseInputTime(record.out));
-      const extraLunch = Math.max(0, (Number(record.lunch) || 0) - (Number(settings.lunch) || 0));
-      const permission = Math.max(0, Number(record.permission) || 0);
-      const net = Math.max(0, clocked - extraLunch - permission);
-      if (Number.isFinite(net)) { workedHours += net; presentDays++; }
+      const calculation = typeof window.calculateAttendance === 'function'
+        ? window.calculateAttendance(record, settings)
+        : {net:Math.max(0, hoursBetween(parseInputTime(record.in), parseInputTime(record.out)) - Math.max(0, (Number(record.lunch)||0) - (Number(settings.lunch)||0)) - Math.max(0, Number(record.permission)||0))};
+      if (Number.isFinite(calculation.net)) { workedHours += calculation.net; presentDays++; }
     }
     return {name, workedHours, leaveDays, presentDays};
   }
