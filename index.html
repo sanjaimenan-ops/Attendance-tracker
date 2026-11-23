@@ -206,6 +206,20 @@ body.authenticated .tag{background:#ffdf9e;color:#57340a;border:1px solid #e9a83
  .time-entry .period-button{flex-basis:48px;width:48px;min-width:48px}
 }
 
+/* Global compact mode: render the authenticated tracker at half scale while
+   preserving its original viewport footprint and responsive layout. */
+body.authenticated .wrap{
+  zoom:0.5!important;
+  width:200%!important;
+  max-width:2560px!important;
+}
+@media(max-width:760px){
+  body.authenticated .wrap{
+    width:200%!important;
+    max-width:none!important;
+  }
+}
+
 /* Orange + white premium dashboard refresh (visual-only; preserve app logic) */
 body.authenticated,
 body.authenticated .wrap{background:#fff7ed!important;color:#292524}
