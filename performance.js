@@ -21,10 +21,14 @@
       #performancePanel .performance-table{display:block;width:100%;min-width:0;table-layout:fixed}
       #performancePanel .performance-table thead{display:none}
       #performancePanel .performance-table tbody{display:block;width:100%;min-width:0}
-      #performancePanel .performance-table tbody tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 14px;width:100%;min-width:0;box-sizing:border-box;padding:14px;margin:0 0 12px;border:1px solid #eadfcf;border-radius:14px;background:#fff;box-shadow:0 1px 4px #1018280a}
+      #performancePanel .performance-table tbody tr{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px 12px;width:100%;min-width:0;box-sizing:border-box;padding:12px;margin:0 0 12px;border:1px solid #eadfcf;border-radius:14px;background:#fff;box-shadow:0 1px 4px #1018280a}
       #performancePanel .performance-table tbody td{display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:5px;min-width:0;width:100%;box-sizing:border-box;padding:2px 0;border:0;white-space:normal;overflow-wrap:anywhere;font-size:14px}
       #performancePanel .performance-table tbody td:before{content:attr(data-label);font-size:11px;line-height:1.3;color:#667085;font-weight:650}
-      #performancePanel .performance-table tbody td:nth-child(1),#performancePanel .performance-table tbody td:nth-child(2),#performancePanel .performance-table tbody td:last-child{grid-column:1/-1}
+      #performancePanel .performance-table tbody td:nth-child(1){grid-column:1}
+      #performancePanel .performance-table tbody td:nth-child(2){grid-column:2/-1}
+      #performancePanel .performance-table tbody td:nth-child(3),#performancePanel .performance-table tbody td:nth-child(4),#performancePanel .performance-table tbody td:nth-child(5){grid-column:span 1}
+      #performancePanel .performance-table tbody td:nth-child(6){grid-column:span 2}
+      #performancePanel .performance-table tbody td:last-child{grid-column:1/-1}
       #performancePanel .performance-table .performance-rank{display:inline-flex;align-items:center;justify-content:center;align-self:flex-start;width:auto;min-width:38px;height:30px;padding:0 10px;border-radius:8px;background:#172554;color:#fff;font-size:14px;line-height:1;font-weight:750}
       #performancePanel .performance-table .performance-bar{width:100%;min-width:0}
       #performancePanel .performance-table .performance-payout{font-size:17px}
@@ -38,8 +42,12 @@
       #performancePanel .performance-table tbody tr{width:100%!important;overflow:hidden!important}
       #performancePanel .performance-table tbody td{overflow-wrap:anywhere!important;word-break:normal!important}
       #performancePanel .performance-table tbody td:first-child{display:flex!important;align-items:center!important;min-height:34px}
-      #performancePanel .performance-table tbody td:first-child{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:flex-start!important;overflow:hidden!important}
+      #performancePanel .performance-table tbody td:first-child{display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:flex-start!important;overflow:hidden!important}
       #performancePanel .performance-table tbody td:first-child:before{flex:0 0 auto!important;display:block!important}
+      #performancePanel .performance-table tbody td:nth-child(2) .performance-bar{margin-top:3px}
+      #performancePanel .performance-table tbody td:last-child{padding-top:8px;border-top:1px solid #eee3d7!important}
+      #performancePanel .performance-table tbody td:last-child:before{margin-bottom:2px}
+      #performancePanel .performance-table .performance-payout{font-size:17px}
       #performancePanel .performance-table tbody td:first-child .performance-rank{display:flex!important;flex:0 0 42px!important;box-sizing:border-box!important;width:42px!important;min-width:42px!important;max-width:42px!important;height:32px!important;margin:0!important;padding:0!important;align-items:center!important;justify-content:center!important;background:#172554!important;color:#fff!important;border-radius:8px!important;font-size:14px!important;line-height:32px!important;font-weight:800!important;white-space:nowrap!important;overflow:visible!important;visibility:visible!important;opacity:1!important}
       #performancePanel .performance-table .performance-bar{width:100%!important;max-width:100%!important;min-width:0!important}
     }
