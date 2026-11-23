@@ -864,14 +864,14 @@ function parseEventTime(text,messageTime,eventLabels){
  return stamp;
 }
 function timeNeedsReview(text,eventLabels){
- const match=String(text||'').match(new RegExp('\\\\b(?:'+(eventLabels||'')+')\\\\b[^\\\\d]*(\\\\d{1,2}[:.]\\\\d{2}\\\\s*(?:AM|PM)?)','i'));
- if(!match||/\\\\b(?:AM|PM)\\\\b/i.test(match[1]))return false;
- const parts=match[1].match(/^(\\\\d{1,2})[:.](\\\\d{2})$/);
+ const match=String(text||'').match(new RegExp('\\b(?:'+(eventLabels||'')+')\\b[^\\d]*(\\d{1,2}[:.]\\d{2}\\s*(?:AM|PM)?)','i'));
+ if(!match||/\\b(?:AM|PM)\\b/i.test(match[1]))return false;
+ const parts=match[1].match(/^(\\d{1,2})[:.](\\d{2})$/);
  return !!parts&&Number(parts[1])>=1&&Number(parts[1])<=12;
 }
-function parseLunchEventTime(text,messageTime){return parseEventTime(text,messageTime,'lunch\\\\s*(?:out|in|start|end)|break\\\\s*(?:out|in)');}
+function parseLunchEventTime(text,messageTime){return parseEventTime(text,messageTime,'lunch\\s*(?:out|in|start|end)|break\\s*(?:out|in)');}
 function parsePunchText(text,messageTime){
- const t=parseEventTime(text,messageTime,'duty\\\\s*(?:in|out)|punch\\\\s*(?:in|out)|check\\\\s*(?:in|out)|in|out|entry|exit');
+ const t=parseEventTime(text,messageTime,'duty\\s*(?:in|out)|punch\\s*(?:in|out)|check\\s*(?:in|out)|in|out|entry|exit');
  return t===null?'':fmtTime(t);
 }
 
@@ -952,8 +952,8 @@ function parseChat(raw,senderOverride){
   }
   const inMatch=/^\s*(?:in|check\s*in|punch\s*in|entry|duty\s*in)\b/i.test(eventText)||/^(?:(?:purchase|godown|work|customer|site|residency|belviza|delivery|mill|shop|store|aalin?wood|marinos)(?:\s+[\p{L}\p{N}().'-]+){0,5})\s+(?:in|entry)\s*$/iu.test(eventText);
   const outMatch=/^\s*(?:out|check\s*out|punch\s*out|exit|duty\s*out)\b/i.test(eventText);
-  if(inMatch){r._hasPunchMessage=true;r._hasInMessage=true;const value=parsePunchText(eventText,m.time);if(value)r.in=value;else r.notes.push('IN needs review: '+eventText);if(timeNeedsReview(eventText,'duty\\\\s*(?:in|out)|punch\\\\s*(?:in|out)|check\\\\s*(?:in|out)|in|out|entry|exit'))r.notes.push('IN time AM/PM inferred from WhatsApp timestamp; verify: '+eventText);}
-  if(outMatch){r._hasPunchMessage=true;r._hasOutMessage=true;const value=parsePunchText(eventText,m.time);if(value)r.out=value;else r.notes.push('OUT needs review: '+eventText);if(timeNeedsReview(eventText,'duty\\\\s*(?:in|out)|punch\\\\s*(?:in|out)|check\\\\s*(?:in|out)|in|out|entry|exit'))r.notes.push('OUT time AM/PM inferred from WhatsApp timestamp; verify: '+eventText);}
+  if(inMatch){r._hasPunchMessage=true;r._hasInMessage=true;const value=parsePunchText(eventText,m.time);if(value)r.in=value;else r.notes.push('IN needs review: '+eventText);if(timeNeedsReview(eventText,'duty\\s*(?:in|out)|punch\\s*(?:in|out)|check\\s*(?:in|out)|in|out|entry|exit'))r.notes.push('IN time AM/PM inferred from WhatsApp timestamp; verify: '+eventText);}
+  if(outMatch){r._hasPunchMessage=true;r._hasOutMessage=true;const value=parsePunchText(eventText,m.time);if(value)r.out=value;else r.notes.push('OUT needs review: '+eventText);if(timeNeedsReview(eventText,'duty\\s*(?:in|out)|punch\\s*(?:in|out)|check\\s*(?:in|out)|in|out|entry|exit'))r.notes.push('OUT time AM/PM inferred from WhatsApp timestamp; verify: '+eventText);}
   if(/lunch\s*(out|start)|break\s*out/.test(t)){r._hasLunchMessage=true;r._lunchOut=parseLunchEventTime(eventText,m.time);}
   if(/lunch\s*(in|end)|break\s*in/.test(t)){r._hasLunchMessage=true;r._lunchIn=parseLunchEventTime(eventText,m.time);}
   if(/\bpermission\s*out\b/i.test(eventText)){r._hasPermissionMessage=true;r._permissionOut=parseEventTime(eventText,m.time,'permission\\s*out');}
