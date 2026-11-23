@@ -822,7 +822,7 @@ body.authenticated .settings-menu-save{width:100%!important;min-height:38px!impo
 
 </main><div id="toast" class="toast" role="status" aria-live="polite"><span class="check" id="toastIcon">✓</span><span id="toastText"></span></div>
 <script>
-const $=id=>document.getElementById(id);let records=[];let toastTimer;let staffStore={};let activeStaff='Sanjai';let incentivePool=20000;const defaultLeaves=[5,7,8,9];
+const $=id=>document.getElementById(id);let records=[];let toastTimer;let staffStore={};let activeStaff='Sanjai';let incentivePool=20000;
 function notify(message,type='success'){const box=$('toast');$('toastText').textContent=message;$('toastIcon').textContent=type==='error'?'!':'✓';box.className='toast '+type+' show';clearTimeout(toastTimer);toastTimer=setTimeout(()=>box.classList.remove('show'),3600)}
 function uploadBusy(on,message='Reading WhatsApp chat…'){$('uploadState').classList.toggle('active',on);$('uploadStateText').textContent=message;document.querySelector('.drop').classList.toggle('uploading',on);$('file').disabled=on;}
 const key='privateAttendanceNov2026_v1';
@@ -837,7 +837,7 @@ $('employeePickerTrigger').addEventListener('click',()=>{const menu=$('employeeP
 document.addEventListener('click',event=>{const picker=$('employeePicker');if(picker&&!picker.contains(event.target))closeEmployeePicker()});
 document.addEventListener('keydown',event=>{if(event.key==='Escape')closeEmployeePicker()});
 function switchStaff(name){if(!staffStore[name])return;save();activeStaff=name;resetMonths=new Set(Array.isArray(resetMonthsByStaff[name])?resetMonthsByStaff[name]:[]);renderStaffOptions();applySnapshot(staffStore[name]);$('review').textContent='Showing attendance profile: '+name}
-function applySnapshot(data){data=data||{};records=Array.isArray(data.records)?data.records:[];if(data.settings)Object.entries(data.settings).forEach(([k,v])=>{if($(k))$(k).value=v});if(!$('sender').value.trim())$('sender').value=activeStaff;records.forEach(r=>{correctNov15Out(r);delete r.payOverride;const autoStatusNote='Status corrected to Present because both IN and OUT punches exist';if(r.status==='Present'&&Array.isArray(r.notes)&&r.notes.includes(autoStatusNote)){r.status='Leave';r.notes=r.notes.filter(note=>note!==autoStatusNote);window.attendanceLeaveRestoreNeeded=true;}});if(activeStaff==='Sanjai'&&!resetMonths.has('2026-11')){ensureNov4Attendance();ensureNov13Permission()}render()}
+function applySnapshot(data){data=data||{};records=Array.isArray(data.records)?data.records:[];if(data.settings)Object.entries(data.settings).forEach(([k,v])=>{if($(k))$(k).value=v});if(!$('sender').value.trim())$('sender').value=activeStaff;records.forEach(r=>{delete r.payOverride;r.notes=Array.isArray(r.notes)?r.notes:[];});render()}
 
 function dateKey(y,m,d){return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`}
 function parseTime(s, requireMeridiem=false){
@@ -867,9 +867,8 @@ function parseLunchEventTime(text,messageTime){return parseEventTime(text,messag
 function parsePunchText(text,messageTime){
  const t=parseEventTime(text,messageTime,'duty\\s*(?:in|out)|punch\\s*(?:in|out)|check\\s*(?:in|out)|in|out|entry|exit');
  return t===null?'':fmtTime(t);
-}function correctNov15Out(r){if(r&&r.date==='2026-11-15'&&/\bAM$/i.test(String(r.out||''))){r.out=String(r.out).replace(/\bAM$/i,'PM');return true;}return false;}
-function ensureNov4Attendance(){let r=records.find(x=>x.date==='2026-11-04');if(!r){r={date:'2026-11-04',status:'Present',in:'10:04 AM',out:'09:35 PM',lunch:1.20,permission:0,notes:['Verified from WhatsApp attendance']};records.push(r);return;}r.status='Present';if(!r.in)r.in='10:04 AM';if(!r.out)r.out='09:35 PM';if(!(+r.lunch>0))r.lunch=1.20;if(r.permission==null)r.permission=0;delete r.payOverride;r.notes=Array.isArray(r.notes)?r.notes:[];}
-function ensureNov13Permission(){let r=records.find(x=>x.date==='2026-11-13');if(!r){r={date:'2026-11-13',status:'Present',in:'10:03 AM',out:'07:03 PM',lunch:0,permission:0.65,notes:['Permission OUT 1:23 PM – IN 2:02 PM (39 minutes)']};records.push(r);}if(!(+r.permission>0))r.permission=0.65;delete r.payOverride;r.notes=Array.isArray(r.notes)?r.notes:[];if(!r.notes.some(n=>String(n).includes('1:23 PM')&&String(n).includes('2:02 PM')))r.notes.push('Permission OUT 1:23 PM – IN 2:02 PM (39 minutes)');r.notes=r.notes.filter(n=>!String(n).includes('Salary manually confirmed as ₹444.50'));}
+}
+
 
 function parseInputTime(s){return parseTime(s,true)}
 function hoursBetween(a,b){if(a==null||b==null)return 0;let diff=b-a;if(diff<0)diff+=1440;return diff/60}
@@ -896,10 +895,12 @@ function parseChat(raw,senderOverride){
   const hasAttachment=/(?:IMG|VID)-\d{8}-WA\d+\.(?:jpg|jpeg|png|mp4|webp)\s*\(file attached\)/i.test(rawText)||/\bmedia omitted\b|\bimage omitted\b|\bsticker omitted\b/i.test(rawText);
   const eventText=rawText.replace(/(?:IMG|VID)-\d{8}-WA\d+\.(?:jpg|jpeg|png|mp4|webp)\s*\(file attached\)/gi,' ').replace(/<Media omitted>|<Image omitted>|<Sticker omitted>/gi,' ').replace(/\s+/g,' ').trim();
   const t=eventText.toLowerCase();
-  const hasLeaveWord=/\b(?:leave|absent|holiday|on leave)\b/i.test(eventText);
+  const hasHolidayWord=/\b(?:holiday|diwali)\b/i.test(eventText);
+  const hasLeaveWord=/\b(?:leave|absent|on leave)\b/i.test(eventText);
   const partialLeave=/\b(?:1st|first|2nd|second)\s*half\b|\bhalf[- ]day\b|\b(?:morning|afternoon)\s+(?:half|leave)\b/i.test(m.text);
   const explicitDates=[...String(m.text||'').matchAll(/\b(\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4})\b/g)].map(x=>parseDate(x[1])).filter(Boolean);
   const uniqueDates=[...new Set(explicitDates)];
+  if(hasHolidayWord){r.status='Holiday';r._statusExplicit=true;r.notes.push('Holiday marked from message: '+m.text);}
   if(hasAttachment){
    if(eventText)r.notes.push('Photo proof caption: '+eventText);
    else r.notes.push('Photo/media attached without a readable attendance caption; review manually. No punch time was inferred from the photo alone.');
@@ -911,16 +912,16 @@ function parseChat(raw,senderOverride){
     const next=new Date(m.date+'T12:00:00');next.setDate(next.getDate()+1);
     const targetDate=next.getFullYear()+'-'+String(next.getMonth()+1).padStart(2,'0')+'-'+String(next.getDate()).padStart(2,'0');
     const target=getRecord(targetDate,'Leave');
-    if(target)target.notes.push('Leave announced the previous day: '+m.text);
+    if(target){target.status='Leave';target._statusExplicit=true;target.notes.push('Leave announced the previous day: '+m.text);}
     r.notes.push(m.text);
    }else if(uniqueDates.length){
     r.notes.push('Leave/holiday announced for '+uniqueDates.join(', ')+': '+m.text);
     for(const targetDate of uniqueDates){
-     const target=getRecord(targetDate,'Leave');
-     if(target)target.notes.push('Leave/holiday date explicitly stated in message sent '+m.date+': '+m.text);
+     const target=getRecord(targetDate,hasHolidayWord?'Holiday':'Leave');
+     if(target){target.status=hasHolidayWord?'Holiday':'Leave';target._statusExplicit=true;target.notes.push('Leave/holiday date explicitly stated in message sent '+m.date+': '+m.text);}
     }
    }else if(/\b(?:today\s+leave|today\s+is\s+(?:a\s+)?holiday|on leave today)\b/i.test(m.text)||!/\b(?:sunday|monday|tuesday|wednesday|thursday|friday|saturday|coming|next)\b/i.test(m.text)){
-    r.status='Leave';
+    r.status=/\babsent\b/i.test(eventText)?'Absent':'Leave';r._statusExplicit=true;
     r.notes.push(m.text);
    }else{
     r.notes.push('Leave announcement needs date review: '+m.text);
@@ -928,12 +929,12 @@ function parseChat(raw,senderOverride){
   }
   const inMatch=/^\s*(?:in|check\s*in|punch\s*in|entry|duty\s*in)\b/i.test(eventText)||/^(?:(?:purchase|godown|work|customer|site|residency|belviza|delivery|mill|shop|store|aalin?wood|marinos)(?:\s+[\p{L}\p{N}().'-]+){0,5})\s+(?:in|entry)\s*$/iu.test(eventText);
   const outMatch=/^\s*(?:out|check\s*out|punch\s*out|exit|duty\s*out)\b/i.test(eventText);
-  if(inMatch){const value=parsePunchText(eventText,m.time);if(value){r.in=value;r._hasPunchMessage=true;}else r.notes.push('IN needs review: '+eventText);}
-  if(outMatch){const value=parsePunchText(eventText,m.time);if(value){r.out=value;r._hasPunchMessage=true;}else r.notes.push('OUT needs review: '+eventText);}
-  if(/lunch\s*(out|start)|break\s*out/.test(t))r._lunchOut=parseLunchEventTime(eventText,m.time);
-  if(/lunch\s*(in|end)|break\s*in/.test(t))r._lunchIn=parseLunchEventTime(eventText,m.time);
-  if(/\bpermission\s*out\b/i.test(eventText))r._permissionOut=parseEventTime(eventText,m.time,'permission\\s*out');
-  if(/\bpermission\s*in\b/i.test(eventText))r._permissionIn=parseEventTime(eventText,m.time,'permission\\s*in');
+  if(inMatch){r._hasPunchMessage=true;const value=parsePunchText(eventText,m.time);if(value)r.in=value;else r.notes.push('IN needs review: '+eventText);}
+  if(outMatch){r._hasPunchMessage=true;const value=parsePunchText(eventText,m.time);if(value)r.out=value;else r.notes.push('OUT needs review: '+eventText);}
+  if(/lunch\s*(out|start)|break\s*out/.test(t)){r._hasLunchMessage=true;r._lunchOut=parseLunchEventTime(eventText,m.time);}
+  if(/lunch\s*(in|end)|break\s*in/.test(t)){r._hasLunchMessage=true;r._lunchIn=parseLunchEventTime(eventText,m.time);}
+  if(/\bpermission\s*out\b/i.test(eventText)){r._hasPermissionMessage=true;r._permissionOut=parseEventTime(eventText,m.time,'permission\\s*out');}
+  if(/\bpermission\s*in\b/i.test(eventText)){r._hasPermissionMessage=true;r._permissionIn=parseEventTime(eventText,m.time,'permission\\s*in');}
   if(!/\bpermission\s*(?:out|in)\b/i.test(m.text)){
    const pm=eventText.match(/permission[^\d]*(\d+(?:\.\d+)?)\s*(h|hr|hrs|hour|hours|min|mins|minute|minutes)?/i);
    if(pm){const n=+pm[1];r.permission+=/min/i.test(pm[2]||'')?n/60:n;}
@@ -941,28 +942,23 @@ function parseChat(raw,senderOverride){
  }
  for(const [date,imported] of map){
   if(imported._lunchOut!=null)imported.lunchOut=fmtTime(imported._lunchOut);
-   if(imported._lunchIn!=null)imported.lunchIn=fmtTime(imported._lunchIn);
-   if(imported._lunchOut!=null&&imported._lunchIn!=null)imported.lunch=hoursBetween(imported._lunchOut,imported._lunchIn);
-  if(imported._permissionOut!=null&&imported._permissionIn!=null)imported.permission=hoursBetween(imported._permissionOut,imported._permissionIn);
-  delete imported._lunchOut;delete imported._lunchIn;delete imported._permissionOut;delete imported._permissionIn;delete imported._hasPunchMessage;
+  if(imported._lunchIn!=null)imported.lunchIn=fmtTime(imported._lunchIn);
+  if(imported._hasLunchMessage&&imported._lunchOut!=null&&imported._lunchIn!=null)imported.lunch=hoursBetween(imported._lunchOut,imported._lunchIn);
+  if(imported._hasPermissionMessage&&imported._permissionOut!=null&&imported._permissionIn!=null)imported.permission=hoursBetween(imported._permissionOut,imported._permissionIn);
   const existing=records.find(x=>x.date===date);
-  if(!existing){records.push(imported);continue;}
-  // Re-import is non-destructive: existing manual values and status always win.
-  if(!existing.in&&imported.in)existing.in=imported.in;
-  if(!existing.out&&imported.out)existing.out=imported.out;
-  if(!existing.lunchOut&&imported.lunchOut)existing.lunchOut=imported.lunchOut;
-   if(!existing.lunchIn&&imported.lunchIn)existing.lunchIn=imported.lunchIn;
-   if(!(+existing.lunch>0)&&(+imported.lunch>0))existing.lunch=imported.lunch;
-  if(!(+existing.permission>0)&&(+imported.permission>0))existing.permission=imported.permission;
-  if(!existing.status)existing.status=imported.status||'Present';
+  const cleanImported={...imported};
+  delete cleanImported._lunchOut;delete cleanImported._lunchIn;delete cleanImported._permissionOut;delete cleanImported._permissionIn;
+  if(!existing){delete cleanImported._hasPunchMessage;delete cleanImported._hasLunchMessage;delete cleanImported._hasPermissionMessage;delete cleanImported._statusExplicit;records.push(cleanImported);continue;}
+  // A fresh import is authoritative for event types actually present in the source export.
+  if(imported._hasPunchMessage){existing.in=imported.in||'';existing.out=imported.out||'';}
+  if(imported._hasLunchMessage){existing.lunchOut=imported.lunchOut||'';existing.lunchIn=imported.lunchIn||'';existing.lunch=imported._lunchOut!=null&&imported._lunchIn!=null?imported.lunch:0;}
+  if(imported._hasPermissionMessage){existing.permission=imported._permissionOut!=null&&imported._permissionIn!=null?imported.permission:0;}
+  if(imported._statusExplicit){existing.status=imported.status;}
   existing.notes=Array.isArray(existing.notes)?existing.notes:[];
   existing.notes=[...new Set([...existing.notes,...(imported.notes||[])])];
  }
  // Verified Sanjai corrections remain limited to dates with independently confirmed punch evidence.
- if(activeStaff==='Sanjai'){const verifiedIn={'2026-11-01':'10:50 AM','2026-11-03':'10:32 AM','2026-11-04':'10:04 AM'};for(const [date,value] of Object.entries(verifiedIn)){const row=records.find(x=>x.date===date);if(row&&!row.in)row.in=value;}}
- if(activeStaff==='Sanjai'&&month==='2026-11'){for(const day of defaultLeaves){const date='2026-11-'+String(day).padStart(2,'0');if(!records.some(x=>x.date===date))records.push({date,status:'Leave',in:'',out:'',lunch:0,permission:0,notes:['Configured leave day']});}}
- records.forEach(correctNov15Out);
- if(activeStaff==='Sanjai'&&month==='2026-11'){ensureNov4Attendance();ensureNov13Permission();}
+
  records.sort((a,b)=>a.date.localeCompare(b.date));save();render();
  $('review').textContent='Read '+msgs.length+' messages; matched '+mine.length+' messages from "'+(senderOverride||$('sender').value)+'"; extracted '+map.size+' dates across all months for '+activeStaff+'. Existing manual values were preserved. You can switch months without importing again. Review media-only and ambiguous leave entries before salary totals.';
  return mine.length;
@@ -1017,7 +1013,7 @@ $('file').addEventListener('change',async e=>{let f=e.target.files[0];if(!f)retu
 document.addEventListener('change',e=>{let i=e.target.dataset.i,k=e.target.dataset.k;if(i!==undefined&&k){let value=e.target.value.trim();if(['inClock','outClock','lunchOutClock','lunchInClock'].includes(k)){const field=({inClock:'in',outClock:'out',lunchOutClock:'lunchOut',lunchInClock:'lunchIn'})[k],periodButton=e.target.parentElement.querySelector('[data-period-toggle]'),period=periodButton?.textContent.trim()||'AM';if(value){const mins=parseInputTime(value+' '+period);if(mins===null){e.target.setCustomValidity('Enter a valid time such as 10:00.');e.target.reportValidity();return;}value=fmtTime(mins);}e.target.setCustomValidity('');records[+i][field]=value;if(field==='lunchOut'||field==='lunchIn'){const lunchStart=parseInputTime(records[+i].lunchOut),lunchEnd=parseInputTime(records[+i].lunchIn);if(lunchStart!==null&&lunchEnd!==null)records[+i].lunch=hoursBetween(lunchStart,lunchEnd);}}else{records[+i][k]=value;if(k==='lunch'||k==='permission')records[+i][k]=+e.target.value||0;}save();render()}else if(['sender','month','shift','lunch','rate','otrate','leavepay'].includes(e.target.id)){save();render()}});
 document.addEventListener('click',e=>{const periodButton=e.target.closest('[data-period-toggle]');if(periodButton){const i=Number(periodButton.dataset.i),field=periodButton.dataset.periodToggle,current=records[i],parts=timeParts(current[field]);const next=parts.period==='AM'?'PM':'AM';if(parts.time)current[field]=parts.time+' '+next;save();render();return;}if(e.target.dataset.del!==undefined){records.splice(+e.target.dataset.del,1);save();render()}});
 $('add').onclick=()=>{const month=$('month').value;const total=daysInMonth(month);const used=new Set(records.filter(r=>r.date&&r.date.startsWith(month+'-')).map(r=>Number(r.date.slice(8,10))));let day=1;while(day<=total&&used.has(day))day++;if(day>total){notify('All days in this month already have attendance records.','error');return;}const d=month+'-'+String(day).padStart(2,'0');records.push({date:d,status:'Present',in:'',out:'',lunch:0,permission:0,notes:[]});records.sort((a,b)=>a.date.localeCompare(b.date));save();render();notify('Added attendance for '+d+'.')};
-$('reset').onclick=()=>{if(confirm('Clear this month\'s imported attendance and restore the configured leave dates?')){const resetMonth=$('month').value;resetMonths.add(resetMonth);records=records.filter(r=>!String(r.date||'').startsWith(resetMonth+'-'));if(activeStaff==='Sanjai'&&resetMonth==='2026-11')records.push(...defaultLeaves.map(day=>({date:resetMonth+'-'+String(day).padStart(2,'0'),status:'Leave',in:'',out:'',lunch:0,permission:0,notes:[]})));save();render();$('review').textContent='';$('fileName').textContent='';notify('Month reset complete. Configured leave dates restored.');}else{notify('Reset cancelled. Your attendance data is unchanged.','error')}};
+$('reset').onclick=()=>{if(confirm('Clear this month\'s imported attendance and restore the configured leave dates?')){const resetMonth=$('month').value;resetMonths.add(resetMonth);records=records.filter(r=>!String(r.date||'').startsWith(resetMonth+'-'));save();render();$('review').textContent='';$('fileName').textContent='';notify('Month reset complete. Configured leave dates restored.');}else{notify('Reset cancelled. Your attendance data is unchanged.','error')}};
 
 $('print').onclick=()=>window.print();
 $('csv').onclick=()=>{
