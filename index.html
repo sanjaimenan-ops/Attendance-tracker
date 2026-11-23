@@ -436,6 +436,57 @@ body.authenticated .settings-menu-save{width:100%!important;min-height:38px!impo
 }
 @media(max-width:360px){#calculationSettings .settings-menu-grid{grid-template-columns:1fr!important}}
 </style>
+<style>
+/* Final mobile alignment pass for the calculation options popover */
+@media(max-width:760px){
+ #calculationSettings .staff-actions-wrap{position:relative!important}
+ #calculationSettings .staff-actions-menu{
+   right:-16px!important;
+   left:auto!important;
+   width:calc(100vw - 48px)!important;
+   max-width:420px!important;
+   padding:13px!important;
+   border-radius:16px!important;
+   box-sizing:border-box!important;
+   max-height:58vh!important;
+ }
+ #calculationSettings .settings-menu-title{margin:0 0 8px!important;font-size:13px!important}
+ #calculationSettings .settings-menu-grid{
+   display:grid!important;
+   grid-template-columns:repeat(2,minmax(0,1fr))!important;
+   column-gap:10px!important;
+   row-gap:9px!important;
+ }
+ #calculationSettings .settings-menu-grid label{
+   min-width:0!important;
+   font-size:11px!important;
+   line-height:1.25!important;
+   gap:4px!important;
+ }
+ #calculationSettings .settings-menu-grid input{
+   min-height:38px!important;
+   height:38px!important;
+   padding:7px 9px!important;
+   font-size:13px!important;
+   border-radius:9px!important;
+ }
+ #calculationSettings .settings-menu-save{
+   min-height:40px!important;
+   margin-top:10px!important;
+   padding:8px 10px!important;
+   font-size:12px!important;
+ }
+ #calculationSettings .settings-menu-divider{margin:11px 0!important}
+ #calculationSettings .staff-actions-menu .staff-action-item{
+   min-height:36px!important;
+   padding:7px 9px!important;
+ }
+}
+@media(max-width:320px){
+ #calculationSettings .staff-actions-menu{width:calc(100vw - 32px)!important;right:-8px!important}
+ #calculationSettings .settings-menu-grid{grid-template-columns:1fr!important}
+}
+</style>
 </head>
 <body class="auth-checking">
 <div id="authLoading" role="status" aria-live="polite"><span class="auth-loading-ripple" aria-hidden="true"><i></i><i></i><i></i><b></b></span><span>Refreshing</span></div>
