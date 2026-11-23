@@ -834,6 +834,10 @@ window.attendanceTrackerBridge = window.attendanceTrackerBridge || {};
 window.attendanceTrackerBridge.renderStaffOptions = renderStaffOptions;
 window.attendanceTrackerBridge.applySnapshot = applySnapshot;
 window.attendanceTrackerBridge.defaultStaffData = defaultStaffData;
+// Publish direct, stable references for the later Firebase script as well.
+window.renderStaffOptions = renderStaffOptions;
+window.applyAttendanceSnapshot = applySnapshot;
+window.defaultAttendanceStaffData = defaultStaffData;
 function renderStaffOptions(){const select=$('staffSelect');if(!select)return;select.innerHTML='';Object.keys(staffStore).sort((a,b)=>a.localeCompare(b)).forEach(name=>{const option=document.createElement('option');option.value=name;option.textContent=name;select.appendChild(option)});select.value=activeStaff;renderEmployeePicker()}
 function renderEmployeePicker(){const select=$('staffSelect'),menu=$('employeePickerMenu'),value=$('employeePickerValue');if(!select||!menu||!value)return;value.textContent=select.value||activeStaff;menu.innerHTML='';[...select.options].forEach(option=>{const item=document.createElement('button');item.type='button';item.className='employee-picker-option';item.setAttribute('role','option');item.setAttribute('aria-selected',String(option.value===select.value));item.innerHTML='<span></span><span class="employee-picker-check" aria-hidden="true">'+(option.value===select.value?'✓':'')+'</span>';item.firstElementChild.textContent=option.textContent;item.addEventListener('click',()=>{select.value=option.value;select.dispatchEvent(new Event('change',{bubbles:true}));closeEmployeePicker()});menu.appendChild(item)})}
 function closeEmployeePicker(){const menu=$('employeePickerMenu'),trigger=$('employeePickerTrigger');if(menu)menu.classList.add('hidden');if(trigger)trigger.setAttribute('aria-expanded','false')}
@@ -1124,6 +1128,19 @@ load();
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script>
 (() => {
+  // Firebase runs after the attendance UI script. Rebuild the bridge from the
+  // exported functions if an older cached shell omitted the bridge object.
+  function getAttendanceBridge() {
+    const bridge = window.attendanceTrackerBridge ?? (window.attendanceTrackerBridge = {});
+    bridge.renderStaffOptions ??= window.renderStaffOptions ?? null;
+    bridge.applySnapshot ??= window.applyAttendanceSnapshot ?? null;
+    bridge.defaultStaffData ??= window.defaultAttendanceStaffData ?? (name => ({records:[],settings:{sender:name,month:'2026-11',shift:'10',lunch:'1',rate:'0',otrate:'0',leavepay:'0'}}));
+    if (typeof bridge.renderStaffOptions !== 'function' || typeof bridge.applySnapshot !== 'function') {
+      throw new Error('Attendance UI is not ready: renderStaffOptions/applySnapshot are unavailable. Check that the main attendance script loaded before Firebase.');
+    }
+    return bridge;
+  }
+
   const firebaseConfig = {
     apiKey: "AIzaSyCdtmYJ5FhlMSgReKJOHfgQzEltgU7FwCU",
     authDomain: "attendance-tracker-f7b6e.firebaseapp.com",
@@ -1227,7 +1244,7 @@ load();
       const localSource = localStore[name] || null;
       const source = cloudSource
         ? {...cloudSource, settings:{...(localSource?.settings||{}),...(cloudSource.settings||{})}}
-        : (localSource ? {...localSource} : window.attendanceTrackerBridge.defaultStaffData(name));
+        : (localSource ? {...localSource} : (getAttendanceBridge().defaultStaffData?.(name) ?? {records:[],settings:{}}));
       const blockedMonths = new Set(Array.isArray(resetMonthsByStaff[name]) ? resetMonthsByStaff[name] : []);
       if (localSource && !cloudSource) mergedFromLocal = true;
       if (localSource && Array.isArray(localSource.records)) {
@@ -1258,8 +1275,10 @@ load();
     }
     activeStaff = staffStore[data.activeStaff] ? data.activeStaff : (staffStore[local.activeStaff] ? local.activeStaff : 'Sanjai');
     resetMonths = new Set(Array.isArray(resetMonthsByStaff[activeStaff]) ? resetMonthsByStaff[activeStaff] : []);
-    window.attendanceTrackerBridge.renderStaffOptions();
-    window.attendanceTrackerBridge.applySnapshot(staffStore[activeStaff]);
+    const bridge = getAttendanceBridge();
+    const activeSnapshot = staffStore[activeStaff] ?? bridge.defaultStaffData?.(activeStaff) ?? {records:[],settings:{}};
+    bridge.renderStaffOptions?.();
+    bridge.applySnapshot?.(activeSnapshot);
     localStorage.setItem('privateAttendanceNov2026_v1', JSON.stringify({staffStore, activeStaff, resetMonths:[...(resetMonthsByStaff.Sanjai||[])], resetMonthsByStaff}));
     window.attendanceCloudMergeNeeded = mergedFromLocal || Object.values(resetMonthsByStaff).some(months=>Array.isArray(months)&&months.length>0);
     return true;
@@ -1395,12 +1414,14 @@ load();
           staffStore = local.staffStore && typeof local.staffStore === 'object'
             ? {...local.staffStore}
             : {Sanjai:{records:local.records||[],settings:local.settings||{sender:'Sanjai',month:'2026-11',shift:'10',lunch:'1',rate:'70',otrate:'88',leavepay:'0'}}};
-          if (!staffStore.Sanjai) staffStore.Sanjai = window.attendanceTrackerBridge.defaultStaffData('Sanjai');
+          if (!staffStore.Sanjai) staffStore.Sanjai = getAttendanceBridge().defaultStaffData?.('Sanjai') ?? {records:[],settings:{sender:'Sanjai',month:'2026-11',shift:'10',lunch:'1',rate:'70',otrate:'88',leavepay:'0'}};
           resetMonthsByStaff = local.resetMonthsByStaff && typeof local.resetMonthsByStaff === 'object' ? {...local.resetMonthsByStaff} : {Sanjai:Array.isArray(local.resetMonths)?local.resetMonths:[]};
           activeStaff = staffStore[local.activeStaff] ? local.activeStaff : 'Sanjai';
           resetMonths = new Set(Array.isArray(resetMonthsByStaff[activeStaff]) ? resetMonthsByStaff[activeStaff] : []);
-          window.attendanceTrackerBridge.renderStaffOptions();
-          window.attendanceTrackerBridge.applySnapshot(staffStore[activeStaff]);
+          const bridge = getAttendanceBridge();
+          const activeSnapshot = staffStore[activeStaff] ?? bridge.defaultStaffData?.(activeStaff) ?? {records:[],settings:{}};
+          bridge.renderStaffOptions?.();
+          bridge.applySnapshot?.(activeSnapshot);
           loadingStage = 'saving initial attendance data to Firestore';
           await withTimeout(cloudDoc.set({
             staffStore: staffStore,
@@ -1427,19 +1448,21 @@ load();
         showError('');
       } catch (error) {
         clearTimeout(loadingWatchdog);
-        console.error('Firestore initialization failed:', error);
+        console.error('Firestore initialization failed at stage: ' + loadingStage, error, error?.stack || '(no stack supplied by browser)');
         document.body.classList.remove('authenticated','auth-checking');
-        const errorCode = error && error.code ? error.code : 'unknown';
-        const errorMessage = error && error.message ? String(error.message).slice(0, 180) : 'No error details available.';
+        const errorCode = error?.code ?? 'no-code';
+        const errorMessage = error?.message ? String(error.message).slice(0, 240) : String(error ?? 'No error details available.');
         showError(errorMessage.includes('timed out')
           ? errorMessage
           : 'Cloud data error at: ' + loadingStage + ' [' + errorCode + ']. ' + errorMessage);
-        auth.signOut().catch(signOutError => console.error('Could not clear the stalled Firebase session:', signOutError));
+        // Keep the valid Firebase session. A UI/cloud restore failure must not
+        // force a sign-out; reload can retry the restore without losing the session.
       }
     });
   } catch (error) {
+    console.error('Firebase setup failed:', error, error?.stack || '(no stack supplied by browser)');
     document.body.classList.remove('authenticated','auth-checking');
-    showError('Firebase setup error. Check your Firebase configuration.');
+    showError('Firebase setup error: ' + String(error?.message ?? error).slice(0, 240));
   }
 })();
 </script>
