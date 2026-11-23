@@ -1014,6 +1014,27 @@ body.authenticated .status.review{
  font-weight:800!important;
 }
 
+
+/* Ensure AM/PM buttons stay black inside the responsive attendance table */
+body.authenticated .panel:has(> .tablewrap) .tablewrap > table:not(.performance-table) .time-entry .period-button,
+body.authenticated .panel:has(> .tablewrap) .tablewrap > table:not(.performance-table) .time-entry button.period-button,
+body.authenticated .panel:has(> .tablewrap) .tablewrap > table:not(.performance-table) [data-period-toggle]{
+ background:#000!important;
+ background-color:#000!important;
+ color:#fff!important;
+ border:1px solid #000!important;
+ box-shadow:0 2px 0 #000!important;
+ font-weight:800!important;
+}
+body.authenticated .panel:has(> .tablewrap) .tablewrap > table:not(.performance-table) .time-entry .period-button:hover,
+body.authenticated .panel:has(> .tablewrap) .tablewrap > table:not(.performance-table) .time-entry .period-button:focus,
+body.authenticated .panel:has(> .tablewrap) .tablewrap > table:not(.performance-table) .time-entry .period-button:active{
+ background:#222!important;
+ background-color:#222!important;
+ color:#fff!important;
+ border-color:#222!important;
+}
+
 </style>
 
 </head>
