@@ -1256,6 +1256,18 @@ body.authenticated .collapsible-heading span{color:var(--premium-muted)!importan
 @media print{#mobileNav{display:none!important}}
 
 </style>
+<style id="light-orange-card-backgrounds-only">
+
+/* Light orange card surfaces only — preserve text, buttons, tables and page background */
+body.authenticated .panel,
+body.authenticated .metric{
+  background:#fff1e2!important;
+}
+body.authenticated .panel:hover{
+  background:#fff1e2!important;
+}
+
+</style>
 </head>
 <body class="auth-checking">
 <div id="authLoading" role="status" aria-live="polite"><span class="auth-loading-ripple" aria-hidden="true"><i></i><i></i><i></i><b></b></span><span>Refreshing</span></div>
