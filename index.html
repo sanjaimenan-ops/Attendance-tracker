@@ -1372,6 +1372,32 @@ body.authenticated select[data-k="status"] option:checked{background:#eaf3fb!imp
 }
 </style>
 
+
+<style id="mobile-summary-chevron-position-fix-20261124">
+@media (max-width:760px) {
+  body.authenticated details#monthlySummary > summary.collapsible-heading,
+  body.authenticated details#performancePanel > summary.collapsible-heading {
+    position:relative!important;
+    padding:20px 54px 20px 20px!important;
+    min-height:0!important;
+  }
+  body.authenticated details#monthlySummary > summary.collapsible-heading::after,
+  body.authenticated details#performancePanel > summary.collapsible-heading::after {
+    position:absolute!important;
+    display:block!important;
+    right:24px!important;
+    top:50%!important;
+    margin:0!important;
+    transform:translateY(-50%) rotate(45deg)!important;
+  }
+  body.authenticated details#monthlySummary[open] > summary.collapsible-heading::after,
+  body.authenticated details#performancePanel[open] > summary.collapsible-heading::after {
+    transform:translateY(-50%) rotate(225deg)!important;
+    margin:0!important;
+  }
+}
+</style>
+
 </head>
 <body class="auth-checking">
 <div id="authLoading" role="status" aria-live="polite"><span class="auth-loading-ripple" aria-hidden="true"><i></i><i></i><i></i><b></b></span><span>Refreshing</span></div>
