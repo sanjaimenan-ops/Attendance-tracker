@@ -1439,9 +1439,13 @@ body.authenticated main.wrap > details.panel > summary.collapsible-heading::afte
 <style id="desktop-login-single-screen-fit-20261124">
 /* Keep the desktop sign-in screen within one viewport; avoid a clipped second page. */
 @media (min-width:801px){
-  html,body:not(.authenticated){
+  body:not(.authenticated){
     width:100%!important;height:100%!important;min-height:0!important;
     margin:0!important;overflow:hidden!important;
+  }
+  /* Restore document scrolling immediately after successful authentication. */
+  html,body.authenticated{
+    height:auto!important;min-height:100%!important;overflow-y:auto!important;overflow-x:hidden!important;
   }
   body:not(.authenticated) #loginScreen{
     display:grid!important;grid-template-columns:minmax(0,1.08fr) minmax(420px,.92fr)!important;
@@ -1823,8 +1827,14 @@ body.authenticated main.wrap > details.panel > summary.collapsible-heading::afte
 
 
 <style id="mobile-auto-logout-settings-20261124-styles">
-/* Auto-logout controls are mobile-only; desktop interface and behavior stay unchanged. */
-.auto-logout-settings{display:none}
+/* Show the same automatic logout controls on desktop and mobile. */
+.auto-logout-settings{display:block!important;margin-top:14px!important;padding:14px 0 4px!important;border-top:1px solid #fed7aa!important}
+#calculationSettings .auto-logout-toggle{display:flex!important;flex-direction:row!important;align-items:center!important;gap:9px!important;width:100%!important;font-size:13px!important;color:#292524!important;font-weight:700!important}
+#calculationSettings .auto-logout-toggle input{width:20px!important;height:20px!important;min-width:20px!important;margin:0!important;accent-color:#ea580c}
+#calculationSettings .auto-logout-timeout-label{display:flex!important;flex-direction:column!important;gap:5px!important;margin-top:10px!important;width:min(320px,100%)!important;font-size:12px!important;color:#57534e!important;font-weight:650!important}
+#calculationSettings .auto-logout-timeout-label select{width:100%!important;min-height:40px!important}
+#calculationSettings .auto-logout-note{margin:9px 0!important;color:#78716c!important;font-size:11px!important;line-height:1.45!important}
+#calculationSettings .auto-logout-status{min-height:0!important;margin-top:6px!important;font-size:11px!important;color:#15803d!important}
 @media(max-width:760px){
   #calculationSettings .auto-logout-settings{display:block!important;margin-top:12px!important;padding-top:12px!important;border-top:1px solid #fed7aa!important}
   #calculationSettings .auto-logout-toggle{display:flex!important;flex-direction:row!important;align-items:center!important;gap:9px!important;width:100%!important;font-size:13px!important;color:#292524!important;font-weight:700!important}
@@ -2402,7 +2412,7 @@ load();
   }
 
 
-  // Mobile-only automatic logout. Preferences are stored separately from attendance data.
+  // Device-wide automatic logout. Preferences are stored separately from attendance data.
   const AUTO_LOGOUT_SETTINGS_KEY = 'attendanceAutoLogoutSettings_v1';
   const AUTO_LOGOUT_LAST_ACTIVITY_KEY = 'attendanceAutoLogoutLastActivityAt_v1';
   const AUTO_LOGOUT_DEFAULTS = { enabled:true, timeoutMinutes:3 };
@@ -2418,7 +2428,6 @@ load();
   let autoLogoutIdleTimer = null;
   let autoLogoutWarningTimer = null;
   let autoLogoutInProgress = false;
-  const isMobileAutoLogoutDevice = () => window.matchMedia('(max-width: 760px)').matches;
 
   function clearAutoLogoutTimers() {
     if (autoLogoutIdleTimer !== null) clearTimeout(autoLogoutIdleTimer);
@@ -2438,7 +2447,7 @@ load();
   }
   function resetAutoLogoutTimer() {
     clearAutoLogoutTimers();
-    if (!isMobileAutoLogoutDevice() || !autoLogoutSettings.enabled ||
+    if (!autoLogoutSettings.enabled ||
         !auth?.currentUser || auth.currentUser.uid !== OWNER_UID ||
         !document.body.classList.contains('authenticated') || logoutInProgress) return;
     const duration = autoLogoutSettings.timeoutMinutes * 60 * 1000;
@@ -2485,7 +2494,7 @@ load();
     }
   }
   function checkAutoLogoutBackground() {
-    if (!isMobileAutoLogoutDevice() || !autoLogoutSettings.enabled) return false;
+    if (!autoLogoutSettings.enabled) return false;
     let lastActivity = 0;
     try { lastActivity = Number(localStorage.getItem(AUTO_LOGOUT_LAST_ACTIVITY_KEY) || 0); } catch (_) {}
     const elapsed = lastActivity ? Date.now() - lastActivity : 0;
@@ -2883,6 +2892,128 @@ if ("serviceWorker" in navigator) {
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
 </script>
+
+
+<style id="desktop-layout-fix-20261124">
+/* Fixes apply only to the desktop-auto-logout branch preview.
+   Remove desktop sidebar and prevent the login card from overflowing off-screen. */
+@media (min-width:761px){
+  body.authenticated .app-shell{
+    display:block!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    width:100%!important;
+    min-width:0!important;
+    min-height:100vh!important;
+  }
+  body.authenticated .app-sidebar{display:none!important}
+  body.authenticated .app-main{
+    display:block!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    padding:26px clamp(16px,2.2vw,36px) 40px!important;
+  }
+}
+@media (min-width:801px){
+  body:not(.authenticated) #loginScreen{
+    display:grid!important;
+    grid-template-columns:minmax(0,1.25fr) minmax(0,.85fr)!important;
+    width:100%!important;
+    max-width:100vw!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+  }
+  body:not(.authenticated) #loginScreen>.login-art,
+  body:not(.authenticated) #loginScreen>.login-card{
+    min-width:0!important;
+    max-width:100%!important;
+  }
+  body:not(.authenticated) #loginScreen>.login-card{
+    width:min(100%,520px)!important;
+    justify-self:center!important;
+    margin-inline:auto!important;
+    padding:clamp(22px,3vw,44px)!important;
+  }
+  body:not(.authenticated) #loginScreen>.login-art svg{
+    display:block!important;
+    width:100%!important;
+    max-width:100%!important;
+    object-fit:contain!important;
+    object-position:center!important;
+  }
+}
+</style>
+
+
+<style id="desktop-preview-login-and-touch-layout-fix-20261124">
+/* Never expose the authenticated application shell on the sign-in screen. */
+body:not(.authenticated) .app-shell,
+body:not(.authenticated) #mobileNav{
+  display:none!important;
+}
+
+/* A phone remains a phone even when Chrome's "Desktop site" is enabled.
+   Use input capability rather than the overridable layout viewport. */
+@media (hover:none) and (pointer:coarse){
+  html,body:not(.authenticated){
+    width:100%!important;
+    height:auto!important;
+    min-height:100%!important;
+    margin:0!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+  }
+  body:not(.authenticated) #loginScreen{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    width:100%!important;
+    max-width:100%!important;
+    height:auto!important;
+    min-height:100svh!important;
+    max-height:none!important;
+    padding:22px 16px!important;
+    align-content:center!important;
+    align-items:center!important;
+    gap:0!important;
+    overflow:visible!important;
+    box-sizing:border-box!important;
+  }
+  body:not(.authenticated) #loginScreen .login-art{
+    display:none!important;
+    width:0!important;
+    height:0!important;
+    min-height:0!important;
+  }
+  body:not(.authenticated) #loginScreen .login-card{
+    display:block!important;
+    align-self:center!important;
+    justify-self:center!important;
+    width:min(100%,520px)!important;
+    max-width:100%!important;
+    max-height:none!important;
+    margin:0 auto!important;
+    padding:34px 28px!important;
+    overflow:visible!important;
+    box-sizing:border-box!important;
+    border-radius:30px!important;
+  }
+  body.authenticated .app-shell{
+    display:block!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    width:100%!important;
+    min-width:0!important;
+  }
+  body.authenticated .app-sidebar{display:none!important}
+  body.authenticated .app-main{
+    display:block!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    padding:14px 12px 28px!important;
+  }
+}
+</style>
 
 
 <style id="desktop-sidebar-removed-20261124">
