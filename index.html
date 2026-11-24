@@ -532,62 +532,44 @@ body.authenticated .foot{color:var(--ui-muted)}
 }
 
 
-/* Approved Ice Blue + Pure White theme — CSS only */
-:root{--ice-blue:#b9e5ff;--ice-mid:#d6ecff;--ice-light:#eaf6ff;--pure-white:#fff;--ice-primary:#2583d8;--ice-primary-dark:#176bb8;--ice-text:#17324d;--ice-muted:#607b95;--ice-border:#d8e8f5}
+/* Approved Ice Blue + Pure White theme on the original page layout */
+:root{--ice-primary:#2583d8;--ice-text:#17324d;--ice-muted:#607b95;--ice-border:#d8e8f5}
 html,body{background:linear-gradient(145deg,#eaf6ff 0%,#fff 54%,#e4f2ff 100%)!important;color:var(--ice-text)!important}
 body.authenticated{background:linear-gradient(145deg,#dff1ff 0%,#f8fcff 52%,#e8f5ff 100%)!important}
-body.authenticated .app-sidebar{background:linear-gradient(180deg,#b9e5ff 0%,#d6ecff 48%,#eaf6ff 100%)!important;color:var(--ice-text)!important;border-right:1px solid var(--ice-border);box-shadow:5px 0 22px #245b8510}
-body.authenticated .sidebar-brand{color:var(--ice-text)!important}
-body.authenticated .sidebar-clock{border-color:#2583d8!important;color:#176bb8!important}
-body.authenticated .sidebar-link{color:#234966!important;background:transparent!important;border-color:transparent!important}
-body.authenticated .sidebar-link:hover,body.authenticated .sidebar-link.active{background:linear-gradient(110deg,#2583d8,#65b8ef)!important;border-color:#8dcefa!important;color:#fff!important;box-shadow:0 6px 18px #176bb822!important}
-body.authenticated .app-main{background:transparent!important}
-body.authenticated .top.app-page-header{background:linear-gradient(110deg,#b9e5ff 0%,#eaf6ff 72%,#fff 100%)!important;color:var(--ice-text)!important;border:1px solid var(--ice-border)!important;box-shadow:0 8px 22px #245b8510!important}
-body.authenticated .top .brand{color:var(--ice-text)!important}
-body.authenticated .top .muted{color:var(--ice-muted)!important}
+body.authenticated .top{background:linear-gradient(110deg,#b9e5ff 0%,#eaf6ff 72%,#fff 100%)!important;color:var(--ice-text)!important;border:1px solid var(--ice-border)!important;border-radius:18px!important;padding:18px 20px!important;box-shadow:0 8px 22px #245b8510!important}
+body.authenticated .top .brand,body.authenticated .panel h3{color:var(--ice-text)!important}
+body.authenticated .top .muted,body.authenticated .muted,body.authenticated .note,body.authenticated .foot{color:var(--ice-muted)!important}
 body.authenticated .top .tag{background:#fff!important;color:#176bb8!important;border:1px solid #c7e4f8!important}
 body.authenticated .panel{background:#fff!important;border:1px solid var(--ice-border)!important;box-shadow:0 7px 22px #245b850d!important}
-body.authenticated .panel:hover{background:#fff!important;border-color:#b9dcf3!important;box-shadow:0 11px 26px #245b8515!important}
-body.authenticated .panel h3{color:var(--ice-text)!important}
 body.authenticated .metric{background:linear-gradient(145deg,#fff 0%,#eff8ff 100%)!important;border:1px solid #d7eaf8!important}
-body.authenticated .metric:hover{background:#f4faff!important}
 body.authenticated .metric small{color:var(--ice-muted)!important}
 body.authenticated .metric strong{color:var(--ice-text)!important}
 body.authenticated button,body.authenticated .filebtn{background:var(--ice-primary)!important;color:#fff!important;border:1px solid var(--ice-primary)!important;box-shadow:0 2px 0 #176bb8!important}
-body.authenticated button:hover,body.authenticated .filebtn:hover{background:var(--ice-primary-dark)!important;box-shadow:0 4px 0 #125a9d,0 7px 14px #176bb822!important}
-body.authenticated button.secondary{background:#eaf6ff!important;color:#205477!important;border:1px solid #c9e4f7!important;box-shadow:0 2px 0 #c2deef!important}
-body.authenticated button.secondary:hover{background:#dff1ff!important}
-body.authenticated button.danger{background:#fff1ef!important;color:#a12c23!important;border-color:#f1c8c1!important;box-shadow:0 2px 0 #e8c0b8!important}
+body.authenticated button:hover,body.authenticated .filebtn:hover{background:#176bb8!important}
+body.authenticated button.secondary{background:#eaf6ff!important;color:#205477!important;border:1px solid #c9e4f7!important;box-shadow:none!important}
+body.authenticated button.danger{background:#fff1ef!important;color:#a12c23!important;border-color:#f1c8c1!important}
 body.authenticated input,body.authenticated select{background:#fff!important;color:var(--ice-text)!important;border:1px solid #cbdfee!important}
-body.authenticated input:focus,body.authenticated select:focus{border-color:#64b4e9!important;box-shadow:0 0 0 3px #9bd5f733!important;background:#fff!important}
+body.authenticated input:focus,body.authenticated select:focus{border-color:#64b4e9!important;box-shadow:0 0 0 3px #9bd5f733!important}
 body.authenticated .drop{background:linear-gradient(145deg,#fff,#f0f9ff)!important;border:2px dashed #83c5ed!important}
-body.authenticated .drop.uploading{background:#e6f5ff!important;border-color:#2583d8!important}
 body.authenticated .tablewrap{background:#fff!important;border-color:var(--ice-border)!important}
 body.authenticated th{background:#d8efff!important;color:#173b59!important}
 body.authenticated td{color:#294862!important;border-bottom-color:#e7f0f7!important}
 body.authenticated tbody tr:nth-child(even){background:#f5faff!important}
 body.authenticated tbody tr:nth-child(odd){background:#fff!important}
 body.authenticated tbody tr:hover{background:#eaf6ff!important}
-body.authenticated .status{background:#edf5fb!important;color:#46647d!important}
 body.authenticated .status.present{background:#dff5e8!important;color:#176b43!important}
 body.authenticated .status.leave{background:#fff1d6!important;color:#80550d!important}
 body.authenticated .status.review{background:#ffe8e4!important;color:#a12c23!important}
-body.authenticated .note,body.authenticated .muted,body.authenticated .foot{color:var(--ice-muted)!important}
-body.authenticated .toast{background:#173b59!important}
-body.authenticated .toast.success{background:#067647!important}
-body.authenticated .toast.error{background:#b42318!important}
 #loginScreen{background:linear-gradient(145deg,#eaf6ff,#fff)!important}
 .login-art{background:#eaf6ff!important}
 .login-card{background:linear-gradient(145deg,#b9e5ff 0%,#eaf6ff 78%,#fff 100%)!important;border:1px solid #cde7f8!important;color:var(--ice-text)!important}
 .login-card h1{color:var(--ice-text)!important}
 .login-card p,.login-card label{color:#365c78!important}
 .login-card input{background:#fff!important;color:var(--ice-text)!important;border:1px solid #d4e7f4!important}
-.login-card input:focus{outline:2px solid #79c2ef!important}
 .login-card button#loginButton{background:#2583d8!important;color:#fff!important;box-shadow:0 4px 0 #176bb8!important}
 body.auth-checking #authLoading{background:#f5fbff!important;color:var(--ice-text)!important}
 #authLoading .auth-loading-ripple i{border-color:#2583d8!important}
-#authLoading .auth-loading-ripple b{background:#2583d8!important;box-shadow:0 0 18px #2583d855!important}
-@media(max-width:760px){body.authenticated .app-sidebar{background:linear-gradient(180deg,#b9e5ff,#eaf6ff)!important}body.authenticated .top.app-page-header{background:linear-gradient(110deg,#b9e5ff,#fff)!important}}
+#authLoading .auth-loading-ripple b{background:#2583d8!important}
 
 </style>
 <style>
@@ -1206,59 +1188,6 @@ body.authenticated .note-info-item + .note-info-item { border-top: 1px solid #e7
 }
 </style>
 
-
-<style id="navy-sky-blue-approved-layout">
-:root{--ns-navy:#0d3768;--ns-navy-2:#164b83;--ns-blue:#1671d9;--ns-sky:#dceeff;--ns-ice:#eff7ff;--ns-border:#d9e8f8;--ns-text:#142b4d;--ns-muted:#607895}
-html,body{background:var(--ns-ice)!important;color:var(--ns-text)!important}
-body.authenticated{background:linear-gradient(145deg,#eaf4ff 0%,#f7fbff 55%,#e4f1ff 100%)!important}
-.app-shell{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100vh}
-.app-sidebar{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;padding:26px 14px;background:linear-gradient(180deg,#0b3565 0%,#124b84 100%);color:#fff;z-index:50}
-.sidebar-brand{display:flex;flex-direction:column;align-items:center;gap:12px;margin:2px 0 46px;text-align:center;font-size:22px;line-height:1.12;font-weight:800;letter-spacing:-.4px}
-.sidebar-clock{display:grid;place-items:center;width:66px;height:66px;border:3px solid #fff;border-radius:50%;font-size:48px;line-height:1;font-weight:400}
-.sidebar-nav{display:flex;flex-direction:column;gap:9px}
-.sidebar-link{width:100%;display:flex;align-items:center;gap:14px;padding:14px 15px;border-radius:13px;background:transparent!important;border:1px solid transparent!important;color:#eef7ff!important;text-align:left;font-size:15px;font-weight:650;box-shadow:none!important;transform:none!important}
-.sidebar-link>span{width:24px;text-align:center;font-size:22px;line-height:1}
-.sidebar-link:hover,.sidebar-link.active{background:linear-gradient(110deg,#2995ed,#1767c5)!important;border-color:#5bb2ff!important;color:#fff!important;box-shadow:0 6px 18px #001e4535!important}
-.sidebar-bottom{margin-top:auto}
-.app-main{min-width:0;padding:26px clamp(16px,2.2vw,36px) 40px}
-body.authenticated .wrap{width:100%;max-width:none;margin:0;padding:0;background:transparent;animation:none}
-body.authenticated .top.app-page-header{display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:10px 0 22px;margin:0 0 4px;background:transparent!important;color:var(--ns-text)!important;border:0!important;border-radius:0!important;box-shadow:none!important}
-.page-heading{min-width:240px;flex:1}
-body.authenticated .top .brand{color:var(--ns-text)!important;font-size:34px!important;letter-spacing:-1px}
-body.authenticated .top .muted{color:var(--ns-muted)!important;font-size:15px}
-.header-tools{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.header-tools .employee-picker{min-width:160px}
-.header-tools .month-picker-label{min-width:150px}
-.header-tools label{font-size:11px;color:var(--ns-muted)}
-.header-tools input,.header-tools .employee-picker-trigger{min-height:44px;background:#fff!important;border:1px solid var(--ns-border)!important;border-radius:14px!important;color:var(--ns-text)!important;box-shadow:0 3px 12px #174a8010!important}
-body.authenticated .auth-actions .tag{background:#e3f1ff!important;color:var(--ns-navy)!important;border:1px solid var(--ns-border)!important}
-body.authenticated .panel{background:#fff!important;border:1px solid var(--ns-border)!important;border-radius:20px!important;box-shadow:0 8px 24px #174a8010!important}
-body.authenticated .panel:hover{background:#fff!important;border-color:#c4dcf4!important;box-shadow:0 12px 28px #174a8017!important}
-body.authenticated .panel h3{color:var(--ns-text)!important}
-body.authenticated button:not(.sidebar-link):not(.password-toggle),body.authenticated .filebtn{background:linear-gradient(135deg,#1671d9,#0e56a6)!important;color:#fff!important;border:1px solid #1769c2!important;box-shadow:0 3px 0 #0b4387!important}
-body.authenticated button.secondary{background:#eaf4ff!important;color:#174a80!important;border:1px solid #cfe3f8!important;box-shadow:none!important}
-body.authenticated button.danger{background:#fff0ef!important;color:#a12c23!important;border:1px solid #f1cbc6!important;box-shadow:none!important}
-body.authenticated input,body.authenticated select{background:#fff!important;color:var(--ns-text)!important;border-color:#cfdeee!important}
-body.authenticated input:focus,body.authenticated select:focus{outline:0!important;border-color:#4b9be8!important;box-shadow:0 0 0 3px #1671d91c!important}
-body.authenticated .metric{background:linear-gradient(145deg,#fff 0%,#f0f7ff 100%)!important;border:1px solid var(--ns-border)!important}
-body.authenticated .metric small{color:var(--ns-muted)!important}
-body.authenticated .metric strong{color:var(--ns-navy)!important}
-body.authenticated .drop{background:#f5faff!important;border:1.5px dashed #8dbce9!important}
-body.authenticated .tablewrap{background:#fff!important;border:1px solid var(--ns-border)!important;border-radius:14px!important;overflow-x:auto!important}
-body.authenticated th{background:#eaf3ff!important;color:#21486f!important;border-bottom:1px solid #dce9f7!important}
-body.authenticated td{color:#263f5d!important;border-bottom:1px solid #e8f0f8!important}
-body.authenticated tbody tr:nth-child(even){background:#f8fbff!important}
-body.authenticated tbody tr:hover{background:#eef7ff!important}
-body.authenticated .status.present{background:#dcf5e7!important;color:#147044!important}
-body.authenticated .status.leave{background:#fff1d9!important;color:#8a5b12!important}
-body.authenticated .status.review{background:#ffe5e2!important;color:#a12c23!important}
-body.authenticated .note,body.authenticated .muted,body.authenticated .foot{color:var(--ns-muted)!important}
-body.authenticated .collapsible-heading{color:var(--ns-text)!important}
-@media(max-width:900px){.app-shell{grid-template-columns:76px minmax(0,1fr)}.app-sidebar{padding:18px 9px}.sidebar-brand{font-size:0;margin-bottom:30px}.sidebar-clock{width:48px;height:48px;font-size:35px}.sidebar-link{justify-content:center;padding:13px 8px;font-size:0;gap:0}.sidebar-link>span{font-size:22px}.sidebar-bottom .sidebar-link{font-size:0}}
-@media(max-width:760px){.app-shell{display:block}.app-sidebar{position:sticky;top:0;width:100%;height:auto;padding:8px 10px;flex-direction:row;align-items:center;gap:10px}.sidebar-brand{display:none}.sidebar-nav{display:flex;flex-direction:row;gap:5px;flex:1;overflow-x:auto}.sidebar-link{width:auto;min-width:48px;justify-content:center;padding:10px 12px;font-size:0}.sidebar-link>span{font-size:20px}.sidebar-bottom{margin:0}.sidebar-bottom .sidebar-link{font-size:0}.app-main{padding:14px 12px 28px}body.authenticated .top.app-page-header{padding:8px 0 16px;gap:12px}body.authenticated .top .brand{font-size:26px!important}.page-heading{flex-basis:100%}.header-tools{width:100%}.header-tools .employee-picker,.header-tools .month-picker-label{flex:1;min-width:130px}.auth-actions{margin-left:auto}.auth-actions .tag{display:none}}
-@media print{.app-sidebar{display:none!important}.app-shell{display:block}.app-main{padding:0}}
-</style>
-
 </head>
 <body class="auth-checking">
 <div id="authLoading" role="status" aria-live="polite"><span class="auth-loading-ripple" aria-hidden="true"><i></i><i></i><i></i><b></b></span><span>Refreshing</span></div>
@@ -1297,23 +1226,9 @@ body.authenticated .collapsible-heading{color:var(--ns-text)!important}
     <div id="loginError" role="alert" aria-live="polite"></div>
   </form>
 </section>
-
-<div class="app-shell">
-  <aside class="app-sidebar" aria-label="Main navigation">
-    <div class="sidebar-brand"><span class="sidebar-clock" aria-hidden="true">◷</span><span>Attendance<br>Tracker</span></div>
-    <nav class="sidebar-nav">
-      <button type="button" class="sidebar-link active" data-target="monthlySummary"><span>⌂</span>Dashboard</button>
-      <button type="button" class="sidebar-link" data-target="dailyAttendance"><span>▣</span>Daily Attendance</button>
-      <button type="button" class="sidebar-link" data-target="performancePanel"><span>✧</span>Incentives</button>
-      <button type="button" class="sidebar-link" data-target="monthlySummary"><span>▤</span>Reports</button>
-      <button type="button" class="sidebar-link" data-target="calculationSettings"><span>⚙</span>Settings</button>
-    </nav>
-    <div class="sidebar-bottom"><button type="button" class="sidebar-link" id="sidebarLogout"><span>↪</span>Logout</button></div>
-  </aside>
-  <div class="app-main">
 <main class="wrap">
 <header class="top"><div><div class="brand">Attendance & Salary</div><div class="muted">Private, browser-based tracker · Your uploaded chat stays on this device</div></div><div class="auth-actions noprint"><span class="tag">PRIVATE · LOCAL DATA</span><button class="secondary" id="logoutButton" type="button">Log out</button></div></header>
-<section class="panel noprint" id="importPanel"><h3 style="margin:0 0 8px">Import WhatsApp attendance</h3><div class="drop"><div style="font-weight:700">Upload WhatsApp chat export (.txt)</div><label id="importFileButton" class="filebtn" style="display:inline-block"><input id="file" type="file" accept=".txt,text/plain">Choose WhatsApp TXT</label><div id="fileName" class="muted" style="margin-top:8px"></div><div id="uploadState" class="upload-state" role="status" aria-live="polite"><span class="spinner"></span><span id="uploadStateText">Reading WhatsApp chat…</span></div></div></section>
+<section class="panel noprint"><h3 style="margin:0 0 8px">1. Import WhatsApp attendance</h3><div class="drop"><div style="font-weight:700">Upload WhatsApp chat export (.txt)</div><label id="importFileButton" class="filebtn" style="display:inline-block"><input id="file" type="file" accept=".txt,text/plain">Choose WhatsApp TXT</label><div id="fileName" class="muted" style="margin-top:8px"></div><div id="uploadState" class="upload-state" role="status" aria-live="polite"><span class="spinner"></span><span id="uploadStateText">Reading WhatsApp chat…</span></div></div></section>
 
 <details class="panel noprint collapsible-panel" id="calculationSettings"><summary class="collapsible-heading"><h3>2. Staff selection</h3></summary><div class="collapsible-content"><div class="settings"><div class="staff-controls"><label class="employee-picker-label">Employee profile
 <div class="employee-picker" id="employeePicker">
@@ -1352,10 +1267,10 @@ body.authenticated .collapsible-heading{color:var(--ns-text)!important}
 </div></details>
 
 <details class="panel collapsible-panel" id="performancePanel"><summary class="collapsible-heading"><h3>3. Incentives</h3><span class="muted">Monthly team performance &amp; incentives</span></summary><div class="collapsible-content"><div class="top"><div class="controls noprint"><label>Month<input id="incentiveMonth" type="month" aria-label="Incentives month" value="2026-11"></label><label>Sales incentive pool (₹)<input id="incentivePoolInput" type="number" min="0" step="0.01" value="20000" style="min-width:150px"></label><button type="button" id="saveIncentivePool">Save pool</button></div></div><div class="grid summary-grid" style="margin-top:14px"><div class="metric"><small>Team net working hours</small><strong id="teamHours">0.00</strong></div><div class="metric"><small>Sales incentive pool</small><strong id="teamPool">₹20,000.00</strong></div><div class="metric"><small>Total incentive payable</small><strong id="teamPayable">₹0.00</strong></div><div class="metric"><small>Leave deductions</small><strong id="teamLeaveDeduction">₹0.00</strong></div></div><div class="tablewrap" style="margin-top:14px"><table class="performance-table"><thead><tr><th>Rank</th><th>Employee</th><th>Net working hours</th><th>Share</th><th>Leave days</th><th>Deduction</th><th>Final incentive</th></tr></thead><tbody id="performanceRows"><tr><td colspan="7" class="empty">No employee profiles found.</td></tr></tbody></table></div></div></details>
-<section class="panel" id="dailyAttendance"><div class="top"><div><h3 style="margin:0">Daily attendance</h3></div><div class="controls noprint"><button class="secondary" id="add">Add day</button></div></div><div class="tablewrap" style="margin-top:12px"><table><thead><tr><th>Date</th><th>Status</th><th>IN (12-hour)</th><th>OUT (12-hour)</th><th>Lunch Out</th><th>Lunch In</th><th>Lunch (h)</th><th>Permission (h)</th><th>Clocked (h)</th><th>Extra lunch (h)</th><th>Net (h)</th><th>Regular (h)</th><th>OT (h)</th><th>Pay (₹)</th><th class="noprint">Action</th></tr></thead><tbody id="rows"><tr><td colspan="15" class="empty">Upload a WhatsApp TXT file or add attendance days manually.</td></tr></tbody></table></div><div class="note warn" id="review" style="margin-top:10px"></div></section>
+<section class="panel"><div class="top"><div><h3 style="margin:0">4. Daily attendance</h3></div><div class="controls noprint"><button class="secondary" id="add">Add day</button></div></div><div class="tablewrap" style="margin-top:12px"><table><thead><tr><th>Date</th><th>Status</th><th>IN (12-hour)</th><th>OUT (12-hour)</th><th>Lunch Out</th><th>Lunch In</th><th>Lunch (h)</th><th>Permission (h)</th><th>Clocked (h)</th><th>Extra lunch (h)</th><th>Net (h)</th><th>Regular (h)</th><th>OT (h)</th><th>Pay (₹)</th><th class="noprint">Action</th></tr></thead><tbody id="rows"><tr><td colspan="15" class="empty">Upload a WhatsApp TXT file or add attendance days manually.</td></tr></tbody></table></div><div class="note warn" id="review" style="margin-top:10px"></div></section>
 
 
-</main></div></div><div id="toast" class="toast" role="status" aria-live="polite"><span class="check" id="toastIcon">✓</span><span id="toastText"></span></div>
+</main><div id="toast" class="toast" role="status" aria-live="polite"><span class="check" id="toastIcon">✓</span><span id="toastText"></span></div>
 <script>
 const $=id=>document.getElementById(id);let records=[];let toastTimer;let staffStore={};let activeStaff='Sanjai';let incentivePool=20000;
 function notify(message,type='success'){const box=$('toast');$('toastText').textContent=message;$('toastIcon').textContent=type==='error'?'!':'✓';box.className='toast '+type+' show';clearTimeout(toastTimer);toastTimer=setTimeout(()=>box.classList.remove('show'),3600)}
@@ -2079,30 +1994,3 @@ if ("serviceWorker" in navigator) {
 })();
 </script>
 
-
-
-<script id="approved-layout-navigation">
-(() => {
- const init=()=>{
-  const tools=document.getElementById('headerTools');
-  const pickerLabel=document.querySelector('.employee-picker-label');
-  const monthLabel=document.querySelector('.month-picker-label');
-  if(tools&&pickerLabel&&!tools.contains(pickerLabel))tools.appendChild(pickerLabel);
-  if(tools&&monthLabel&&!tools.contains(monthLabel))tools.appendChild(monthLabel);
-  document.querySelectorAll('.sidebar-link[data-target]').forEach(btn=>{
-   btn.addEventListener('click',()=>{
-    const target=document.getElementById(btn.dataset.target);
-    if(!target)return;
-    if(target.tagName==='DETAILS')target.open=true;
-    document.querySelectorAll('.sidebar-link[data-target]').forEach(x=>x.classList.toggle('active',x===btn));
-    target.scrollIntoView({behavior:'smooth',block:'start'});
-   });
-  });
-  document.getElementById('sidebarLogout')?.addEventListener('click',()=>document.getElementById('logoutButton')?.click());
-  const daily=document.querySelector('.sidebar-link[data-target="dailyAttendance"]');
-  const importPanel=document.getElementById('importPanel');
-  if(importPanel){importPanel.style.order='-1';}
- };
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
-})();
-</script>
