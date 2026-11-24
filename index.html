@@ -2521,7 +2521,7 @@ load();
       return;
     }
     if (status) status.textContent = autoLogoutSettings.enabled
-      ? 'Enabled · ' + autoLogoutSettings.timeoutMinutes + ' minute inactivity timeout · 1 minute in background'
+      ? 'Enabled · ' + autoLogoutSettings.timeoutMinutes + ' minute inactivity timeout · applies while the app is open or in the background'
       : 'Automatic logout is off.';
     resetAutoLogoutTimer();
     notify(autoLogoutSettings.enabled ? 'Automatic logout settings saved.' : 'Automatic logout disabled.');
