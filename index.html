@@ -2402,7 +2402,7 @@ load();
   }
 
 
-  // Mobile-only automatic logout. Preferences are stored separately from attendance data.
+  // Device-wide automatic logout. Preferences are stored separately from attendance data.
   const AUTO_LOGOUT_SETTINGS_KEY = 'attendanceAutoLogoutSettings_v1';
   const AUTO_LOGOUT_LAST_ACTIVITY_KEY = 'attendanceAutoLogoutLastActivityAt_v1';
   const AUTO_LOGOUT_DEFAULTS = { enabled:true, timeoutMinutes:3 };
@@ -2418,7 +2418,6 @@ load();
   let autoLogoutIdleTimer = null;
   let autoLogoutWarningTimer = null;
   let autoLogoutInProgress = false;
-  const isMobileAutoLogoutDevice = () => window.matchMedia('(max-width: 760px)').matches;
 
   function clearAutoLogoutTimers() {
     if (autoLogoutIdleTimer !== null) clearTimeout(autoLogoutIdleTimer);
@@ -2438,7 +2437,7 @@ load();
   }
   function resetAutoLogoutTimer() {
     clearAutoLogoutTimers();
-    if (!isMobileAutoLogoutDevice() || !autoLogoutSettings.enabled ||
+    if (!autoLogoutSettings.enabled ||
         !auth?.currentUser || auth.currentUser.uid !== OWNER_UID ||
         !document.body.classList.contains('authenticated') || logoutInProgress) return;
     const duration = autoLogoutSettings.timeoutMinutes * 60 * 1000;
@@ -2485,7 +2484,7 @@ load();
     }
   }
   function checkAutoLogoutBackground() {
-    if (!isMobileAutoLogoutDevice() || !autoLogoutSettings.enabled) return false;
+    if (!autoLogoutSettings.enabled) return false;
     let lastActivity = 0;
     try { lastActivity = Number(localStorage.getItem(AUTO_LOGOUT_LAST_ACTIVITY_KEY) || 0); } catch (_) {}
     const elapsed = lastActivity ? Date.now() - lastActivity : 0;
