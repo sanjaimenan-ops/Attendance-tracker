@@ -2116,3 +2116,23 @@ if ("serviceWorker" in navigator) {
 })();
 </script>
 
+
+<script id="mobile-nav-actions">
+(() => {
+ const init=()=>{
+  const nav=document.getElementById('mobileNav');
+  if(!nav)return;
+  nav.querySelectorAll('[data-target]').forEach(btn=>{
+   btn.addEventListener('click',()=>{
+    const target=document.getElementById(btn.dataset.target);
+    if(!target)return;
+    if(target.tagName==='DETAILS')target.open=true;
+    nav.querySelectorAll('[data-target]').forEach(x=>x.classList.toggle('active',x===btn));
+    target.scrollIntoView({behavior:'smooth',block:'start'});
+   });
+  });
+  document.getElementById('mobileNavLogout')?.addEventListener('click',()=>document.getElementById('logoutButton')?.click());
+ };
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();
+</script>
