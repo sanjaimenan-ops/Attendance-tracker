@@ -2323,7 +2323,7 @@ if ("serviceWorker" in navigator) {
   document.getElementById('sidebarLogout')?.addEventListener('click',()=>document.getElementById('logoutButton')?.click());
   const daily=document.querySelector('.sidebar-link[data-target="dailyAttendance"]');
   const importPanel=document.getElementById('importPanel');
-  if(importPanel){importPanel.style.order='-1';}
+  // Preserve the DOM order: header first, then WhatsApp import card.
  };
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
