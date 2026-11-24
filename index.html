@@ -1827,8 +1827,14 @@ body.authenticated main.wrap > details.panel > summary.collapsible-heading::afte
 
 
 <style id="mobile-auto-logout-settings-20261124-styles">
-/* Auto-logout controls are mobile-only; desktop interface and behavior stay unchanged. */
-.auto-logout-settings{display:none}
+/* Show the same automatic logout controls on desktop and mobile. */
+.auto-logout-settings{display:block!important;margin-top:14px!important;padding:14px 0 4px!important;border-top:1px solid #fed7aa!important}
+#calculationSettings .auto-logout-toggle{display:flex!important;flex-direction:row!important;align-items:center!important;gap:9px!important;width:100%!important;font-size:13px!important;color:#292524!important;font-weight:700!important}
+#calculationSettings .auto-logout-toggle input{width:20px!important;height:20px!important;min-width:20px!important;margin:0!important;accent-color:#ea580c}
+#calculationSettings .auto-logout-timeout-label{display:flex!important;flex-direction:column!important;gap:5px!important;margin-top:10px!important;width:min(320px,100%)!important;font-size:12px!important;color:#57534e!important;font-weight:650!important}
+#calculationSettings .auto-logout-timeout-label select{width:100%!important;min-height:40px!important}
+#calculationSettings .auto-logout-note{margin:9px 0!important;color:#78716c!important;font-size:11px!important;line-height:1.45!important}
+#calculationSettings .auto-logout-status{min-height:0!important;margin-top:6px!important;font-size:11px!important;color:#15803d!important}
 @media(max-width:760px){
   #calculationSettings .auto-logout-settings{display:block!important;margin-top:12px!important;padding-top:12px!important;border-top:1px solid #fed7aa!important}
   #calculationSettings .auto-logout-toggle{display:flex!important;flex-direction:row!important;align-items:center!important;gap:9px!important;width:100%!important;font-size:13px!important;color:#292524!important;font-weight:700!important}
