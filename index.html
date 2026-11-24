@@ -1435,6 +1435,40 @@ body.authenticated main.wrap > details.panel > summary.collapsible-heading::afte
 }
 </style>
 
+
+<style id="desktop-login-single-screen-fit-20261124">
+/* Keep the desktop sign-in screen within one viewport; avoid a clipped second page. */
+@media (min-width:801px){
+  html,body:not(.authenticated){
+    width:100%!important;height:100%!important;min-height:0!important;
+    margin:0!important;overflow:hidden!important;
+  }
+  body:not(.authenticated) #loginScreen{
+    display:grid!important;grid-template-columns:minmax(0,1.08fr) minmax(420px,.92fr)!important;
+    width:100%!important;height:100vh!important;height:100dvh!important;
+    min-height:0!important;max-height:100vh!important;max-height:100dvh!important;
+    box-sizing:border-box!important;align-items:center!important;overflow:hidden!important;
+  }
+  body:not(.authenticated) #loginScreen .login-art{
+    height:100%!important;min-height:0!important;max-height:100%!important;
+  }
+  body:not(.authenticated) #loginScreen .login-art svg{
+    width:100%!important;height:100%!important;min-height:0!important;max-height:100%!important;
+  }
+  body:not(.authenticated) #loginScreen .login-card{
+    align-self:center!important;justify-self:center!important;
+    width:min(560px,calc(100% - 48px))!important;
+    max-width:calc(100% - 48px)!important;
+    max-height:calc(100vh - 40px)!important;max-height:calc(100dvh - 40px)!important;
+    box-sizing:border-box!important;overflow-y:auto!important;
+    padding:clamp(22px,3vw,44px)!important;border-radius:30px!important;
+  }
+  body:not(.authenticated) #loginScreen .login-card p{margin-bottom:24px!important}
+  body:not(.authenticated) #loginScreen .login-card label{margin:12px 0!important}
+  body:not(.authenticated) #loginScreen .login-card button#loginButton{margin-top:20px!important}
+}
+</style>
+
 </head>
 <body class="auth-checking">
 <div id="authLoading" role="status" aria-live="polite"><span class="auth-loading-ripple" aria-hidden="true"><i></i><i></i><i></i><b></b></span><span>Refreshing</span></div>
