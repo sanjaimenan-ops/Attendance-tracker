@@ -1821,6 +1821,21 @@ body.authenticated main.wrap > details.panel > summary.collapsible-heading::afte
 }
 </style>
 
+
+<style id="mobile-auto-logout-settings-20261124-styles">
+/* Auto-logout controls are mobile-only; desktop interface and behavior stay unchanged. */
+.auto-logout-settings{display:none}
+@media(max-width:760px){
+  #calculationSettings .auto-logout-settings{display:block!important;margin-top:12px!important;padding-top:12px!important;border-top:1px solid #fed7aa!important}
+  #calculationSettings .auto-logout-toggle{display:flex!important;flex-direction:row!important;align-items:center!important;gap:9px!important;width:100%!important;font-size:13px!important;color:#292524!important;font-weight:700!important}
+  #calculationSettings .auto-logout-toggle input{width:20px!important;height:20px!important;min-width:20px!important;margin:0!important;accent-color:#ea580c}
+  #calculationSettings .auto-logout-timeout-label{display:flex!important;flex-direction:column!important;gap:5px!important;margin-top:10px!important;width:100%!important;font-size:12px!important;color:#57534e!important;font-weight:650!important}
+  #calculationSettings .auto-logout-timeout-label select{width:100%!important;min-height:40px!important}
+  #calculationSettings .auto-logout-note{margin:9px 0!important;color:#78716c!important;font-size:11px!important;line-height:1.45!important}
+  #calculationSettings .auto-logout-status{min-height:0!important;margin-top:6px!important;font-size:11px!important;color:#15803d!important}
+}
+</style>
+
 </head>
 <body class="auth-checking">
 <div id="authLoading" role="status" aria-live="polite"><span class="auth-loading-ripple" aria-hidden="true"><i></i><i></i><i></i><b></b></span><span>Refreshing</span></div>
@@ -1907,6 +1922,23 @@ body.authenticated main.wrap > details.panel > summary.collapsible-heading::afte
     <label>Paid leave hours/day<input id="leavepay" type="number" min="0" step="0.25" value="0"></label>
   </div>
   <button type="button" id="saveStaffSettings" class="settings-menu-save">Save salary &amp; work settings</button>
+  <div class="settings-menu-divider"></div>
+  <section class="auto-logout-settings" id="mobile-auto-logout-settings-20261124" aria-label="Automatic logout settings">
+    <div class="settings-menu-title">Automatic logout</div>
+    <label class="auto-logout-toggle"><input type="checkbox" id="autoLogoutEnabled" checked> Enable automatic logout</label>
+    <label class="auto-logout-timeout-label">Inactivity timeout
+      <select id="autoLogoutTimeout">
+        <option value="1">1 minute</option>
+        <option value="3" selected>3 minutes</option>
+        <option value="5">5 minutes</option>
+        <option value="10">10 minutes</option>
+        <option value="15">15 minutes</option>
+      </select>
+    </label>
+    <p class="auto-logout-note">A 30-second warning appears before logout. Leaving the app in the background for 1 minute also signs you out. Settings are saved on this device.</p>
+    <button type="button" id="saveAutoLogoutSettings" class="settings-menu-save">Save auto-logout settings</button>
+    <div id="autoLogoutStatus" class="auto-logout-status" role="status" aria-live="polite"></div>
+  </section>
 </div>
 </div>
 <div class="employee-management-wrap">
@@ -2369,7 +2401,149 @@ load();
     return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
   }
 
-  // Automatic logout has been removed. Manual logout remains available.
+
+  // Mobile-only automatic logout. Preferences are stored separately from attendance data.
+  const AUTO_LOGOUT_SETTINGS_KEY = 'attendanceAutoLogoutSettings_v1';
+  const AUTO_LOGOUT_BACKGROUND_KEY = 'attendanceAutoLogoutBackgroundAt_v1';
+  const AUTO_LOGOUT_DEFAULTS = { enabled:true, timeoutMinutes:3, backgroundMinutes:1 };
+  let autoLogoutSettings = (() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(AUTO_LOGOUT_SETTINGS_KEY) || 'null');
+      return {
+        enabled: typeof saved?.enabled === 'boolean' ? saved.enabled : AUTO_LOGOUT_DEFAULTS.enabled,
+        timeoutMinutes: [1,3,5,10,15].includes(Number(saved?.timeoutMinutes)) ? Number(saved.timeoutMinutes) : AUTO_LOGOUT_DEFAULTS.timeoutMinutes,
+        backgroundMinutes: 1
+      };
+    } catch (_) { return {...AUTO_LOGOUT_DEFAULTS}; }
+  })();
+  let autoLogoutIdleTimer = null;
+  let autoLogoutWarningTimer = null;
+  let autoLogoutInProgress = false;
+  const isMobileAutoLogoutDevice = () => window.matchMedia('(max-width: 760px)').matches || window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+  function clearAutoLogoutTimers() {
+    if (autoLogoutIdleTimer !== null) clearTimeout(autoLogoutIdleTimer);
+    if (autoLogoutWarningTimer !== null) clearTimeout(autoLogoutWarningTimer);
+    autoLogoutIdleTimer = null;
+    autoLogoutWarningTimer = null;
+  }
+  function syncAutoLogoutControls() {
+    const enabled = document.getElementById('autoLogoutEnabled');
+    const timeout = document.getElementById('autoLogoutTimeout');
+    if (enabled) enabled.checked = !!autoLogoutSettings.enabled;
+    if (timeout) timeout.value = String(autoLogoutSettings.timeoutMinutes);
+  }
+  function persistAutoLogoutSettings() {
+    try { localStorage.setItem(AUTO_LOGOUT_SETTINGS_KEY, JSON.stringify(autoLogoutSettings)); return true; }
+    catch (error) { console.error('Could not save auto-logout preferences:', error); return false; }
+  }
+  function resetAutoLogoutTimer() {
+    clearAutoLogoutTimers();
+    if (!isMobileAutoLogoutDevice() || !autoLogoutSettings.enabled ||
+        !auth?.currentUser || auth.currentUser.uid !== OWNER_UID ||
+        !document.body.classList.contains('authenticated') || logoutInProgress) return;
+    const duration = autoLogoutSettings.timeoutMinutes * 60 * 1000;
+    const warningDelay = Math.max(0, duration - 30000);
+    autoLogoutWarningTimer = setTimeout(() => {
+      if (document.body.classList.contains('authenticated')) {
+        notify('You will be logged out in 30 seconds due to inactivity. Use the app to stay signed in.', 'error');
+      }
+    }, warningDelay);
+    autoLogoutIdleTimer = setTimeout(() => {
+      performAutomaticLogout('You were signed out after ' + autoLogoutSettings.timeoutMinutes + ' minutes of inactivity.');
+    }, duration);
+  }
+  async function performAutomaticLogout(reason) {
+    if (logoutInProgress || !auth?.currentUser || auth.currentUser.uid !== OWNER_UID) return;
+    logoutInProgress = true;
+    clearAutoLogoutTimers();
+    try {
+      if (cloudTimer !== null) { clearTimeout(cloudTimer); cloudTimer = null; }
+      if (cloudDoc && cloudReady) {
+        await pushCloudState();
+        await saveQueue;
+      }
+    } catch (error) {
+      console.error('Automatic logout stopped because the final cloud save failed:', error);
+      showError('Automatic logout was paused because the latest attendance data could not be saved. Check your connection and try again.');
+      logoutInProgress = false;
+      resetAutoLogoutTimer();
+      return;
+    }
+    cloudReady = false;
+    cloudDoc = null;
+    try {
+      localStorage.removeItem(AUTO_LOGOUT_BACKGROUND_KEY);
+      await auth.signOut();
+      notify(reason);
+    } catch (error) {
+      console.error('Automatic sign-out failed:', error);
+      logoutInProgress = false;
+      resetAutoLogoutTimer();
+    } finally {
+      if (!auth.currentUser) logoutInProgress = false;
+    }
+  }
+  function markAutoLogoutBackground() {
+    if (!isMobileAutoLogoutDevice() || !autoLogoutSettings.enabled || !auth?.currentUser) return;
+    try {
+      if (!localStorage.getItem(AUTO_LOGOUT_BACKGROUND_KEY)) {
+        localStorage.setItem(AUTO_LOGOUT_BACKGROUND_KEY, String(Date.now()));
+      }
+    } catch (_) {}
+  }
+  function checkAutoLogoutBackground() {
+    if (!isMobileAutoLogoutDevice() || !autoLogoutSettings.enabled) {
+      try { localStorage.removeItem(AUTO_LOGOUT_BACKGROUND_KEY); } catch (_) {}
+      return false;
+    }
+    let hiddenAt = 0;
+    try {
+      hiddenAt = Number(localStorage.getItem(AUTO_LOGOUT_BACKGROUND_KEY) || 0);
+      localStorage.removeItem(AUTO_LOGOUT_BACKGROUND_KEY);
+    } catch (_) {}
+    if (hiddenAt && Date.now() - hiddenAt >= autoLogoutSettings.backgroundMinutes * 60000) {
+      performAutomaticLogout('You were signed out because the app stayed in the background for 1 minute.');
+      return true;
+    }
+    return false;
+  }
+  function registerAutoLogoutActivityTracking() {
+    const activityEvents = ['pointerdown','keydown','touchstart','click','input','change','scroll','wheel'];
+    activityEvents.forEach(type => document.addEventListener(type, resetAutoLogoutTimer, {passive:true}));
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) markAutoLogoutBackground();
+      else if (!checkAutoLogoutBackground()) resetAutoLogoutTimer();
+    });
+    window.addEventListener('pagehide', markAutoLogoutBackground);
+    window.addEventListener('pageshow', () => {
+      if (!checkAutoLogoutBackground()) resetAutoLogoutTimer();
+    });
+    window.addEventListener('focus', () => {
+      if (!checkAutoLogoutBackground()) resetAutoLogoutTimer();
+    });
+  }
+  function saveAutoLogoutControls() {
+    const enabled = document.getElementById('autoLogoutEnabled');
+    const timeout = document.getElementById('autoLogoutTimeout');
+    const status = document.getElementById('autoLogoutStatus');
+    if (!enabled || !timeout) return;
+    autoLogoutSettings.enabled = enabled.checked;
+    autoLogoutSettings.timeoutMinutes = [1,3,5,10,15].includes(Number(timeout.value)) ? Number(timeout.value) : 3;
+    if (!persistAutoLogoutSettings()) {
+      if (status) status.textContent = 'Could not save settings on this device.';
+      return;
+    }
+    if (status) status.textContent = autoLogoutSettings.enabled
+      ? 'Enabled · ' + autoLogoutSettings.timeoutMinutes + ' minute inactivity timeout · 1 minute in background'
+      : 'Automatic logout is off.';
+    resetAutoLogoutTimer();
+    notify(autoLogoutSettings.enabled ? 'Automatic logout settings saved.' : 'Automatic logout disabled.');
+  }
+  document.getElementById('saveAutoLogoutSettings')?.addEventListener('click', saveAutoLogoutControls);
+  syncAutoLogoutControls();
+  registerAutoLogoutActivityTracking();
+
   let logoutInProgress = false;
 
   function localState() {
@@ -2510,6 +2684,8 @@ load();
     logoutButton.addEventListener('click', async () => {
       if (logoutInProgress) return;
       logoutInProgress = true;
+      clearAutoLogoutTimers();
+      try { localStorage.removeItem(AUTO_LOGOUT_BACKGROUND_KEY); } catch (_) {}
       clearLoginCredentials();
       if (cloudTimer !== null) {
         clearTimeout(cloudTimer);
@@ -2563,6 +2739,8 @@ load();
       // Do not expose the login form briefly while a valid session is being restored.
       if (!user) {
         clearTimeout(loadingWatchdog);
+        clearAutoLogoutTimers();
+        try { localStorage.removeItem(AUTO_LOGOUT_BACKGROUND_KEY); } catch (_) {}
         document.body.classList.remove('authenticated','auth-checking');
         clearLoginCredentials();
         return;
@@ -2621,7 +2799,9 @@ load();
           window.scheduleAttendanceCloudSave();
         }
         clearTimeout(loadingWatchdog);
+        if (checkAutoLogoutBackground()) return;
         document.body.classList.add('authenticated');
+        resetAutoLogoutTimer();
         document.body.classList.remove('auth-checking');
         showError('');
       } catch (error) {
