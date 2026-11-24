@@ -1316,6 +1316,125 @@ body.authenticated select[data-k="status"] option:checked{background:#eaf3fb!imp
   }
 }
 </style>
+
+<style id="full-normal-page-layout-20261124">
+/* Restore the approved original single-column page layout at every viewport. */
+body.authenticated .app-shell{
+  display:block!important; grid-template-columns:none!important; min-height:0!important;
+}
+body.authenticated .app-sidebar{display:none!important}
+body.authenticated .app-main{display:block!important;min-width:0!important;padding:0!important}
+body.authenticated main.wrap{
+  display:flex!important; flex-direction:column!important; align-items:stretch!important;
+  gap:18px!important; width:100%!important; max-width:1600px!important;
+  margin:0 auto!important; padding:24px!important; box-sizing:border-box!important;
+  background:transparent!important; animation:none!important;
+}
+body.authenticated main.wrap > header.top{
+  order:0!important; display:flex!important; flex-direction:row!important;
+  align-items:center!important; justify-content:space-between!important;
+  flex-wrap:wrap!important; gap:16px!important; width:100%!important;
+  min-height:0!important; height:auto!important; margin:0!important;
+  padding:20px 22px!important; box-sizing:border-box!important;
+  background:linear-gradient(115deg,#163b65 0%,#286ca8 100%)!important;
+  color:#fff!important; border:1px solid #204f7d!important;
+  border-top:5px solid #f28c28!important; border-radius:18px!important;
+  box-shadow:0 9px 24px #163b651c!important; overflow:visible!important;
+}
+body.authenticated main.wrap > header.top > div:first-child{
+  display:block!important; flex:1 1 260px!important; min-width:0!important;
+}
+body.authenticated main.wrap > header.top .brand{
+  display:block!important; color:#fff!important; -webkit-text-fill-color:#fff!important;
+  opacity:1!important; visibility:visible!important;
+  font-size:clamp(23px,3vw,32px)!important; line-height:1.2!important;
+  font-weight:800!important; letter-spacing:-.5px!important;
+}
+body.authenticated main.wrap > header.top .muted{
+  display:block!important; color:#e4eff9!important; -webkit-text-fill-color:#e4eff9!important;
+  opacity:1!important; visibility:visible!important; font-size:14px!important;
+  line-height:1.45!important;
+}
+body.authenticated main.wrap > header.top .auth-actions{
+  display:flex!important; align-items:center!important; justify-content:flex-end!important;
+  flex:0 0 auto!important; width:auto!important; margin:0!important;
+}
+body.authenticated main.wrap > section.panel,
+body.authenticated main.wrap > details.panel{
+  display:block!important; flex:none!important; width:100%!important;
+  box-sizing:border-box!important; margin:0!important;
+  background:#ffe2c2!important; border-radius:19px!important;
+}
+body.authenticated main.wrap > details.panel > summary.collapsible-heading{
+  display:flex!important; flex-direction:row!important; align-items:center!important;
+  justify-content:space-between!important; gap:12px!important;
+  width:100%!important; box-sizing:border-box!important;
+}
+body.authenticated main.wrap > details.panel > summary.collapsible-heading h3{
+  flex:0 1 auto!important; min-width:0!important; margin:0!important;
+}
+body.authenticated main.wrap > details.panel > summary.collapsible-heading > .muted{
+  flex:0 1 auto!important; min-width:0!important; margin:0!important;
+  text-align:left!important; overflow-wrap:anywhere!important;
+}
+body.authenticated main.wrap > details.panel > summary.collapsible-heading::after{
+  flex:0 0 10px!important; margin-left:auto!important;
+}
+#mobileNav{display:none!important}
+@media(max-width:760px){
+  body.authenticated main.wrap{
+    width:100%!important; max-width:none!important; padding:12px!important; gap:18px!important;
+  }
+  #mobileNav{
+    position:sticky!important; top:0!important; z-index:900!important;
+    display:flex!important; align-items:center!important; justify-content:space-between!important;
+    gap:7px!important; width:100%!important; padding:9px 12px!important;
+    box-sizing:border-box!important; background:linear-gradient(110deg,#163b65 0%,#286ca8 100%)!important;
+    border-bottom:4px solid #f28c28!important; box-shadow:0 5px 16px #163b6528!important;
+  }
+  #mobileNav .mobile-nav-link{
+    display:grid!important; place-items:center!important; flex:1 1 0!important;
+    min-width:0!important; height:54px!important; min-height:54px!important;
+    padding:0!important; border:1px solid #d9e9f8!important; border-radius:15px!important;
+    background:#fff!important; color:#163b65!important; font-size:28px!important;
+    line-height:1!important; box-shadow:0 3px 0 #b6cfe3!important;
+  }
+  #mobileNav .mobile-nav-link.active{
+    background:linear-gradient(145deg,#f8a64b,#f28c28)!important;
+    border-color:#ffd3a6!important; color:#fff!important; box-shadow:0 3px 0 #bd5e0a!important;
+  }
+  #mobileNav .mobile-nav-logout{
+    flex:0 0 54px!important; margin-left:8px!important;
+  }
+  body.authenticated main.wrap > header.top{
+    flex-direction:row!important; flex-wrap:wrap!important; align-items:flex-start!important;
+    gap:12px!important; margin:0!important; padding:16px!important;
+  }
+  body.authenticated main.wrap > header.top > div:first-child{flex:1 1 100%!important}
+  body.authenticated main.wrap > header.top .brand{font-size:25px!important}
+  body.authenticated main.wrap > header.top .auth-actions{
+    flex:1 1 100%!important; width:100%!important; justify-content:flex-end!important;
+  }
+  body.authenticated main.wrap > details.panel > summary.collapsible-heading{
+    gap:10px!important; padding:16px!important;
+  }
+  body.authenticated main.wrap > details.panel > summary.collapsible-heading h3{
+    flex:1 1 auto!important; font-size:clamp(19px,5vw,25px)!important;
+  }
+  body.authenticated main.wrap > details.panel > summary.collapsible-heading > .muted{
+    flex:0 1 42%!important; font-size:13px!important; line-height:1.35!important;
+  }
+  body.authenticated main.wrap > details.panel > summary.collapsible-heading::after{
+    flex:0 0 10px!important;
+  }
+}
+@media(min-width:761px){#mobileNav{display:none!important}}
+@media print{
+  #mobileNav,body.authenticated .app-sidebar{display:none!important}
+  body.authenticated main.wrap{display:block!important;padding:0!important}
+}
+</style>
+
 </head>
 <body class="auth-checking">
 <div id="authLoading" role="status" aria-live="polite"><span class="auth-loading-ripple" aria-hidden="true"><i></i><i></i><i></i><b></b></span><span>Refreshing</span></div>
