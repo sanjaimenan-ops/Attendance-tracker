@@ -1137,6 +1137,17 @@ body.authenticated .note-info-item + .note-info-item { border-top: 1px solid #e7
 }
 </style>
 
+
+<style id="attendance-horizontal-scroll">
+@media (min-width: 761px) {
+  body.authenticated .panel:has(> .tablewrap) .tablewrap {
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    scrollbar-width: auto;
+  }
+}
+</style>
+
 </head>
 <body class="auth-checking">
 <div id="authLoading" role="status" aria-live="polite"><span class="auth-loading-ripple" aria-hidden="true"><i></i><i></i><i></i><b></b></span><span>Refreshing</span></div>
@@ -1925,3 +1936,21 @@ if ("serviceWorker" in navigator) {
   });
 }
 </script>
+
+
+<script id="attendance-shift-wheel-scroll">
+(() => {
+  document.addEventListener('wheel', event => {
+    if (!event.shiftKey) return;
+    const wrap = event.target.closest?.('.tablewrap');
+    if (!wrap || !wrap.querySelector('table:not(.performance-table)')) return;
+    const maxScroll = wrap.scrollWidth - wrap.clientWidth;
+    if (maxScroll <= 0) return;
+    const delta = Math.abs(event.deltaY) >= Math.abs(event.deltaX) ? event.deltaY : event.deltaX;
+    if (!delta) return;
+    event.preventDefault();
+    wrap.scrollLeft += delta;
+  }, { passive: false });
+})();
+</script>
+
