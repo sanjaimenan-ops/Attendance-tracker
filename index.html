@@ -1514,7 +1514,7 @@ body.authenticated main.wrap > details.panel > summary.collapsible-heading::afte
   }
   body.authenticated #dailyAttendance > .tablewrap > table > tbody > tr {
     display:grid!important;
-    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
     width:100%!important;
     min-width:0!important;
     max-width:100%!important;
@@ -1568,6 +1568,255 @@ body.authenticated main.wrap > details.panel > summary.collapsible-heading::afte
     width:auto!important;
     min-width:100px!important;
     align-self:flex-start!important;
+  }
+}
+</style>
+
+
+<style id="approved-mobile-cream-white-orange-cards-20261124">
+/* Restore the approved older cream/white/orange card design on mobile only. */
+@media (max-width:760px) {
+  body.authenticated,
+  body.authenticated .wrap {
+    background:#fff7ed!important;
+    color:#292524!important;
+  }
+  body.authenticated .wrap {
+    padding:12px!important;
+  }
+  body.authenticated main.wrap > header.top {
+    background:linear-gradient(120deg,#f97316 0%,#ea580c 100%)!important;
+    color:#fff!important;
+    border:0!important;
+    border-radius:17px!important;
+    padding:17px!important;
+    box-shadow:0 8px 20px #c2410c20!important;
+  }
+  body.authenticated main.wrap > header.top .brand {
+    color:#fff!important;
+    font-size:21px!important;
+  }
+  body.authenticated main.wrap > header.top .muted {
+    color:#ffedd5!important;
+  }
+  body.authenticated main.wrap > section.panel,
+  body.authenticated main.wrap > details.panel,
+  body.authenticated .panel {
+    background:#fff!important;
+    color:#292524!important;
+    border:1px solid #fed7aa!important;
+    border-radius:17px!important;
+    box-shadow:0 5px 16px #9a34120d!important;
+  }
+  body.authenticated .panel:hover {
+    background:#fff!important;
+    border-color:#fed7aa!important;
+    box-shadow:0 5px 16px #9a34120d!important;
+    transform:none!important;
+  }
+  body.authenticated .panel h3,
+  body.authenticated .collapsible-heading {
+    color:#292524!important;
+  }
+  body.authenticated .panel>.top {
+    background:transparent!important;
+    color:#292524!important;
+    padding:0!important;
+    margin:0!important;
+    border:0!important;
+    box-shadow:none!important;
+  }
+  body.authenticated .panel>.top .muted,
+  body.authenticated .muted,
+  body.authenticated .note,
+  body.authenticated .foot {
+    color:#78716c!important;
+  }
+  body.authenticated .metric {
+    min-width:0!important;
+    background:#fff!important;
+    border:1px solid #ffedd5!important;
+    border-left:4px solid #f97316!important;
+    border-radius:15px!important;
+    box-shadow:0 3px 10px #9a34120a!important;
+    padding:16px!important;
+  }
+  body.authenticated .metric small {
+    color:#78716c!important;
+    font-weight:650!important;
+  }
+  body.authenticated .metric strong {
+    color:#292524!important;
+    font-size:22px!important;
+    overflow-wrap:anywhere!important;
+  }
+  body.authenticated .summary-grid {
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:12px!important;
+  }
+  body.authenticated button:not(.password-toggle),
+  body.authenticated .filebtn {
+    background:#ea580c!important;
+    color:#fff!important;
+    border:1px solid #ea580c!important;
+    border-radius:11px!important;
+    box-shadow:0 3px 0 #c2410c!important;
+  }
+  body.authenticated button.secondary {
+    background:#fff7ed!important;
+    color:#9a3412!important;
+    border:1px solid #fed7aa!important;
+    box-shadow:none!important;
+  }
+  body.authenticated button.danger {
+    background:#fff1f0!important;
+    color:#b42318!important;
+    border:1px solid #fecdca!important;
+    box-shadow:none!important;
+  }
+  body.authenticated input,
+  body.authenticated select {
+    background:#fff!important;
+    color:#292524!important;
+    border:1px solid #e7d5c7!important;
+    border-radius:12px!important;
+  }
+  body.authenticated .drop {
+    background:#fffaf5!important;
+    border:2px dashed #fb923c!important;
+    border-radius:16px!important;
+  }
+  body.authenticated #performancePanel .controls {
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) 112px!important;
+    align-items:end!important;
+    gap:10px!important;
+    width:100%!important;
+  }
+  body.authenticated #performancePanel .controls label {
+    min-width:0!important;
+    width:100%!important;
+  }
+  body.authenticated #performancePanel #saveIncentivePool {
+    width:100%!important;
+    min-width:0!important;
+    min-height:54px!important;
+    padding:8px!important;
+    white-space:normal!important;
+  }
+  body.authenticated #performancePanel .summary-grid {
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  body.authenticated #dailyAttendance {
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    overflow:hidden!important;
+  }
+  body.authenticated #dailyAttendance > .tablewrap {
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    overflow-x:hidden!important;
+    overflow-y:visible!important;
+    background:transparent!important;
+    border:0!important;
+    border-radius:0!important;
+  }
+  body.authenticated #dailyAttendance > .tablewrap > table,
+  body.authenticated #dailyAttendance > .tablewrap > table > tbody {
+    display:block!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+  }
+  body.authenticated #dailyAttendance > .tablewrap > table {
+    table-layout:fixed!important;
+    border-collapse:separate!important;
+  }
+  body.authenticated #dailyAttendance > .tablewrap > table > thead {
+    display:none!important;
+  }
+  body.authenticated #dailyAttendance > .tablewrap > table > tbody > tr {
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:8px 12px!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    padding:14px!important;
+    margin:0 0 12px!important;
+    box-sizing:border-box!important;
+    background:#fff!important;
+    border:1px solid #e5a63d!important;
+    border-radius:18px!important;
+    box-shadow:0 3px 10px #9a34120a!important;
+  }
+  body.authenticated #dailyAttendance > .tablewrap > table > tbody > tr > td {
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    justify-content:flex-start!important;
+    gap:5px!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    padding:3px!important;
+    border:0!important;
+    border-bottom:1px solid #f5e7dc!important;
+    white-space:normal!important;
+    overflow-wrap:anywhere!important;
+    box-sizing:border-box!important;
+    font-size:13px!important;
+  }
+  body.authenticated #dailyAttendance td:before {
+    content:attr(data-label)!important;
+    display:block!important;
+    color:#667085!important;
+    font-size:12px!important;
+    line-height:1.3!important;
+    font-weight:700!important;
+  }
+  body.authenticated #dailyAttendance td:nth-child(1),
+  body.authenticated #dailyAttendance td:nth-child(2),
+  body.authenticated #dailyAttendance td:last-child {
+    grid-column:1/-1!important;
+  }
+  body.authenticated #dailyAttendance td input,
+  body.authenticated #dailyAttendance td select {
+    display:block!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    min-height:42px!important;
+    box-sizing:border-box!important;
+  }
+  body.authenticated #dailyAttendance .time-entry {
+    display:flex!important;
+    align-items:center!important;
+    gap:6px!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    box-sizing:border-box!important;
+  }
+  body.authenticated #dailyAttendance .time-entry input {
+    flex:1 1 0!important;
+    width:0!important;
+    min-width:0!important;
+    max-width:100%!important;
+  }
+  body.authenticated #dailyAttendance .time-entry .period-button {
+    flex:0 0 48px!important;
+    width:48px!important;
+    min-width:48px!important;
+    max-width:48px!important;
+    padding:8px 4px!important;
+  }
+  body.authenticated #dailyAttendance td:last-child button {
+    width:100%!important;
+    min-width:0!important;
+    align-self:stretch!important;
   }
 }
 </style>
