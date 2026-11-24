@@ -2404,22 +2404,21 @@ load();
 
   // Mobile-only automatic logout. Preferences are stored separately from attendance data.
   const AUTO_LOGOUT_SETTINGS_KEY = 'attendanceAutoLogoutSettings_v1';
-  const AUTO_LOGOUT_BACKGROUND_KEY = 'attendanceAutoLogoutBackgroundAt_v1';
-  const AUTO_LOGOUT_DEFAULTS = { enabled:true, timeoutMinutes:3, backgroundMinutes:1 };
+  const AUTO_LOGOUT_LAST_ACTIVITY_KEY = 'attendanceAutoLogoutLastActivityAt_v1';
+  const AUTO_LOGOUT_DEFAULTS = { enabled:true, timeoutMinutes:3 };
   let autoLogoutSettings = (() => {
     try {
       const saved = JSON.parse(localStorage.getItem(AUTO_LOGOUT_SETTINGS_KEY) || 'null');
       return {
         enabled: typeof saved?.enabled === 'boolean' ? saved.enabled : AUTO_LOGOUT_DEFAULTS.enabled,
         timeoutMinutes: [1,3,5,10,15].includes(Number(saved?.timeoutMinutes)) ? Number(saved.timeoutMinutes) : AUTO_LOGOUT_DEFAULTS.timeoutMinutes,
-        backgroundMinutes: 1
       };
     } catch (_) { return {...AUTO_LOGOUT_DEFAULTS}; }
   })();
   let autoLogoutIdleTimer = null;
   let autoLogoutWarningTimer = null;
   let autoLogoutInProgress = false;
-  const isMobileAutoLogoutDevice = () => window.matchMedia('(max-width: 760px)').matches || window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  const isMobileAutoLogoutDevice = () => window.matchMedia('(max-width: 760px)').matches;
 
   function clearAutoLogoutTimers() {
     if (autoLogoutIdleTimer !== null) clearTimeout(autoLogoutIdleTimer);
@@ -2443,6 +2442,7 @@ load();
         !auth?.currentUser || auth.currentUser.uid !== OWNER_UID ||
         !document.body.classList.contains('authenticated') || logoutInProgress) return;
     const duration = autoLogoutSettings.timeoutMinutes * 60 * 1000;
+    try { localStorage.setItem(AUTO_LOGOUT_LAST_ACTIVITY_KEY, String(Date.now())); } catch (_) {}
     const warningDelay = Math.max(0, duration - 30000);
     autoLogoutWarningTimer = setTimeout(() => {
       if (document.body.classList.contains('authenticated')) {
@@ -2473,7 +2473,7 @@ load();
     cloudReady = false;
     cloudDoc = null;
     try {
-      localStorage.removeItem(AUTO_LOGOUT_BACKGROUND_KEY);
+      localStorage.removeItem(AUTO_LOGOUT_LAST_ACTIVITY_KEY);
       await auth.signOut();
       notify(reason);
     } catch (error) {
@@ -2484,26 +2484,14 @@ load();
       if (!auth.currentUser) logoutInProgress = false;
     }
   }
-  function markAutoLogoutBackground() {
-    if (!isMobileAutoLogoutDevice() || !autoLogoutSettings.enabled || !auth?.currentUser) return;
-    try {
-      if (!localStorage.getItem(AUTO_LOGOUT_BACKGROUND_KEY)) {
-        localStorage.setItem(AUTO_LOGOUT_BACKGROUND_KEY, String(Date.now()));
-      }
-    } catch (_) {}
-  }
   function checkAutoLogoutBackground() {
-    if (!isMobileAutoLogoutDevice() || !autoLogoutSettings.enabled) {
-      try { localStorage.removeItem(AUTO_LOGOUT_BACKGROUND_KEY); } catch (_) {}
-      return false;
-    }
-    let hiddenAt = 0;
-    try {
-      hiddenAt = Number(localStorage.getItem(AUTO_LOGOUT_BACKGROUND_KEY) || 0);
-      localStorage.removeItem(AUTO_LOGOUT_BACKGROUND_KEY);
-    } catch (_) {}
-    if (hiddenAt && Date.now() - hiddenAt >= autoLogoutSettings.backgroundMinutes * 60000) {
-      performAutomaticLogout('You were signed out because the app stayed in the background for 1 minute.');
+    if (!isMobileAutoLogoutDevice() || !autoLogoutSettings.enabled) return false;
+    let lastActivity = 0;
+    try { lastActivity = Number(localStorage.getItem(AUTO_LOGOUT_LAST_ACTIVITY_KEY) || 0); } catch (_) {}
+    const elapsed = lastActivity ? Date.now() - lastActivity : 0;
+    const limit = autoLogoutSettings.timeoutMinutes * 60000;
+    if (elapsed >= limit && auth?.currentUser?.uid === OWNER_UID) {
+      performAutomaticLogout('You were signed out after ' + autoLogoutSettings.timeoutMinutes + ' minutes of inactivity.');
       return true;
     }
     return false;
@@ -2512,10 +2500,8 @@ load();
     const activityEvents = ['pointerdown','keydown','touchstart','click','input','change','scroll','wheel'];
     activityEvents.forEach(type => document.addEventListener(type, resetAutoLogoutTimer, {passive:true}));
     document.addEventListener('visibilitychange', () => {
-      if (document.hidden) markAutoLogoutBackground();
-      else if (!checkAutoLogoutBackground()) resetAutoLogoutTimer();
+      if (!document.hidden && !checkAutoLogoutBackground()) resetAutoLogoutTimer();
     });
-    window.addEventListener('pagehide', markAutoLogoutBackground);
     window.addEventListener('pageshow', () => {
       if (!checkAutoLogoutBackground()) resetAutoLogoutTimer();
     });
@@ -2685,7 +2671,7 @@ load();
       if (logoutInProgress) return;
       logoutInProgress = true;
       clearAutoLogoutTimers();
-      try { localStorage.removeItem(AUTO_LOGOUT_BACKGROUND_KEY); } catch (_) {}
+      try { localStorage.removeItem(AUTO_LOGOUT_LAST_ACTIVITY_KEY); } catch (_) {}
       clearLoginCredentials();
       if (cloudTimer !== null) {
         clearTimeout(cloudTimer);
@@ -2740,7 +2726,7 @@ load();
       if (!user) {
         clearTimeout(loadingWatchdog);
         clearAutoLogoutTimers();
-        try { localStorage.removeItem(AUTO_LOGOUT_BACKGROUND_KEY); } catch (_) {}
+        try { localStorage.removeItem(AUTO_LOGOUT_LAST_ACTIVITY_KEY); } catch (_) {}
         document.body.classList.remove('authenticated','auth-checking');
         clearLoginCredentials();
         return;
