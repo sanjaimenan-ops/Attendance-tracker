@@ -1077,6 +1077,66 @@ body.authenticated .panel > .top .muted{
 
 </style>
 
+
+<style id="attendance-note-info-ui">
+/* Keep attendance explanations out of the table; reveal all messages from an info icon. */
+body.authenticated .note-info {
+  display: inline-block;
+  position: relative;
+  margin: 6px 0 0 2px;
+  vertical-align: middle;
+}
+body.authenticated .note-info > summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 21px;
+  height: 21px;
+  border: 1px solid #9bb5ce;
+  border-radius: 50%;
+  background: #edf6ff;
+  color: #173b65;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1;
+  cursor: pointer;
+  user-select: none;
+}
+body.authenticated .note-info > summary::-webkit-details-marker { display: none; }
+body.authenticated .note-info[open] > summary { background: #dceeff; border-color: #668db5; }
+body.authenticated .note-info-popover {
+  position: absolute;
+  z-index: 1000;
+  top: 25px;
+  left: 0;
+  width: min(360px, 70vw);
+  max-height: 260px;
+  overflow: auto;
+  padding: 10px 12px;
+  border: 1px solid #cbdced;
+  border-radius: 10px;
+  background: #fff;
+  color: #26384b;
+  box-shadow: 0 8px 24px #173b6526;
+  white-space: normal;
+  text-align: left;
+}
+body.authenticated .note-info-item {
+  font-size: 12px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  padding: 5px 0;
+}
+body.authenticated .note-info-item + .note-info-item { border-top: 1px solid #e7edf4; }
+@media (max-width: 760px) {
+  body.authenticated .note-info-popover {
+    left: 0;
+    width: min(320px, 78vw);
+  }
+}
+</style>
+
 </head>
 <body class="auth-checking">
 <div id="authLoading" role="status" aria-live="polite"><span class="auth-loading-ripple" aria-hidden="true"><i></i><i></i><i></i><b></b></span><span>Refreshing</span></div>
@@ -1447,7 +1507,7 @@ function render(){
  const monthRecords=records.map((r,i)=>({r,i})).filter(x=>x.r.date&&x.r.date.startsWith(month+'-'));
  let body=$('rows');
  if(!monthRecords.length){body.innerHTML='<tr><td colspan="15" class="empty">No attendance data for this month. Upload a WhatsApp TXT file or add attendance days manually.</td></tr>'}
- else body.innerHTML=monthRecords.map(({r,i})=>{let c=calc(r),inn=timeParts(r.in),outt=timeParts(r.out),lunchOut=timeParts(r.lunchOut),lunchIn=timeParts(r.lunchIn);let missing=r.status==='Present'&&(!r.in||!r.out);return `<tr><td data-label="Date">${r.date}</td><td data-label="Status"><select data-i="${i}" data-k="status"><option ${r.status==='Present'?'selected':''}>Present</option><option ${r.status==='Leave'?'selected':''}>Leave</option><option ${r.status==='Holiday'?'selected':''}>Holiday</option><option ${r.status==='Absent'?'selected':''}>Absent</option></select>${(Array.isArray(r.notes)?r.notes:[]).map(note=>'<div class="note warn">'+escapeHTML(note)+'</div>').join('')}${missing?'<div class="status review">Missing punch</div>':''}</td><td data-label="IN time"><div class="time-entry"><input data-i="${i}" data-k="inClock" type="text" inputmode="numeric" placeholder="10:00" aria-label="IN time" value="${inn.time}"><button type="button" class="period-button" data-i="${i}" data-period-toggle="in" aria-label="Toggle IN AM PM">${inn.period}</button></div></td><td data-label="OUT time"><div class="time-entry"><input data-i="${i}" data-k="outClock" type="text" inputmode="numeric" placeholder="09:30" aria-label="OUT time" value="${outt.time}"><button type="button" class="period-button" data-i="${i}" data-period-toggle="out" aria-label="Toggle OUT AM PM">${outt.period}</button></div></td><td data-label="Lunch Out"><div class="time-entry"><input data-i="${i}" data-k="lunchOutClock" type="text" inputmode="numeric" placeholder="01:00" aria-label="Lunch Out time" value="${lunchOut.time}"><button type="button" class="period-button" data-i="${i}" data-period-toggle="lunchOut" aria-label="Toggle Lunch Out AM PM">${lunchOut.period}</button></div></td><td data-label="Lunch In"><div class="time-entry"><input data-i="${i}" data-k="lunchInClock" type="text" inputmode="numeric" placeholder="02:00" aria-label="Lunch In time" value="${lunchIn.time}"><button type="button" class="period-button" data-i="${i}" data-period-toggle="lunchIn" aria-label="Toggle Lunch In AM PM">${lunchIn.period}</button></div></td><td data-label="Lunch (hours)"><input data-i="${i}" data-k="lunch" type="number" min="0" step="0.01" value="${(+r.lunch||0).toFixed(2)}"></td><td data-label="Permission (hours)"><input data-i="${i}" data-k="permission" type="number" min="0" step="0.01" value="${(+r.permission||0).toFixed(2)}"></td><td data-label="Clocked hours">${c.clock.toFixed(2)}</td><td data-label="Extra lunch (hours)">${c.extra.toFixed(2)}</td><td data-label="Net paid hours"><b>${c.net.toFixed(2)}</b></td><td data-label="Regular hours">${c.reg.toFixed(2)}</td><td data-label="Overtime hours">${c.ot.toFixed(2)}</td><td data-label="Pay">₹${c.pay.toFixed(2)}</td><td class="noprint" data-label="Action"><button class="danger" data-del="${i}">Delete</button></td></tr>`}).join('');
+ else body.innerHTML=monthRecords.map(({r,i})=>{let c=calc(r),inn=timeParts(r.in),outt=timeParts(r.out),lunchOut=timeParts(r.lunchOut),lunchIn=timeParts(r.lunchIn);let missing=r.status==='Present'&&(!r.in||!r.out);return `<tr><td data-label="Date">${r.date}</td><td data-label="Status"><select data-i="${i}" data-k="status"><option ${r.status==='Present'?'selected':''}>Present</option><option ${r.status==='Leave'?'selected':''}>Leave</option><option ${r.status==='Holiday'?'selected':''}>Holiday</option><option ${r.status==='Absent'?'selected':''}>Absent</option></select>${(Array.isArray(r.notes)&&r.notes.length)?'<details class="note-info"><summary title="View attendance messages" aria-label="View attendance messages">i</summary><div class="note-info-popover">'+r.notes.map(note=>'<div class="note-info-item">'+escapeHTML(note)+'</div>').join('')+'</div></details>':''}${missing?'<div class="status review">Missing punch</div>':''}</td><td data-label="IN time"><div class="time-entry"><input data-i="${i}" data-k="inClock" type="text" inputmode="numeric" placeholder="10:00" aria-label="IN time" value="${inn.time}"><button type="button" class="period-button" data-i="${i}" data-period-toggle="in" aria-label="Toggle IN AM PM">${inn.period}</button></div></td><td data-label="OUT time"><div class="time-entry"><input data-i="${i}" data-k="outClock" type="text" inputmode="numeric" placeholder="09:30" aria-label="OUT time" value="${outt.time}"><button type="button" class="period-button" data-i="${i}" data-period-toggle="out" aria-label="Toggle OUT AM PM">${outt.period}</button></div></td><td data-label="Lunch Out"><div class="time-entry"><input data-i="${i}" data-k="lunchOutClock" type="text" inputmode="numeric" placeholder="01:00" aria-label="Lunch Out time" value="${lunchOut.time}"><button type="button" class="period-button" data-i="${i}" data-period-toggle="lunchOut" aria-label="Toggle Lunch Out AM PM">${lunchOut.period}</button></div></td><td data-label="Lunch In"><div class="time-entry"><input data-i="${i}" data-k="lunchInClock" type="text" inputmode="numeric" placeholder="02:00" aria-label="Lunch In time" value="${lunchIn.time}"><button type="button" class="period-button" data-i="${i}" data-period-toggle="lunchIn" aria-label="Toggle Lunch In AM PM">${lunchIn.period}</button></div></td><td data-label="Lunch (hours)"><input data-i="${i}" data-k="lunch" type="number" min="0" step="0.01" value="${(+r.lunch||0).toFixed(2)}"></td><td data-label="Permission (hours)"><input data-i="${i}" data-k="permission" type="number" min="0" step="0.01" value="${(+r.permission||0).toFixed(2)}"></td><td data-label="Clocked hours">${c.clock.toFixed(2)}</td><td data-label="Extra lunch (hours)">${c.extra.toFixed(2)}</td><td data-label="Net paid hours"><b>${c.net.toFixed(2)}</b></td><td data-label="Regular hours">${c.reg.toFixed(2)}</td><td data-label="Overtime hours">${c.ot.toFixed(2)}</td><td data-label="Pay">₹${c.pay.toFixed(2)}</td><td class="noprint" data-label="Action"><button class="danger" data-del="${i}">Delete</button></td></tr>`}).join('');
  let present=monthRecords.filter(x=>x.r.status==='Present'&&x.r.in&&x.r.out).length,leaves=monthRecords.filter(x=>x.r.status==='Leave').length,tot={clock:0,net:0,reg:0,ot:0,extra:0,perm:0,pay:0};
  monthRecords.forEach(({r})=>{let c=calc(r);tot.clock+=c.clock;tot.net+=c.net;tot.reg+=c.reg;tot.ot+=c.ot;tot.extra+=c.extra;tot.perm+=(+r.permission||0);tot.pay+=c.pay});
  $('present').textContent=present;$('leaves').textContent=leaves;
