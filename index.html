@@ -1439,9 +1439,13 @@ body.authenticated main.wrap > details.panel > summary.collapsible-heading::afte
 <style id="desktop-login-single-screen-fit-20261124">
 /* Keep the desktop sign-in screen within one viewport; avoid a clipped second page. */
 @media (min-width:801px){
-  html,body:not(.authenticated){
+  body:not(.authenticated){
     width:100%!important;height:100%!important;min-height:0!important;
     margin:0!important;overflow:hidden!important;
+  }
+  /* Restore document scrolling immediately after successful authentication. */
+  html,body.authenticated{
+    height:auto!important;min-height:100%!important;overflow-y:auto!important;overflow-x:hidden!important;
   }
   body:not(.authenticated) #loginScreen{
     display:grid!important;grid-template-columns:minmax(0,1.08fr) minmax(420px,.92fr)!important;
