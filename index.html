@@ -2530,7 +2530,24 @@ load();
       finally { logoutInProgress = false; }
     });
 
+
+    // Standalone-PWA guard: the existing watchdog starts only after Firebase
+    // calls onAuthStateChanged. If that initial callback never arrives, the
+    // installed app can remain on "Refreshing" forever. This guard is PWA-only
+    // and reveals the login screen without signing out or touching attendance data.
+    const isInstalledPwa = window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    let initialAuthCallbackReceived = false;
+    const pwaAuthStartupGuard = isInstalledPwa ? setTimeout(() => {
+      if (!initialAuthCallbackReceived && document.body.classList.contains('auth-checking')) {
+        console.error('Installed PWA: Firebase did not deliver the initial auth-state callback.');
+        document.body.classList.remove('auth-checking');
+        showError('The installed app could not restore its saved sign-in session. Please sign in again. Your attendance data has not been cleared.');
+      }
+    }, 12000) : null;
+
     auth.onAuthStateChanged(async user => {
+      initialAuthCallbackReceived = true;
+      if (pwaAuthStartupGuard !== null) clearTimeout(pwaAuthStartupGuard);
       let loadingStage = 'waiting for Firebase authentication';
       const loadingWatchdog = setTimeout(() => {
         if (document.body.classList.contains('auth-checking')) {
