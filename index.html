@@ -1277,6 +1277,45 @@ body.authenticated select[data-k="status"] option{background:#fff!important;colo
 body.authenticated select[data-k="status"] option:checked{background:#eaf3fb!important;color:#163b65!important}
 
 </style>
+<style id="mobile-layout-restoration-final">
+/* Mobile-only layout correction: retain the production single-column layout and approved colours. */
+@media (max-width:760px){
+  body.authenticated header.top{
+    display:flex!important;flex-direction:row!important;align-items:flex-start!important;
+    justify-content:space-between!important;flex-wrap:wrap!important;gap:12px!important;
+    width:100%!important;height:auto!important;min-height:0!important;
+    padding:16px!important;margin:12px 0 18px!important;
+    background:linear-gradient(115deg,#163b65 0%,#286ca8 100%)!important;
+    color:#fff!important;overflow:visible!important;
+  }
+  body.authenticated header.top>div:first-child{flex:1 1 100%!important;min-width:0!important}
+  body.authenticated header.top .brand{display:block!important;color:#fff!important;opacity:1!important;visibility:visible!important;font-size:25px!important;line-height:1.2!important}
+  body.authenticated header.top .muted{display:block!important;color:#e4eff9!important;opacity:1!important;visibility:visible!important;line-height:1.4!important}
+  body.authenticated header.top .auth-actions{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:10px!important;flex:1 1 100%!important;width:100%!important;margin:0!important}
+  body.authenticated header.top .auth-actions #logoutButton{margin-left:auto!important}
+  body.authenticated .panel{height:auto!important;min-height:0!important;max-height:none!important}
+  body.authenticated #calculationSettings .staff-controls{
+    display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 38px!important;
+    align-items:end!important;gap:8px!important;width:100%!important;
+  }
+  body.authenticated #calculationSettings .staff-controls>.employee-picker-label,
+  body.authenticated #calculationSettings .staff-controls>.month-picker-label{
+    display:flex!important;flex-direction:column!important;min-width:0!important;width:100%!important;
+  }
+  body.authenticated #calculationSettings .staff-controls .employee-picker,
+  body.authenticated #calculationSettings .staff-controls>.month-picker-label input{
+    display:block!important;width:100%!important;min-width:0!important;max-width:100%!important;
+    box-sizing:border-box!important;font-size:14px!important;
+  }
+  body.authenticated #calculationSettings .staff-actions-wrap{
+    grid-column:auto!important;justify-self:end!important;align-self:end!important;
+    flex:0 0 38px!important;width:38px!important;margin:0!important;
+  }
+  body.authenticated #calculationSettings .staff-more-trigger{
+    width:38px!important;min-width:38px!important;height:42px!important;min-height:42px!important;
+  }
+}
+</style>
 </head>
 <body class="auth-checking">
 <div id="authLoading" role="status" aria-live="polite"><span class="auth-loading-ripple" aria-hidden="true"><i></i><i></i><i></i><b></b></span><span>Refreshing</span></div>
