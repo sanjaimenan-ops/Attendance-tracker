@@ -1476,6 +1476,102 @@ body.authenticated main.wrap > details.panel > summary.collapsible-heading::afte
 }
 </style>
 
+
+<style id="mobile-daily-attendance-single-column-20261124">
+@media (max-width:760px) {
+  body.authenticated #dailyAttendance {
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    overflow:hidden!important;
+  }
+  body.authenticated #dailyAttendance > .tablewrap {
+    display:block!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    overflow-x:hidden!important;
+    overflow-y:visible!important;
+    border:0!important;
+    border-radius:0!important;
+  }
+  body.authenticated #dailyAttendance > .tablewrap > table {
+    display:block!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    table-layout:fixed!important;
+    border-collapse:separate!important;
+  }
+  body.authenticated #dailyAttendance > .tablewrap > table > thead {
+    display:none!important;
+  }
+  body.authenticated #dailyAttendance > .tablewrap > table > tbody {
+    display:block!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+  }
+  body.authenticated #dailyAttendance > .tablewrap > table > tbody > tr {
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    gap:8px!important;
+    padding:12px!important;
+    margin:0 0 12px!important;
+    box-sizing:border-box!important;
+  }
+  body.authenticated #dailyAttendance > .tablewrap > table > tbody > tr > td {
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    padding:4px 2px!important;
+    white-space:normal!important;
+    overflow-wrap:anywhere!important;
+    box-sizing:border-box!important;
+  }
+  body.authenticated #dailyAttendance td input,
+  body.authenticated #dailyAttendance td select {
+    display:block!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    box-sizing:border-box!important;
+  }
+  body.authenticated #dailyAttendance .time-entry {
+    display:flex!important;
+    align-items:center!important;
+    gap:6px!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    box-sizing:border-box!important;
+  }
+  body.authenticated #dailyAttendance .time-entry input {
+    flex:1 1 0!important;
+    width:0!important;
+    min-width:0!important;
+    max-width:100%!important;
+  }
+  body.authenticated #dailyAttendance .time-entry .period-button {
+    flex:0 0 48px!important;
+    width:48px!important;
+    min-width:48px!important;
+    max-width:48px!important;
+  }
+  body.authenticated #dailyAttendance td:last-child button {
+    width:auto!important;
+    min-width:100px!important;
+    align-self:flex-start!important;
+  }
+}
+</style>
+
 </head>
 <body class="auth-checking">
 <div id="authLoading" role="status" aria-live="polite"><span class="auth-loading-ripple" aria-hidden="true"><i></i><i></i><i></i><b></b></span><span>Refreshing</span></div>
