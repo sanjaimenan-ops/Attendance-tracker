@@ -3035,4 +3035,61 @@ body:not(.authenticated) #mobileNav{
     padding:26px clamp(16px,2.2vw,36px) 40px!important;
   }
 }
+
+<style id="mobile-login-viewport-fix-20261127">
+/* Touch devices must use the full available phone width, even when the
+   browser requests a desktop layout viewport. Desktop rules are untouched. */
+@media (hover:none) and (pointer:coarse){
+  body:not(.authenticated) #loginScreen{
+    grid-template-columns:minmax(0,1fr)!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    min-height:100svh!important;
+    height:auto!important;
+    padding:20px 16px!important;
+    align-content:center!important;
+    align-items:center!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+  }
+  body:not(.authenticated) #loginScreen .login-art{display:none!important}
+  body:not(.authenticated) #loginScreen .login-card{
+    width:100%!important;
+    max-width:none!important;
+    min-width:0!important;
+    margin:0!important;
+    padding:30px 24px!important;
+    border-radius:24px!important;
+  }
+  body:not(.authenticated) #loginScreen .login-card h1{
+    font-size:clamp(26px,5vw,34px)!important;
+  }
+  body:not(.authenticated) #loginScreen .login-card p{
+    font-size:14px!important;
+    margin-bottom:24px!important;
+  }
+  body:not(.authenticated) #loginScreen .login-card label{
+    font-size:13px!important;
+    margin:14px 0!important;
+  }
+  body:not(.authenticated) #loginScreen .login-card input{
+    min-height:48px!important;
+    font-size:16px!important;
+  }
+  body:not(.authenticated) #loginScreen .login-card button#loginButton{
+    min-height:50px!important;
+    margin-top:22px!important;
+    font-size:15px!important;
+  }
+}
+@media (hover:none) and (pointer:coarse) and (max-width:420px){
+  body:not(.authenticated) #loginScreen{padding:16px 12px!important}
+  body:not(.authenticated) #loginScreen .login-card{
+    padding:26px 20px!important;
+    border-radius:22px!important;
+  }
+}
+</style>
+
 </style>
